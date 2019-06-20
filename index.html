@@ -7,11 +7,15 @@
   <base href="/core-data/">
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
   <script>
+    var appBasePath = document.querySelector('base').href;
     (function(){
       var redirect = sessionStorage.redirect;
       delete sessionStorage.redirect;
       if (redirect && redirect != location.href) {
         history.replaceState(null, null, redirect);
+      }
+      if (location.pathname.split('/').filter((el)=>''!==el).length < 1) {
+        history.replaceState(null, null, appBasePath);
       }
     })();
   </script>
@@ -128,8 +132,8 @@
         url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
         pointToLayer: function(geoJsonPoint, latlon) {
           return L.circleMarker(latlon, {
-            weight: 1,
-            radius: 4
+            weight: 2,
+            radius: 6
           });
         }
     }).addTo(map);
@@ -151,7 +155,7 @@
         return L.circleMarker(latlon, {
           weight: 2,
           color: '#33AA44',
-          radius: 4
+          radius: 6
         });
       }
     }).addTo(map);
