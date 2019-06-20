@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Core Data</title>
+  <base href="/core-data/">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    (function(){
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
+  
+  <!-- Load Leaflet from a CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.js"></script>
+
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@^2/dist/esri-leaflet.js"></script>
+
+  <!-- Load Web Component base -->
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
+  <script src="js/common.min.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/typography.css" />
+
+  <style>
+    @media (min-width: 770px) {
+      [data-view=app] {
+        display: grid;
+        grid-template-columns: 50% 50%;
+      }
+      app-sidebar {
+        overflow-y: auto;
+      }
+      .right-panel {
+        grid-column-start: 2;
+      }
+    }
+    @media (max-width: 769px) {
+      [data-view=app] {
+        display: grid;
+        grid-template-rows: 80% 100%;
+        overflow-y: auto;
+      }
+      .right-panel {
+        grid-row-start: 1;
+      }
+    }
+    [data-view] {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    [data-closed] {
+      display: none;
+    }
+  </style>
+  <script src="./lit/index.js"></script>
+</head>
+<body>
+  <div data-view="app">
+    <app-sidebar id="sidebar" class="left-panel" tabs='["filter", "details"]'>
+      <section>
+        <h2>
+          Select a site to learn more!
+        </h2>
+        <p>
+          Lorem ipsum dolor sit amet, viris efficiendi suscipiantur 
+          quo eu, eam altera iudicabit eu. Eu per molestie antiopam, 
+          eam in nemore iracundia, cum ei audiam iuvaret. Sed an erat 
+          sonet dolor, option lucilius sed cu, qui sadipscing 
+          comprehensam te. Magna recusabo intellegebat mei in. Purto 
+          rebum tibique no qui, enim minim eleifend ut pro.
+        </p>
+      </section>
+      <div slot="filter">
+        <h2>filter</h2>
+      </div>
+      <div slot="details">
+        <h2>details</h2>
+        <site-details></site-details>
+      </div>
+    </app-sidebar>
+    <div id="map" class="right-panel"></div>
+  </div>
+  <script>
+    /* JAVASCRIPT */
+    
+    /* ~~~~~~~~ Map ~~~~~~~~ */
+    //create a map, center it, and set the zoom level. 
+    //set zoomcontrol to false because we will add it in a different corner. 
+    var map = L.map('map', {zoomControl:false}).setView([45, -89.623861], 6);
+    var sidebar = document.querySelector('#sidebar');
+    var details = document.querySelector('site-details');
+
+    /* ~~~~~~~~ Map Layers ~~~~~~~~ */
+    //basemap from Open Street Map
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    /* ~~~~~~~~ Zoom Control ~~~~~~~~ */
+    //place a zoom control in the top right: 
+    new L.Control.Zoom({position: 'topright'}).addTo(map);
+
+    /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
+    var bore = L.esri.featureLayer({
+        url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
+    }).addTo(map);
+
+    var popupTemplate = "<h3>{SiteName}</h3>";
+
+    bore.bindPopup(function(e){
+        return L.Util.template(popupTemplate, e.feature.properties); 
+    });
+
+    var selectFeature = function(info) {
+      details.siteinfo = null;
+      details.siteinfo = info;
+      sidebar.switchTab('details');
+    };
+
+    var deselectFeature = function() {
+      details.siteinfo = null;
+      sidebar.switchTab('default');
+    }
+
+    bore.on('popupopen', function(e) {
+      var info = e.propagatedFrom.feature.properties;
+      selectFeature(info);
+    });
+
+    bore.on('popupclose', function(e) {
+      deselectFeature();
+    });
+  </script>
+</body>
+</html>
