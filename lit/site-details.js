@@ -81,7 +81,12 @@ export class SiteDetails extends LitElement {
       </style>
 
       ${(!this.siteinfo)? '' : html`
-        <h1 class="header">${this.siteinfo.Wid}: ${this.siteinfo.SiteName}</h1>
+        ${(!this.siteinfo.Wid)?'':html`
+          <h1 class="header">${this.siteinfo.Wid}: ${this.siteinfo.SiteName}</h1>
+        `}
+        ${(!this.siteinfo.ID)?'':html`
+          <h1 class="header">${this.siteinfo.ID}: ${this.siteinfo.Site_Name}</h1>
+        `}
         <div data-element="table">
           ${this.renderTable}
         </div>

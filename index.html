@@ -96,12 +96,22 @@
   <script>
     /* JAVASCRIPT */
     
+    var sidebar = document.querySelector('#sidebar');
+    var details = document.querySelector('site-details');
+    var selectFeature = function(info) {
+      details.siteinfo = null;
+      details.siteinfo = info;
+      sidebar.switchTab('details');
+    };
+    var deselectFeature = function() {
+      details.siteinfo = null;
+      sidebar.switchTab('default');
+    }
+
     /* ~~~~~~~~ Map ~~~~~~~~ */
     //create a map, center it, and set the zoom level. 
     //set zoomcontrol to false because we will add it in a different corner. 
     var map = L.map('map', {zoomControl:false}).setView([45, -89.623861], 6);
-    var sidebar = document.querySelector('#sidebar');
-    var details = document.querySelector('site-details');
 
     /* ~~~~~~~~ Map Layers ~~~~~~~~ */
     //basemap from Open Street Map
@@ -116,31 +126,43 @@
     /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
     var bore = L.esri.featureLayer({
         url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
+        pointToLayer: function(geoJsonPoint, latlon) {
+          return L.circleMarker(latlon, {
+            weight: 1,
+            radius: 4
+          });
+        }
     }).addTo(map);
-
-    var popupTemplate = "<h3>{SiteName}</h3>";
-
     bore.bindPopup(function(e){
-        return L.Util.template(popupTemplate, e.feature.properties); 
+        return L.Util.template("<h3>{SiteName}</h3>", e.feature.properties); 
     });
-
-    var selectFeature = function(info) {
-      details.siteinfo = null;
-      details.siteinfo = info;
-      sidebar.switchTab('details');
-    };
-
-    var deselectFeature = function() {
-      details.siteinfo = null;
-      sidebar.switchTab('default');
-    }
-
     bore.on('popupopen', function(e) {
       var info = e.propagatedFrom.feature.properties;
       selectFeature(info);
     });
-
     bore.on('popupclose', function(e) {
+      deselectFeature();
+    });
+
+    /* +++++++++++ Sediment Core layer +++++++++++ */ 
+    var quat = L.esri.featureLayer({
+      url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
+      pointToLayer: function(geoJsonPoint, latlon) {
+        return L.circleMarker(latlon, {
+          weight: 2,
+          color: '#33AA44',
+          radius: 4
+        });
+      }
+    }).addTo(map);
+    quat.bindPopup(function(e){
+        return L.Util.template("<h3>{Site_Name}</h3>", e.feature.properties); 
+    });
+    quat.on('popupopen', function(e) {
+      var info = e.propagatedFrom.feature.properties;
+      selectFeature(info);
+    });
+    quat.on('popupclose', function(e) {
       deselectFeature();
     });
   </script>
