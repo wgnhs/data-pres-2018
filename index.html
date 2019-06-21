@@ -127,13 +127,18 @@
     //place a zoom control in the top right: 
     new L.Control.Zoom({position: 'topright'}).addTo(map);
 
+    var calcRadius = (a) => Math.max(a/1.5,3);
+    var RestylingCircleMarker = L.CircleMarker.extend({ 
+      getEvents: function() {return {zoomend: this._restyle}}, 
+      _restyle: function(e){this.setRadius(calcRadius(e.target.getZoom()))} 
+    });
     /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
     var bore = L.esri.featureLayer({
         url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
         pointToLayer: function(geoJsonPoint, latlon) {
-          return L.circleMarker(latlon, {
+          return new RestylingCircleMarker(latlon, {
             weight: 2,
-            radius: 6
+            radius: calcRadius(map.getZoom())
           });
         }
     }).addTo(map);
@@ -152,10 +157,10 @@
     var quat = L.esri.featureLayer({
       url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
       pointToLayer: function(geoJsonPoint, latlon) {
-        return L.circleMarker(latlon, {
+        return new RestylingCircleMarker(latlon, {
           weight: 2,
           color: '#33AA44',
-          radius: 6
+          radius: calcRadius(map.getZoom())
         });
       }
     }).addTo(map);
