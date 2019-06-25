@@ -30,6 +30,7 @@
   <!-- Load Web Component base -->
   <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
   <script src="js/common.min.js"></script>
+  <script src="lit/index.js"></script>
 
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/variables.css" />
@@ -68,8 +69,10 @@
     [data-closed] {
       display: none;
     }
+    .filtered {
+      display: none;
+    }
   </style>
-  <script src="./lit/index.js"></script>
 </head>
 <body>
   <div data-view="app">
@@ -78,18 +81,8 @@
         <h2>
           Select a site to learn more!
         </h2>
-        <p>
-          Lorem ipsum dolor sit amet, viris efficiendi suscipiantur 
-          quo eu, eam altera iudicabit eu. Eu per molestie antiopam, 
-          eam in nemore iracundia, cum ei audiam iuvaret. Sed an erat 
-          sonet dolor, option lucilius sed cu, qui sadipscing 
-          comprehensam te. Magna recusabo intellegebat mei in. Purto 
-          rebum tibique no qui, enim minim eleifend ut pro.
-        </p>
+        <map-filter></map-filter>
       </section>
-      <div slot="filter">
-        <h2>filter</h2>
-      </div>
       <div slot="details">
         <h2>details</h2>
         <site-details></site-details>
@@ -97,83 +90,6 @@
     </app-sidebar>
     <div id="map" class="right-panel"></div>
   </div>
-  <script>
-    /* JAVASCRIPT */
-    
-    var sidebar = document.querySelector('#sidebar');
-    var details = document.querySelector('site-details');
-    var selectFeature = function(info) {
-      details.siteinfo = null;
-      details.siteinfo = info;
-      sidebar.switchTab('details');
-    };
-    var deselectFeature = function() {
-      details.siteinfo = null;
-      sidebar.switchTab('default');
-    }
-
-    /* ~~~~~~~~ Map ~~~~~~~~ */
-    //create a map, center it, and set the zoom level. 
-    //set zoomcontrol to false because we will add it in a different corner. 
-    var map = L.map('map', {zoomControl:false}).setView([45, -89.623861], 6);
-
-    /* ~~~~~~~~ Map Layers ~~~~~~~~ */
-    //basemap from Open Street Map
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    /* ~~~~~~~~ Zoom Control ~~~~~~~~ */
-    //place a zoom control in the top right: 
-    new L.Control.Zoom({position: 'topright'}).addTo(map);
-
-    var calcRadius = (a) => Math.max(a/1.5,3);
-    var RestylingCircleMarker = L.CircleMarker.extend({ 
-      getEvents: function() {return {zoomend: this._restyle}}, 
-      _restyle: function(e){this.setRadius(calcRadius(e.target.getZoom()))} 
-    });
-    /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
-    var bore = L.esri.featureLayer({
-        url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
-        pointToLayer: function(geoJsonPoint, latlon) {
-          return new RestylingCircleMarker(latlon, {
-            weight: 2,
-            radius: calcRadius(map.getZoom())
-          });
-        }
-    }).addTo(map);
-    bore.bindPopup(function(e){
-        return L.Util.template("<h3>{SiteName}</h3>", e.feature.properties); 
-    });
-    bore.on('popupopen', function(e) {
-      var info = e.propagatedFrom.feature.properties;
-      selectFeature(info);
-    });
-    bore.on('popupclose', function(e) {
-      deselectFeature();
-    });
-
-    /* +++++++++++ Sediment Core layer +++++++++++ */ 
-    var quat = L.esri.featureLayer({
-      url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
-      pointToLayer: function(geoJsonPoint, latlon) {
-        return new RestylingCircleMarker(latlon, {
-          weight: 2,
-          color: '#33AA44',
-          radius: calcRadius(map.getZoom())
-        });
-      }
-    }).addTo(map);
-    quat.bindPopup(function(e){
-        return L.Util.template("<h3>{Site_Name}</h3>", e.feature.properties); 
-    });
-    quat.on('popupopen', function(e) {
-      var info = e.propagatedFrom.feature.properties;
-      selectFeature(info);
-    });
-    quat.on('popupclose', function(e) {
-      deselectFeature();
-    });
-  </script>
+  <script src="map.js"></script>
 </body>
 </html>
