@@ -2,14 +2,20 @@
 
 var sidebar = document.querySelector('#sidebar');
 var details = document.querySelector('site-details');
+var pdfView = document.querySelector('pdf-view');
 var selectFeature = function(info) {
   details.siteinfo = null;
   details.siteinfo = info;
   sidebar.switchTab('details');
+  pdfView['pdfsrc'] = null;
+  pdfView['pdfsrc'] = (info.Wid)?'https://data.wgnhs.wisc.edu/geophysical-logs/'+info.Wid+'.pdf':null;
+
 };
 var deselectFeature = function() {
   details.siteinfo = null;
   sidebar.switchTab('default');
+
+  pdfView['pdfsrc'] = null;
 }
 
 /* ~~~~~~~~ Map ~~~~~~~~ */
@@ -94,4 +100,17 @@ quat.on('popupopen', function(e) {
 });
 quat.on('popupclose', function(e) {
   deselectFeature();
+});
+
+
+
+
+document.addEventListener('toggle-pdf', function(e) {
+  var mapEl = document.querySelector('#map');
+  if (!e.detail.closed) {
+    mapEl.setAttribute('data-closed', true);
+  } else {
+    mapEl.removeAttribute('data-closed');
+    map.invalidateSize();
+  }
 });

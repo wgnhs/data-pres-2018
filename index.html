@@ -27,6 +27,9 @@
   <!-- Load Esri Leaflet from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@^2/dist/esri-leaflet.js"></script>
 
+  <!-- Load PDF viewer -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@^2/build/pdf.min.js"></script>
+
   <!-- Load Web Component base -->
   <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
   <script src="js/common.min.js"></script>
@@ -85,10 +88,15 @@
       </section>
       <div slot="details">
         <h2>details</h2>
-        <site-details></site-details>
+        <site-details>
+          <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+        </site-details>
       </div>
     </app-sidebar>
     <div id="map" class="right-panel"></div>
+    <pdf-view-panel class="right-panel" data-closed>
+      <pdf-view></pdf-view>
+    </pdf-view-panel>
   </div>
   <script src="map.js"></script>
 </body>

@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
+export { PDFView, PDFViewPanel, PDFViewButton } from './pdf-view.js';
 
 export class SiteDetails extends LitElement {
   static get properties() {
@@ -90,6 +91,7 @@ export class SiteDetails extends LitElement {
         <div data-element="table">
           ${this.renderTable}
         </div>
+        <slot></slot>
       `}
     `;
   }
