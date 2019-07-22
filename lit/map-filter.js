@@ -201,8 +201,8 @@ export class MapFilter extends LitElement {
   updated() {
     let matchClass = this.matchClass;
     let filt = this.filter;
-    if (window.map) {
-      window.map.fire('filterpoints', {
+    if (window.siteMap) {
+      window.siteMap.map.fire('filterpoints', {
         detail: {
           resolve: function(props) {
             let result = filt.length < 1;
