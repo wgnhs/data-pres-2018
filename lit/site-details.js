@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
+import { ignoredKeys, keyLookup } from '../app/key-lookups.js';
 export { PDFView, PDFViewPanel, PDFViewButton } from './pdf-view.js';
 
 export class SiteDetails extends LitElement {
@@ -91,14 +92,9 @@ export class SiteDetails extends LitElement {
         <div data-element="table">
           ${this.renderTable}
         </div>
-        <slot></slot>
+        <slot name="sketch"></slot>
       `}
     `;
   }
 }
 customElements.define('site-details', SiteDetails);
-
-let ignoredKeys = [
-];
-let keyLookup = {
-};
