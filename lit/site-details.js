@@ -29,8 +29,9 @@ export class SiteDetails extends LitElement {
     return css`
       [data-element="table"] {
         display: grid;
-        grid-template-columns: 30% 70%;
+        grid-template-columns: 30% 1fr;
         grid-gap: 0.5em;
+        width: 100%;
       }
 
       td {
@@ -51,9 +52,24 @@ export class SiteDetails extends LitElement {
         position: sticky;
         top: 0px;
         background-color: var(--palette-white);
-        padding: 1em;
+        padding: var(--font-size-extra-large);
         z-index: 10;
         width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+      }
+      .header h1 {
+        padding: 0;
+      }
+      .header i {
+        font-size: var(--icon-size-large);
+        color: var(--palette-accent);
+        cursor: pointer;
+      }
+      
+      [data-closed] {
+        display: none;
       }
     `;
   }

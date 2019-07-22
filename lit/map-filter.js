@@ -139,7 +139,7 @@ export class MapFilter extends LitElement {
     return css`
       [data-element="table"] {
         display: grid;
-        grid-template-columns: 30% 70%;
+        grid-template-columns: 30% 1fr;
         grid-gap: 0.5em;
       }
 
