@@ -83,6 +83,13 @@ export class SiteMap extends window.L.Evented {
         resolve();
       }))
     })]).then(function() {
+      let lookup = {};
+      this.layers.forEach(function(layer) {
+        layer.eachFeature(function(obj) {
+          lookup[SiteMap.getSiteCode(obj.feature.properties)] = obj;
+        });
+      });
+      this._lookup = lookup;
       this.fire('init');
     }.bind(this));
 
@@ -99,15 +106,7 @@ export class SiteMap extends window.L.Evented {
   }
 
   getPoint(params) {
-    let result;
-
-    this.layers.forEach(function(layer) {
-      layer.eachFeature(function(obj) {
-        if (!result && SiteMap.getSiteCode(obj.feature.properties) === SiteMap.getSiteCode(params)) {
-          result = obj;
-        }
-      });
-    })
+    let result = this._lookup[SiteMap.getSiteCode(params)];
     return result;
   }
 
@@ -135,10 +134,10 @@ export class SiteMap extends window.L.Evented {
     }
   }
 
-  selectPoint(site) {
+  selectPoint(params) {
     let result = null;
     // console.log('select point on map:', site);
-    let point = this.getPoint(site);
+    let point = this.getPoint(params);
     if (point) {
       result = point.feature.properties;
       let highlightPoint = this.getHighlightPoint();

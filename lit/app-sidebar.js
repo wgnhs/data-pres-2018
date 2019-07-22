@@ -19,7 +19,7 @@ export class AppSidebar extends LitElement {
   static get styles() {
     return css`
       :host {
-        padding: 0 1.5em 1.5em 1.5em;
+        padding: 0 var(--border-radius);
       }
     `;
   }
@@ -44,7 +44,7 @@ export class AppSidebar extends LitElement {
         @import url("./css/typography.css");
       </style>
 
-      <h1 class="header">${this.title}</h1>
+      ${(!this.title)?'':html`<h1 class="header">${this.title}</h1>`}
       <slot></slot>
       ${!(this.tabs)?'':this.tabs.map((el) => html`
       <slot name='${el}' hidden></slot>
