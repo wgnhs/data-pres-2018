@@ -61,6 +61,8 @@ export class SiteDetails extends LitElement {
       }
       .header h1 {
         padding: 0;
+        max-width: 70%;
+        text-align: center;
       }
       .header i {
         font-size: var(--icon-size-large);
@@ -99,18 +101,33 @@ export class SiteDetails extends LitElement {
       </style>
 
       ${(!this.siteinfo)? '' : html`
-        ${(!this.siteinfo.Wid)?'':html`
-          <h1 class="header">${this.siteinfo.Wid}: ${this.siteinfo.SiteName}</h1>
-        `}
-        ${(!this.siteinfo.ID)?'':html`
-          <h1 class="header">${this.siteinfo.ID}: ${this.siteinfo.Site_Name}</h1>
-        `}
+        <div class="header">
+          <span>
+            <a href="${window.router.router.link('/')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
+          </span>
+          ${(!this.siteinfo.Wid)?'':html`
+            <h1>${this.siteinfo.Wid}: ${this.siteinfo.SiteName}</h1>
+          `}
+          ${(!this.siteinfo.ID)?'':html`
+            <h1>${this.siteinfo.ID}: ${this.siteinfo.Site_Name}</h1>
+          `}
+          <span></span>
+        </div>
+
         <div data-element="table">
           ${this.renderTable}
         </div>
         <slot name="sketch"></slot>
       `}
     `;
+  }
+
+  fireClearSelection() {
+    let event = new CustomEvent('clear-selection', {
+      bubbles: true,
+      detail: {}
+    });
+    this.dispatchEvent(event);
   }
 }
 customElements.define('site-details', SiteDetails);
