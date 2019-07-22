@@ -4,6 +4,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import filesize from 'rollup-plugin-filesize';
 
 const commonDir = 'js';
+const appDir = 'app';
 const litDir = 'lit';
 
 function buildPlugins({dir=litDir, min=false}) {
@@ -24,7 +25,7 @@ function buildPlugins({dir=litDir, min=false}) {
   return result;
 }
 
-function buildApp({dir=litDir, filename='index', min=false, format='umd'}) {
+function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
   let minifyToken = (min) ? '.min': '';
   let result = {
     input: `${dir}/${filename}.js`,
@@ -65,5 +66,7 @@ export default [
   buildCommon({}),
   buildCommon({min: true}),
   buildApp({}),
-  buildApp({min: true})
+  buildApp({min: true}),
+  buildApp({dir: litDir}),
+  buildApp({dir: litDir, min: true})
 ];

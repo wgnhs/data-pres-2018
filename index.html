@@ -19,6 +19,7 @@
       }
     })();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/navigo@^7/lib/navigo.js"></script>
   
   <!-- Load Leaflet from a CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.css" />
@@ -26,6 +27,10 @@
 
   <!-- Load Esri Leaflet from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@^2/dist/esri-leaflet.js"></script>
+
+  <!-- load leaflet-basemaps from a CDN --> 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-basemaps/L.Control.Basemaps.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-basemaps"></script>
 
   <!-- Load PDF viewer -->
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@^2/build/pdf.min.js"></script>
@@ -78,26 +83,33 @@
   </style>
 </head>
 <body>
-  <div data-view="app">
-    <app-sidebar id="sidebar" class="left-panel" tabs='["filter", "details"]'>
-      <section>
-        <h2>
-          Select a site to learn more!
-        </h2>
-        <map-filter></map-filter>
-      </section>
+  <div id="app" data-view="app">
+    <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
+      <div class="default-view">
+        <h1 class="header">Search Subsurface Data</h1>
+        <section>
+          <h2>
+            Select a site to learn more!
+          </h2>
+        </section>
+        <section>
+          <map-filter></map-filter>
+        </section>
+      </div>
+
       <div slot="details">
-        <h2>details</h2>
         <site-details>
-          <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+          <div slot="sketch">
+            <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+          </div>
         </site-details>
       </div>
     </app-sidebar>
     <div id="map" class="right-panel"></div>
-    <pdf-view-panel class="right-panel" data-closed>
+    <pdf-view-panel id="sketch" class="right-panel" data-closed>
       <pdf-view></pdf-view>
     </pdf-view-panel>
   </div>
-  <script src="map.js"></script>
+  <script src="app/index.js"></script>
 </body>
 </html>
