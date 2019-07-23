@@ -1,5 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
+import { keyLookup } from '../app/key-lookups.js';
+export { AppCollapsible } from './app-collapsible.js';
 export { InRadio } from './in-radio.js';
 
 export class MapFilter extends LitElement {
@@ -16,143 +18,31 @@ export class MapFilter extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.genId = (function() {
-      const memo = {};
-      return function(index) {
-        if (!memo[index]) {
-          memo[index] = genId();
-        }
-        return memo[index];
-      }
-    })();
-    this.filter = [];
-    this.filterFields = {
-      "SiteName": {
-        controls: []
-      },
-      "Wid": {
-        controls: [
-          new TextControl(this)
-        ]
-      },
-      "RecentLog": {
-        controls: [
-          new GTLTControl(this, true)
-        ]
-      },
-      "MaxDepth": {
-        controls: [
-          new GTLTControl(this)
-        ]
-      },
-      "Norm_Res": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "OBI": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Caliper": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Fluid_Cond": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Flow_Spin": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Gamma": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "ABI": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Fluid_Temp": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "SP": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "SPR": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Fluid_Res": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Flow_HP": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Spec_Gamma": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Video": {
-        controls: [
-          new CheckboxControl(this)
-        ]
-      },
-      "Drill_Year": {
-        controls: [
-          new GTLTControl(this, true)
-        ]
-      },
-      "Depth_Ft": {
-        controls: [
-          new GTLTControl(this)
-        ]
-      },
-      "Drill_Meth": {
-        controls: [
-          new SelectControl(this, 'Drill_Meth')
-        ]
-      },
-    }
-  }
-
   static get styles() {
     return css`
-      [data-element="table"] {
-        display: grid;
-        grid-template-columns: 30% 1fr;
-        grid-gap: 0.5em;
+      :host {
+        display
       }
 
-      td {
-        padding: 0.5em;
+      .field {
+        display: grid;
+        grid-template-columns: 40% 1fr;
+        grid-gap: var(--border-radius);
+        margin: 0 var(--border-radius);
       }
 
       .label {
-        background-color: var(--palette-dark);
+        /* background-color: var(--palette-dark); */
         font-weight: var(--font-weight-bold);
       }
 
       .selector {
+        /* background-color: var(--palette-light); */
+      }
+
+      .section-title {
+        margin: var(--line-height) 0 0 0;
+        padding: var(--border-radius);
         background-color: var(--palette-light);
       }
 
@@ -168,34 +58,58 @@ export class MapFilter extends LitElement {
   }
 
   render() {
-    let name=0, config=1
     return html`
+      <style>
+        @import url("./css/typography.css");
+      </style>
       <div>
-        <h4>Filter Map:</h4>
-        <div>
-          Show sites that have <in-radio choices='["ANY", "ALL"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
-        </div>
-        <div data-element="table">
-        ${Object.entries(this.filterFields).map((entry, index) => html`
-          ${(entry[config].controls.length === 0)?'':entry[config].controls.map(el => html`
-          <td class="label">
-            <label for="${this.genId(index)}" >
-              ${entry[name]}
-            </label>
-          </td>
-          <td class="selector" 
-              @change="${el.handle.bind(el)}">
-            <input
-              id="${el.id}"
-              type="checkbox"
-              name="${entry[name]}">
-            ${el.next}
-          </td>
-          `)}
-        `)}
-        </div>
+        Show sites that have <in-radio choices='["ANY", "ALL"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
+      </div>
+      <div>
+        ${this.renderFilterSections()}
       </div>
     `;
+  }
+
+  resolveKeyLookup(field) {
+    let result = (!keyLookup[field])?field:keyLookup[field].title;
+    return result;
+  }
+
+  renderFilterSections() {
+    let name=0, config=1;
+    return this.filterSections.map((el) => html`
+      <app-collapsible open>
+        <i slot="header-before" class="material-icons">expand_more</i>
+        <span slot="header">${el.title}</span>
+        <div slot="content">
+          ${el.sections.map((section, index) => html`
+            ${!(section.title)?'':html`
+              <h2 class="section-title">${section.title}</h2>
+            `}
+            ${Object.entries(section.fields).map((entry, index) => html`
+              <div class="field">
+              ${(entry[config].controls.length === 0)?'':entry[config].controls.map(el => html`
+                <td class="label">
+                  <label for="${this.genId(index)}" >
+                    ${this.resolveKeyLookup(entry[name])}
+                  </label>
+                </td>
+                <td class="selector" 
+                    @change="${el.handle.bind(el)}">
+                  <input
+                    id="${el.id}"
+                    type="checkbox"
+                    name="${entry[name]}">
+                  ${el.next}
+                </td>
+              `)}
+              </div>
+            `)}
+          `)}
+        </div>
+      </app-collapsible>
+    `);
   }
 
   updated() {
@@ -222,6 +136,204 @@ export class MapFilter extends LitElement {
         }
       });
     }
+  }
+
+
+
+  constructor() {
+    super();
+    this.genId = (function() {
+      const memo = {};
+      return function(index) {
+        if (!memo[index]) {
+          memo[index] = genId();
+        }
+        return memo[index];
+      }
+    })();
+    this.filter = [];
+    this.filterSections = [
+      {
+        title: "Site Information",
+        sections: [
+          {
+            fields: {
+              "County": {
+                controls: [
+                  new SelectControl(this, "County")
+                ]
+              },
+              "SiteName": {
+                controls: [
+                  new TextControl(this)
+                ]
+              },
+              "Site_Name": {
+                controls: [
+                  new TextControl(this)
+                ]
+              },
+              "Wid": {
+                controls: [
+                  new TextControl(this)
+                ]
+              },
+            }
+          }
+        ]
+      },
+      {
+        title: "Geophysical Logs",
+        sections: [
+          {
+            fields: {
+              "RecentLog": {
+                controls: [
+                  new GTLTControl(this, true)
+                ]
+              },
+              "MaxDepth": {
+                controls: [
+                  new GTLTControl(this)
+                ]
+              }
+            }
+          },
+          {
+            title: "Geologic",
+            fields: {
+              "Norm_Res": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Caliper": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Gamma": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "SP": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "SPR": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Spec_Gamma": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+
+            }
+          },
+          {
+            title: "Hydrogeologic",
+            fields: {
+              "Fluid_Cond": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Flow_Spin": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Fluid_Temp": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Fluid_Res": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Flow_HP": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+
+            }
+          },
+          {
+            title: "Image",
+            fields: {
+              "OBI": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "ABI": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Video": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+
+            }
+          }
+        ]
+      },
+      {
+        title: "Quaternary Core Data",
+        sections: [
+          {
+            fields: {
+              "Drill_Year": {
+                controls: [
+                  new GTLTControl(this, true)
+                ]
+              },
+              "Depth_Ft": {
+                controls: [
+                  new GTLTControl(this)
+                ]
+              },
+              "Drill_Meth": {
+                controls: [
+                  new SelectControl(this, 'Drill_Meth')
+                ]
+              },
+            }
+          },
+          {
+            title: "Analyses available",
+            fields: {
+              "Subsamples": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Photos": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              },
+              "Grainsize": {
+                controls: [
+                  new CheckboxControl(this)
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ];
   }
 }
 customElements.define('map-filter', MapFilter);
@@ -332,7 +444,7 @@ class SelectControl {
     context.prop = context.target.name;
 
     if (!this.options) {
-      this.options = Array.from(Object.entries(map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set()));
+      this.options = Array.from(Object.entries(window.siteMap.map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set()));
     }
 
     for (
