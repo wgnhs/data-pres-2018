@@ -1,7 +1,7 @@
 # data-pres-2018
 simple web map for our Borehole Geophysical Logs and Sediment Core data viewer.
 
-Web map is live here: http://dev.wgnhs.wisc.edu:8080/data-pres-2018/
+Web map is live here: https://wgnhs.github.io/data-pres-2018/
 
 
 ## Development
