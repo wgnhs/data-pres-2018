@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Subsurface Data</title>
+  <base href="/data-pres-2018/">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    var appBasePath = document.querySelector('base').href;
+    (function(){
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+      if (location.pathname.split('/').filter((el)=>''!==el).length < 1) {
+        history.replaceState(null, null, appBasePath);
+      }
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/navigo@^7/lib/navigo.js"></script>
+  
+  <!-- Load Leaflet from a CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.js"></script>
+
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@^2/dist/esri-leaflet.js"></script>
+
+  <!-- load leaflet-basemaps from a CDN --> 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-basemaps/L.Control.Basemaps.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-basemaps"></script>
+
+  <!-- Load PDF viewer -->
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@^2/build/pdf.min.js"></script>
+
+  <!-- Load Web Component base -->
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
+  <script src="js/common.min.js"></script>
+  <script src="lit/index.js"></script>
+
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/typography.css" />
+
+  <style>
+    @media (min-width: 770px) {
+      [data-view=app] {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      app-sidebar {
+        overflow-y: auto;
+      }
+      .right-panel {
+        grid-column-start: 2;
+      }
+    }
+    @media (max-width: 769px) {
+      [data-view=app] {
+        display: grid;
+        grid-template-rows: 80% 1fr;
+        overflow-y: auto;
+      }
+      .right-panel {
+        grid-row-start: 1;
+      }
+    }
+    [data-view] {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    [data-closed] {
+      display: none;
+    }
+    .header {
+      text-align: center;
+      font-size: var(--font-size-title);
+    }
+    /* .default-view {
+      margin: 0 var(--border-radius);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      height: 100%;
+    } */
+    section p {
+      margin: 0 var(--line-height);
+    }
+    section h2 {
+      margin: 0 var(--border-radius);
+    }
+  </style>
+</head>
+<body>
+  <div id="app" data-view="app">
+    <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
+      <div class="default-view">
+        <h1 class="header">Search Subsurface Data</h1>
+        <section>
+          <map-filter></map-filter>
+        </section>
+      </div>
+
+      <div slot="details">
+        <site-details>
+          <div slot="sketch">
+            <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+          </div>
+        </site-details>
+      </div>
+    </app-sidebar>
+    <div id="map" class="right-panel"></div>
+    <pdf-view-panel id="sketch" class="right-panel" data-closed>
+      <pdf-view></pdf-view>
+    </pdf-view-panel>
+  </div>
+  <script src="app/index.js"></script>
+</body>
+</html>
