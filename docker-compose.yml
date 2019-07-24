@@ -2,7 +2,7 @@ version: '3'
 
 services:
   web:
-    image: dev.wgnhs.wisc.edu:5000/core-data
+    image: dev.wgnhs.wisc.edu:5000/data-pres-2018
     build: .
     ports:
       - "8080:8080"

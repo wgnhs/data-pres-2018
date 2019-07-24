@@ -1,7 +1,7 @@
-# core-data
+# data-pres-2018
 simple web map for our Borehole Geophysical Logs and Sediment Core data viewer.
 
-Web map is live here: http://dev.wgnhs.wisc.edu:8080/core-data/
+Web map is live here: http://dev.wgnhs.wisc.edu:8080/data-pres-2018/
 
 
 ## Development
@@ -18,7 +18,7 @@ After cloning the repository, bring up a terminal in the repository's root direc
 npm start
 ```
 The `npm start` command is configured to build the project, then serve the project 
-at `http://localhost:8080/core-data/`
+at `http://localhost:8080/data-pres-2018/`
 
 The server will watch for source changes and automatically refresh the browser.
 

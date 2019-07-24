@@ -3,7 +3,7 @@ export class SiteRouter extends window.L.Evented {
 
   constructor() {
     super();
-    let router = this.router = new Navigo(window.location.origin + '/core-data/');
+    let router = this.router = new Navigo(window.location.origin + '/data-pres-2018/');
     Object.entries(this.route).forEach(function(el) {
       if (el[1].signature) {
         router.on(el[1].signature, el[1].handler);
