@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'lit-element'], factory) :
-  (global = global || self, factory(global.index = {}, global.common));
-}(this, function (exports, litElement) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('@uirouter/core')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'lit-element', '@uirouter/core'], factory) :
+  (global = global || self, factory(global.index = {}, global.common, global.common));
+}(this, function (exports, litElement, core) { 'use strict';
 
   class AppSidebar extends litElement.LitElement {
     static get properties() {
@@ -65,6 +65,7 @@
   };
 
   const ignoredKeys = [
+    'Site_Code',
     'SiteName',
     'Site_Name',
     'Wid',
@@ -403,7 +404,7 @@
       ${(!this.siteinfo)? '' : litElement.html`
         <div class="header">
           <span>
-            <a href="${window.router.router.link('/')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
+            <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
           </span>
           ${(!this.siteinfo.Wid)?'':litElement.html`
             <h1>${this.siteinfo.Wid}: ${this.siteinfo.SiteName}</h1>

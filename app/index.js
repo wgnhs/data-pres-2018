@@ -1,7 +1,8 @@
-(function (factory) {
-  typeof define === 'function' && define.amd ? define(factory) :
-  factory();
-}(function () { 'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('@uirouter/core')) :
+  typeof define === 'function' && define.amd ? define(['@uirouter/core'], factory) :
+  (global = global || self, factory(global.common));
+}(this, function (core) { 'use strict';
 
   const RestylingCircleMarker = L.CircleMarker.extend({
     getEvents: function() {
@@ -127,7 +128,11 @@
         let lookup = {};
         this.layers.forEach(function(layer) {
           layer.eachFeature(function(obj) {
-            lookup[SiteMap.getSiteCode(obj.feature.properties)] = obj;
+            let siteCode = SiteMap.getSiteCode(obj.feature.properties);
+            obj.feature.properties['Site_Code'] = siteCode;
+            obj.feature.properties.Latitude = obj.getLatLng()['lat'];
+            obj.feature.properties.Longitude = obj.getLatLng()['lng'];
+            lookup[siteCode] = obj;
           });
         });
         this._lookup = lookup;
@@ -252,85 +257,30 @@
     }
   }
 
+  const DEFAULT_ROUTE = 'entry';
+
   class SiteRouter extends window.L.Evented {
 
     constructor() {
       super();
-      let router = this.router = new Navigo(window.location.origin + '/data-pres-2018/');
-      Object.entries(this.route).forEach(function(el) {
-        if (el[1].signature) {
-          router.on(el[1].signature, el[1].handler);
-        } else {
-          router.notFound(el[1].handler);
-        }
-      });
+      this.router = new core.UIRouter();
+      this.router.plugin(core.pushStateLocationPlugin);
+      this.router.plugin(core.servicesPlugin);
+      this.routes = {};
     }
 
-    resolve() {
-      this.router.resolve();
+    start() {
+      this.router.urlService.rules.initial({ state: DEFAULT_ROUTE });
+      this.router.urlService.rules.otherwise({ state: DEFAULT_ROUTE });
+      // this.router.trace.enable(1);
+      this.router.urlService.listen();
+      this.router.urlService.sync();
     }
 
-    get route() {
-      return {
-        'entry': {
-          handler: this._entryRoute.bind(this)
-        },
-        'view': {
-          signature: '/view/:Site_Code',
-          handler: this._viewSite.bind(this)
-        },
-        'print': {
-          signature: '/print/:Site_Code',
-          handler: this._printSite.bind(this)
-        }
-      };
-    }
-
-    static getSiteCode(params) {
-      let keys = ['Wid', 'ID', 'Site_Code'];
-      let result = keys.reduce((prev, curr) => {
-        return prev || params[curr];
-      }, undefined);
-      return result;
-    }
-
-    _updateLocation(path) {
-      this.router.pause();
-      this.router.navigate(path);
-      this.router.resume();
-    }
-
-    /**
-     * Non-selected Site
-     */
-    _entryRoute() {
-      this._updateLocation('/');
-      this.fire('route-entry');
-    }
-
-    /**
-     * Selected Site, View Layout
-     */
-    _viewSite(params) {
-      let code = SiteRouter.getSiteCode(params);
-      if (code) {
-        this._updateLocation('/view/' + code);
-        this.fire('route-view', params);
-      } else {
-        console.error('bad viewSite call');
-      }
-    }
-
-    /**
-     * Selected Site, Print Layout
-     */
-    _printSite(params) {
-      let code = SiteRouter.getSiteCode(params);
-      if (code) {
-        this._updateLocation('/print/' + code);
-        this.fire('route-print', params);
-      } else {
-        console.error('bad printSite call');
+    addRoute(config) {
+      if (config && config.name) {
+        this.routes[config.name] = config;
+        this.router.stateRegistry.register(config);
       }
     }
 
@@ -342,11 +292,21 @@
     }
 
     setRoute(name, params) {
-      if (arguments.length > 0 && this.route[name]) {
-        this.route[name].handler(params);
+      if (arguments.length > 0 && this.routes[name]) {
+        this.router.stateService.go(name, params);
       } else {
-        this._entryRoute();
+        this.router.stateService.go(DEFAULT_ROUTE);
       }
+    }
+
+    link(name, params) {
+      let result = '';
+      if (params) {
+        result = this.router.stateService.href(name, params);
+      } else {
+        result = this.router.stateService.href(name);
+      }
+      return result;
     }
 
   }
@@ -379,50 +339,84 @@
       return true;
     }
     window.router = new SiteRouter();
-    window.router.on('route-entry', () => {
-      // console.log('route-entry');
-      window.siteMap.clearSelection();
-      deselectFeature();
-      document.querySelector('#app').setAttribute('data-view', 'app');
-      window.sidebar.switchTab('default');
-      window.siteMap.setVisibility(true);
+    window.router.addRoute({
+      name: 'entry',
+      url: '/',
+      onEnter: function(trans, state) {
+        // console.log('route-entry');
+        window.siteMap.clearSelection();
+        deselectFeature();
+        document.querySelector('#app').setAttribute('data-view', 'app');
+        window.sidebar.switchTab('default');
+        window.siteMap.setVisibility(true);
+      },
+      onExit: function(trans, state) {
+
+      },
     });
-    window.router.on('route-view', (params) => {
-      // console.log('route-view');
-      let attr = window.siteMap.selectPoint(params);
-      if (attr) {
-        document.querySelectorAll('site-details').forEach(function(details) {
-          details['printLayout'] = false;
-        });
-        selectFeature(attr).then(() => {
-          document.querySelector('#app').setAttribute('data-view', 'app');
-          window.sidebar.switchTab('details');
-          window.siteMap.setVisibility(true);
-        });
-      } else {
-        window.router.clearRoute();
-      }
+    window.router.addRoute({
+      name: 'view',
+      url: '/view/:Site_Code',
+      // params: {
+      //   'Site_Code': {
+      //     array: true
+      //   }
+      // },
+      onEnter: function(trans, state) {
+        // console.log('route-view');
+        let params = trans.params();
+        let attr = window.siteMap.selectPoint(params);
+        if (attr) {
+          document.querySelectorAll('site-details').forEach(function(details) {
+            details['printLayout'] = false;
+          });
+          selectFeature(attr).then(() => {
+            document.querySelector('#app').setAttribute('data-view', 'app');
+            window.sidebar.switchTab('details');
+            window.siteMap.setVisibility(true);
+          });
+        } else {
+          window.router.clearRoute();
+        }
+      },
+      onExit: function(trans, state) {
+
+      },
     });
-    window.router.on('route-print', (params) => {
-      // console.log('route-print');
-      let attr = window.siteMap.selectPoint(params);
-      if (attr) {
-        document.querySelectorAll('site-details').forEach(function(details) {
-          details['printLayout'] = true;
-        });
-        selectFeature(attr).then(() => {
-          document.querySelector('#app').removeAttribute('data-view');
-          window.sidebar.switchTab('details');
-          window.siteMap.setVisibility(false);
-        });
-      } else {
-        window.router.clearRoute();
-      }
+    window.router.addRoute({
+      name: 'print',
+      url: '/print/:Site_Code',
+      // params: {
+      //   'Site_Code': {
+      //     array: true
+      //   }
+      // },
+      onEnter: function(trans, state) {
+        // console.log('route-print');
+        let params = trans.params();
+        let attr = window.siteMap.selectPoint(params);
+        if (attr) {
+          document.querySelectorAll('site-details').forEach(function(details) {
+            details['printLayout'] = true;
+          });
+          selectFeature(attr).then(() => {
+            document.querySelector('#app').removeAttribute('data-view');
+            window.sidebar.switchTab('details');
+            window.siteMap.setVisibility(false);
+          });
+        } else {
+          window.router.clearRoute();
+        }
+      },
+      onExit: function(trans, state) {
+
+      },
     });
-    window.router.resolve();
+    // Start the router
+    window.router.start();
 
     window.siteMap.on('interaction', (params) => {
-      if (SiteRouter.getSiteCode(params)) {
+      if (params['Site_Code']) {
         window.router.setRoute('view', params);
       } else {
         window.router.clearRoute();
