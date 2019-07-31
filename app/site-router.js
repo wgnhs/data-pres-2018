@@ -1,83 +1,28 @@
+import { pushStateLocationPlugin, servicesPlugin, UIRouter } from '@uirouter/core';
+const DEFAULT_ROUTE = 'entry';
 
 export class SiteRouter extends window.L.Evented {
 
   constructor() {
     super();
-    let router = this.router = new Navigo(window.location.origin + '/data-pres-2018/');
-    Object.entries(this.route).forEach(function(el) {
-      if (el[1].signature) {
-        router.on(el[1].signature, el[1].handler);
-      } else {
-        router.notFound(el[1].handler);
-      }
-    });
+    this.router = new UIRouter();
+    this.router.plugin(pushStateLocationPlugin);
+    this.router.plugin(servicesPlugin);
+    this.routes = {};
   }
 
-  resolve() {
-    this.router.resolve();
+  start() {
+    this.router.urlService.rules.initial({ state: DEFAULT_ROUTE });
+    this.router.urlService.rules.otherwise({ state: DEFAULT_ROUTE });
+    // this.router.trace.enable(1);
+    this.router.urlService.listen();
+    this.router.urlService.sync();
   }
 
-  get route() {
-    return {
-      'entry': {
-        handler: this._entryRoute.bind(this)
-      },
-      'view': {
-        signature: '/view/:Site_Code',
-        handler: this._viewSite.bind(this)
-      },
-      'print': {
-        signature: '/print/:Site_Code',
-        handler: this._printSite.bind(this)
-      }
-    };
-  }
-
-  static getSiteCode(params) {
-    let keys = ['Wid', 'ID', 'Site_Code'];
-    let result = keys.reduce((prev, curr) => {
-      return prev || params[curr];
-    }, undefined)
-    return result;
-  }
-
-  _updateLocation(path) {
-    this.router.pause();
-    this.router.navigate(path);
-    this.router.resume();
-  }
-
-  /**
-   * Non-selected Site
-   */
-  _entryRoute() {
-    this._updateLocation('/');
-    this.fire('route-entry');
-  }
-
-  /**
-   * Selected Site, View Layout
-   */
-  _viewSite(params) {
-    let code = SiteRouter.getSiteCode(params);
-    if (code) {
-      this._updateLocation('/view/' + code);
-      this.fire('route-view', params);
-    } else {
-      console.error('bad viewSite call');
-    }
-  }
-
-  /**
-   * Selected Site, Print Layout
-   */
-  _printSite(params) {
-    let code = SiteRouter.getSiteCode(params);
-    if (code) {
-      this._updateLocation('/print/' + code);
-      this.fire('route-print', params);
-    } else {
-      console.error('bad printSite call');
+  addRoute(config) {
+    if (config && config.name) {
+      this.routes[config.name] = config;
+      this.router.stateRegistry.register(config);
     }
   }
 
@@ -89,11 +34,21 @@ export class SiteRouter extends window.L.Evented {
   }
 
   setRoute(name, params) {
-    if (arguments.length > 0 && this.route[name]) {
-      this.route[name].handler(params);
+    if (arguments.length > 0 && this.routes[name]) {
+      this.router.stateService.go(name, params);
     } else {
-      this._entryRoute();
+      this.router.stateService.go(DEFAULT_ROUTE);
     }
+  }
+
+  link(name, params) {
+    let result = '';
+    if (params) {
+      result = this.router.stateService.href(name, params);
+    } else {
+      result = this.router.stateService.href(name);
+    }
+    return result;
   }
 
 }

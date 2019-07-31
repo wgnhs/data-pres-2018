@@ -86,9 +86,11 @@ export class SiteMap extends window.L.Evented {
       let lookup = {};
       this.layers.forEach(function(layer) {
         layer.eachFeature(function(obj) {
+          let siteCode = SiteMap.getSiteCode(obj.feature.properties);
+          obj.feature.properties['Site_Code'] = siteCode;
           obj.feature.properties.Latitude = obj.getLatLng()['lat'];
           obj.feature.properties.Longitude = obj.getLatLng()['lng'];
-          lookup[SiteMap.getSiteCode(obj.feature.properties)] = obj;
+          lookup[siteCode] = obj;
         });
       });
       this._lookup = lookup;

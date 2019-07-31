@@ -1,4 +1,5 @@
 export const ignoredKeys = [
+  'Site_Code',
   'SiteName',
   'Site_Name',
   'Wid',
