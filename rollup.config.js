@@ -31,7 +31,8 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
     input: `${dir}/${filename}.js`,
     plugins: buildPlugins({dir, min}),
     external: [
-      'lit-element'
+      'lit-element',
+      '@uirouter/core'
     ],
     output: {
       file: `dist/${dir}/${filename}${minifyToken}.js`,
@@ -39,7 +40,8 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
       name: filename,
       sourcemap: min,
       globals: {
-        'lit-element': 'common'
+        'lit-element': 'common',
+        '@uirouter/core': 'common'
       }
     }
   }

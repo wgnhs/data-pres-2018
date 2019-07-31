@@ -31,50 +31,84 @@ window.siteMap.once('init', function() {
   };
 
   window.router = new SiteRouter();
-  window.router.on('route-entry', () => {
-    // console.log('route-entry');
-    window.siteMap.clearSelection();
-    deselectFeature();
-    document.querySelector('#app').setAttribute('data-view', 'app');
-    window.sidebar.switchTab('default');
-    window.siteMap.setVisibility(true);
+  window.router.addRoute({
+    name: 'entry',
+    url: '/',
+    onEnter: function(trans, state) {
+      // console.log('route-entry');
+      window.siteMap.clearSelection();
+      deselectFeature();
+      document.querySelector('#app').setAttribute('data-view', 'app');
+      window.sidebar.switchTab('default');
+      window.siteMap.setVisibility(true);
+    },
+    onExit: function(trans, state) {
+
+    },
   });
-  window.router.on('route-view', (params) => {
-    // console.log('route-view');
-    let attr = window.siteMap.selectPoint(params);
-    if (attr) {
-      document.querySelectorAll('site-details').forEach(function(details) {
-        details['printLayout'] = false;
-      });
-      selectFeature(attr).then(() => {
-        document.querySelector('#app').setAttribute('data-view', 'app');
-        window.sidebar.switchTab('details');
-        window.siteMap.setVisibility(true);
-      })
-    } else {
-      window.router.clearRoute();
-    }
+  window.router.addRoute({
+    name: 'view',
+    url: '/view/:Site_Code',
+    // params: {
+    //   'Site_Code': {
+    //     array: true
+    //   }
+    // },
+    onEnter: function(trans, state) {
+      // console.log('route-view');
+      let params = trans.params();
+      let attr = window.siteMap.selectPoint(params);
+      if (attr) {
+        document.querySelectorAll('site-details').forEach(function(details) {
+          details['printLayout'] = false;
+        });
+        selectFeature(attr).then(() => {
+          document.querySelector('#app').setAttribute('data-view', 'app');
+          window.sidebar.switchTab('details');
+          window.siteMap.setVisibility(true);
+        })
+      } else {
+        window.router.clearRoute();
+      }
+    },
+    onExit: function(trans, state) {
+
+    },
   });
-  window.router.on('route-print', (params) => {
-    // console.log('route-print');
-    let attr = window.siteMap.selectPoint(params);
-    if (attr) {
-      document.querySelectorAll('site-details').forEach(function(details) {
-        details['printLayout'] = true;
-      });
-      selectFeature(attr).then(() => {
-        document.querySelector('#app').removeAttribute('data-view');
-        window.sidebar.switchTab('details');
-        window.siteMap.setVisibility(false);
-      })
-    } else {
-      window.router.clearRoute();
-    }
+  window.router.addRoute({
+    name: 'print',
+    url: '/print/:Site_Code',
+    // params: {
+    //   'Site_Code': {
+    //     array: true
+    //   }
+    // },
+    onEnter: function(trans, state) {
+      // console.log('route-print');
+      let params = trans.params();
+      let attr = window.siteMap.selectPoint(params);
+      if (attr) {
+        document.querySelectorAll('site-details').forEach(function(details) {
+          details['printLayout'] = true;
+        });
+        selectFeature(attr).then(() => {
+          document.querySelector('#app').removeAttribute('data-view');
+          window.sidebar.switchTab('details');
+          window.siteMap.setVisibility(false);
+        })
+      } else {
+        window.router.clearRoute();
+      }
+    },
+    onExit: function(trans, state) {
+
+    },
   });
-  window.router.resolve();
+  // Start the router
+  window.router.start();
 
   window.siteMap.on('interaction', (params) => {
-    if (SiteRouter.getSiteCode(params)) {
+    if (params['Site_Code']) {
       window.router.setRoute('view', params);
     } else {
       window.router.clearRoute();

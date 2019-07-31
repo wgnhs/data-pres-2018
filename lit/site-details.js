@@ -103,7 +103,7 @@ export class SiteDetails extends LitElement {
       ${(!this.siteinfo)? '' : html`
         <div class="header">
           <span>
-            <a href="${window.router.router.link('/')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
+            <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
           </span>
           ${(!this.siteinfo.Wid)?'':html`
             <h1>${this.siteinfo.Wid}: ${this.siteinfo.SiteName}</h1>
