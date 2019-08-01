@@ -789,12 +789,12 @@
                 },
                 "SiteName": {
                   controls: [
-                    new TextControl(this)
+                    new ContainsControl(this)
                   ]
                 },
                 "Site_Name": {
                   controls: [
-                    new TextControl(this)
+                    new ContainsControl(this)
                   ]
                 },
                 "Wid": {
@@ -1068,7 +1068,7 @@
       context.prop = context.target.name;
 
       if (!this.options) {
-        this.options = Array.from(Object.entries(window.siteMap.map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set()));
+        this.options = Array.from(Object.entries(window.siteMap.map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set())).sort();
       }
 
       for (
@@ -1127,6 +1127,55 @@
             let result = !!el[context.prop];
             if (result) {
               result = !context.target.nextElementSibling.value || el[context.prop] == context.target.nextElementSibling.value;
+            }
+            return result;
+          }
+        });
+      }
+      this.postHandle();
+    }
+  }
+
+  class ContainsControl {
+    constructor(element) {
+      this.id = genId();
+      this.filter = element.filter;
+      this.postHandle = element.requestUpdate.bind(element);
+    }
+    get next() {
+      return litElement.html`
+      <input type="text">
+    `;
+    }
+    handle(e) {
+      let id = this.id;
+      let context = {};
+      context.target = e.currentTarget.querySelector('#'+id);
+      context.prop = context.target.name;
+
+      for (
+        var idx = this.filter.findIndex(filterEl => filterEl.id === id); 
+        idx >= 0;
+        idx = this.filter.findIndex(filterEl => filterEl.id === id)
+      ) {
+        this.filter.splice(idx, 1);
+      }
+      let isOn = context.target.checked;
+      if (isOn) {
+        this.filter.push({
+          id: id,
+          resolve: function(feature) {
+            // filter out features without the property
+            let result = !!feature[context.prop];
+            if (result) {
+              let input = context.target.nextElementSibling.value;
+              // blank filter selects all
+              if (input) {
+                let cleanInput = input.trim().toUpperCase();
+                let cleanProp = feature[context.prop].toUpperCase();
+                result = cleanProp.includes(cleanInput);
+              }
+                
             }
             return result;
           }
