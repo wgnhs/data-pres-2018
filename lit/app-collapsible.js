@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-import { genId } from '../js/common.js';
+import { genId, dispatch } from '../js/common.js';
 
 /**
  * Code use and modified from
@@ -95,7 +95,7 @@ export class AppCollapsible extends LitElement {
   render() {
     return html`
     <div class="wrap-collapsible">
-      <input id="${this.genId}" class="toggle" type="checkbox" ?checked="${this.open}">
+      <input id="${this.genId}" class="toggle" type="checkbox" ?checked="${this.open}" @change=${this._handleChange}>
       <label for="${this.genId}" class="lbl-toggle" tabindex="0">
         <div class="collapsible-header">
           <div><slot name="header-before"></slot></div>
@@ -125,6 +125,17 @@ export class AppCollapsible extends LitElement {
         };
       });
     });
+  }
+
+  updated(changed) {
+    let eventName = 'open';
+    if (changed.has(eventName)) {
+      dispatch(this, eventName, { value: this[eventName] });
+    }
+  }
+
+  _handleChange(e) {
+    this.open = e.target.checked;
   }
 }
 customElements.define('app-collapsible', AppCollapsible);

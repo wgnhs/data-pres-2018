@@ -1,5 +1,6 @@
 export const ignoredKeys = [
   'Site_Code',
+  'Data_Type',
   'SiteName',
   'Site_Name',
   'Wid',

@@ -39,11 +39,15 @@ export class SiteMap extends window.L.Evented {
 
     /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
     let bore = this.bore = L.esri.featureLayer({
+      name: 'Geophysical Log',
       url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
       pointToLayer: function(geoJsonPoint, latlon) {
         return new RestylingCircleMarker(latlon, {
           weight: 2,
-          radius: RestylingCircleMarker.calcRadius(map.getZoom())
+          color: 'var(--palette-blue)',
+          radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+          stroke: false,
+          fill: false
         });
       }
     }).on('click', (function(e) {
@@ -56,12 +60,15 @@ export class SiteMap extends window.L.Evented {
 
     /* +++++++++++ Sediment Core layer +++++++++++ */ 
     let quat = this.quat = L.esri.featureLayer({
+      name: 'Quaternary Core',
       url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
       pointToLayer: function(geoJsonPoint, latlon) {
         return new RestylingCircleMarker(latlon, {
           weight: 2,
-          color: '#33AA44',
-          radius: RestylingCircleMarker.calcRadius(map.getZoom())
+          color: 'var(--palette-green)',
+          radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+          stroke: false,
+          fill: false
         });
       }
     }).on('click', (function(e) {
@@ -88,6 +95,7 @@ export class SiteMap extends window.L.Evented {
         layer.eachFeature(function(obj) {
           let siteCode = SiteMap.getSiteCode(obj.feature.properties);
           obj.feature.properties['Site_Code'] = siteCode;
+          obj.feature.properties['Data_Type'] = layer.options.name;
           obj.feature.properties.Latitude = obj.getLatLng()['lat'];
           obj.feature.properties.Longitude = obj.getLatLng()['lng'];
           lookup[siteCode] = obj;
@@ -170,6 +178,5 @@ export class SiteMap extends window.L.Evented {
       this.el.setAttribute('data-closed', true);
     }
   }
-
 
 }

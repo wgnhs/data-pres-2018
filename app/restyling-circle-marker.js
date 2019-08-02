@@ -34,7 +34,7 @@ export const RestylingCircleMarker = L.CircleMarker.extend({
   },
   highlight: function() {
     this._activeBackup = this.options.color;
-    this.setStyle({'color': 'orange'})
+    this.setStyle({'color': 'var(--palette-active)'})
   },
   removeHighlight: function() {
     if (this._activeBackup) {
