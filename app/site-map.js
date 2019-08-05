@@ -39,7 +39,7 @@ export class SiteMap extends window.L.Evented {
 
     /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
     let bore = this.bore = L.esri.featureLayer({
-      name: 'Geophysical Log',
+      name: 'Geophysical Log Data',
       url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
       pointToLayer: function(geoJsonPoint, latlon) {
         return new RestylingCircleMarker(latlon, {
@@ -60,7 +60,7 @@ export class SiteMap extends window.L.Evented {
 
     /* +++++++++++ Sediment Core layer +++++++++++ */ 
     let quat = this.quat = L.esri.featureLayer({
-      name: 'Quaternary Core',
+      name: 'Quaternary Core Data',
       url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
       pointToLayer: function(geoJsonPoint, latlon) {
         return new RestylingCircleMarker(latlon, {

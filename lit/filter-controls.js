@@ -1,6 +1,28 @@
 import { html } from 'lit-element';
 import { genId } from '../js/common.js';
 
+export class FilterGroup {
+  constructor(config) {
+    Object.assign(this, config);
+    if (!this.id) {
+      this.id = genId();
+    }
+  }
+  activate(context) {
+    let result = null;
+    const input = context.detail.checked;
+    if (context.toggleable && input) {
+      result = {
+        id: context.id,
+        resolve: function(feature) {
+          return feature[context.prop] === context.value;
+        }
+      };
+    }
+    return result;
+  }
+}
+
 export class CheckboxControl {
   constructor() {
     this.id = genId();
@@ -18,6 +40,9 @@ export class CheckboxControl {
     if (input) {
       result = {
         id: context.id,
+        resolveGroup: function(feature) {
+          return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+        },
         resolve: function(feature) {
           // filter out features without the property
           let isValid = !!feature[context.prop]
@@ -55,6 +80,9 @@ export class GTLTControl {
     if (input) {
       result = {
         id: context.id,
+        resolveGroup: function(feature) {
+          return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+        },
         resolve: function(feature) {
           // filter out features without the property
           let isValid = !!feature[context.prop];
@@ -70,9 +98,8 @@ export class GTLTControl {
 }
 
 export class SelectControl {
-  constructor(prop) {
+  constructor() {
     this.id = genId();
-    this.prop = prop;
   }
   get next() {
     return html`
@@ -97,6 +124,9 @@ export class SelectControl {
     if (input) {
       result = {
         id: context.id,
+        resolveGroup: function(feature) {
+          return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+        },
         resolve: function(feature) {
           // filter out features without the property
           let isValid = !!feature[context.prop];
@@ -129,6 +159,9 @@ export class TextControl {
     if (input) {
       result = {
         id: context.id,
+        resolveGroup: function(feature) {
+          return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+        },
         resolve: function(feature) {
           // filter out features without the property
           let isValid = !!feature[context.prop];
@@ -161,6 +194,9 @@ export class ContainsControl {
     if (input) {
       result = {
         id: context.id,
+        resolveGroup: function(feature) {
+          return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+        },
         resolve: function(feature) {
           // filter out features without the property
           let isValid = !!feature[context.prop];

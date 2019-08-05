@@ -1,7 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
-import { keyLookup } from '../app/site-data.js';
-import { CheckboxControl, GTLTControl, SelectControl, TextControl, ContainsControl } from './filter-controls.js';
+import { keyLookup, filterLookup } from '../app/site-data.js';
 export { AppCollapsible } from './app-collapsible.js';
 export { InRadio } from './in-radio.js';
 export { ToggleSwitch } from './toggle-switch.js';
@@ -63,7 +62,7 @@ export class MapFilter extends LitElement {
         @import url("./css/typography.css");
       </style>
       <div>
-        Show sites that have <in-radio choices='["ANY", "ALL"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
+        Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
       <div>
         ${this.renderFilterGroups()}
@@ -88,7 +87,7 @@ export class MapFilter extends LitElement {
             name="${group.mapName}"
             slot="header-after"
             ?checked=${group.open}
-            @change=${group.activate}
+            @change=${this._handleGroup(group, this.include)}
           ></toggle-switch>
         `}
         <div slot="content">
@@ -105,7 +104,7 @@ export class MapFilter extends LitElement {
                   </label>
                 </td>
                 <td class="selector" 
-                    @change="${this._controlHandle(control, this.filter)}">
+                    @change="${this._handleControl(group, control, this.filter)}">
                   <input
                     type="hidden"
                     id="${control.id}"
@@ -125,7 +124,6 @@ export class MapFilter extends LitElement {
     return {
       'open' : (context, e) => {
         context.open = e.detail.value;
-        this.requestUpdate();
       }
     }
   }
@@ -135,22 +133,43 @@ export class MapFilter extends LitElement {
       const handler = this._eventHandlers[e.type];
       if (handler) {
         handler(context, e);
+        this.requestUpdate();
       }
     }
   }
 
-  _controlHandle(control, filter) {
+  _handleGroup(group, filter) {
+    const id = group.id;
+    const handle = group.activate.bind(group);
+    return (e) => {
+      const context = {};
+      context.id = id;
+      context.toggleable = group.toggleable;
+      context.detail = e.detail;
+      context.prop = group.prop;
+      context.value = group[group.prop];
+      removeFromFilter(filter, id);
+      let resolver = handle(context);
+      if (resolver) {
+        filter.push(resolver);
+      }
+      this.requestUpdate();
+    }
+  }
+
+  _handleControl(group, control, filter) {
     const id = control.id;
     const handle = control.handle.bind(control);
     return (e) => {
-      let context = {};
+      const context = {};
       context.id = id;
+      context.group = group;
       context.target = e.currentTarget.querySelector('#'+id);
       context.prop = context.target.name;
       removeFromFilter(filter, id);
-      let item = handle(context);
-      if (item) {
-        filter.push(item);
+      let resolver = handle(context);
+      if (resolver) {
+        filter.push(resolver);
       }
       this.requestUpdate();
     }
@@ -167,14 +186,15 @@ export class MapFilter extends LitElement {
             let included = incl.length > 0 && incl.reduce((prev, curr) => {
               return prev || curr.resolve(props);
             }, false);
-            let result = included && filt.length < 1;
+            let spec = filt.filter((rule) => rule.resolveGroup(props));
+            let result = included && spec.length < 1;
             if (included && !result) {
               if ("ALL" === matchClass) {
-                result = filt.reduce((prev, curr) => {
+                result = spec.reduce((prev, curr) => {
                   return prev && curr.resolve(props);
                 }, true);
               } else {
-                result = filt.reduce((prev, curr) => {
+                result = spec.reduce((prev, curr) => {
                   return prev || curr.resolve(props);
                 }, false);
               }
@@ -191,8 +211,8 @@ export class MapFilter extends LitElement {
       group.sections.forEach((section) => {
         Object.entries(section.fields).forEach((field) => {
           field[1].controls.forEach((control) => {
-            if (control.init && control.prop) {
-              control.init(uniques[control.prop]);
+            if (control.init) {
+              control.init(uniques[field[0]]);
             }
           })
         })
@@ -214,223 +234,7 @@ export class MapFilter extends LitElement {
     })();
     this.include = [];
     this.filter = [];
-    this.filterGroups = [
-      {
-        title: "Site Information",
-        open: true,
-        sections: [
-          {
-            fields: {
-              "County": {
-                controls: [
-                  new SelectControl("County")
-                ]
-              },
-              "SiteName": {
-                controls: [
-                  new ContainsControl()
-                ]
-              },
-              "Site_Name": {
-                controls: [
-                  new ContainsControl()
-                ]
-              },
-              "Wid": {
-                controls: [
-                  new TextControl()
-                ]
-              },
-            }
-          }
-        ]
-      },
-      {
-        title: "Geophysical Logs",
-        mapName: 'Geophysical Log',
-        toggleable: true,
-        activate: (e) => {
-          const id = e.target.id;
-          const isOn = e.detail.checked;
-    
-          removeFromFilter(this.include, id)
-          if (isOn) {
-            this.include.push({
-              id: id,
-              resolve: function(el) {
-                return el['Data_Type'] === 'Geophysical Log';
-              }
-            });
-          }
-          this.requestUpdate();
-        },
-        sections: [
-          {
-            fields: {
-              "RecentLog": {
-                controls: [
-                  new GTLTControl(true)
-                ]
-              },
-              "MaxDepth": {
-                controls: [
-                  new GTLTControl()
-                ]
-              }
-            }
-          },
-          {
-            title: "Geologic",
-            fields: {
-              "Norm_Res": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Caliper": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Gamma": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "SP": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "SPR": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Spec_Gamma": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-    
-            }
-          },
-          {
-            title: "Hydrogeologic",
-            fields: {
-              "Fluid_Cond": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Flow_Spin": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Fluid_Temp": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Fluid_Res": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Flow_HP": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-    
-            }
-          },
-          {
-            title: "Image",
-            fields: {
-              "OBI": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "ABI": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Video": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-    
-            }
-          }
-        ]
-      },
-      {
-        title: "Quaternary Core Data",
-        mapName: 'Quaternary Core',
-        toggleable: true,
-        activate: (e) => {
-          const id = e.target.id;
-          const isOn = e.detail.checked;
-    
-          removeFromFilter(this.include, id)
-          if (isOn) {
-            this.include.push({
-              id: id,
-              resolve: function(el) {
-                return el['Data_Type'] === 'Quaternary Core';
-              }
-            });
-          }
-          this.requestUpdate();
-        },
-        sections: [
-          {
-            fields: {
-              "Drill_Year": {
-                controls: [
-                  new GTLTControl(true)
-                ]
-              },
-              "Depth_Ft": {
-                controls: [
-                  new GTLTControl()
-                ]
-              },
-              "Drill_Meth": {
-                controls: [
-                  new SelectControl('Drill_Meth')
-                ]
-              },
-            }
-          },
-          {
-            title: "Analyses available",
-            fields: {
-              "Subsamples": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Photos": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              },
-              "Grainsize": {
-                controls: [
-                  new CheckboxControl()
-                ]
-              }
-            }
-          }
-        ]
-      }
-    ];
+    this.filterGroups = filterLookup;
   }
 }
 customElements.define('map-filter', MapFilter);

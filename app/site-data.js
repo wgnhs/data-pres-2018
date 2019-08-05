@@ -1,3 +1,11 @@
+import {
+  FilterGroup,
+  CheckboxControl,
+  GTLTControl,
+  SelectControl,
+  TextControl,
+  ContainsControl
+} from '../lit/filter-controls.js';
 
 export class SiteData {
   constructor(...layer) {
@@ -84,3 +92,192 @@ export const keyLookup = {
   'Grainsize': {title: 'Grainsize', desc: ''},
 };
 
+export const filterLookup = [
+  new FilterGroup({
+    title: "Site Information",
+    open: true,
+    sections: [
+      {
+        fields: {
+          "County": {
+            controls: [
+              new SelectControl()
+            ]
+          },
+          "SiteName": {
+            controls: [
+              new ContainsControl()
+            ]
+          },
+          "Site_Name": {
+            controls: [
+              new ContainsControl()
+            ]
+          },
+          "Wid": {
+            controls: [
+              new TextControl()
+            ]
+          },
+        }
+      }
+    ]
+  }),
+  new FilterGroup({
+    title: "Geophysical Log Data",
+    prop: 'Data_Type',
+    'Data_Type': 'Geophysical Log Data',
+    toggleable: true,
+    sections: [
+      {
+        fields: {
+          "RecentLog": {
+            controls: [
+              new GTLTControl(true)
+            ]
+          },
+          "MaxDepth": {
+            controls: [
+              new GTLTControl()
+            ]
+          }
+        }
+      },
+      {
+        title: "Geologic",
+        fields: {
+          "Norm_Res": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Caliper": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Gamma": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "SP": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "SPR": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Spec_Gamma": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+
+        }
+      },
+      {
+        title: "Hydrogeologic",
+        fields: {
+          "Fluid_Cond": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Flow_Spin": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Fluid_Temp": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Fluid_Res": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Flow_HP": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+
+        }
+      },
+      {
+        title: "Image",
+        fields: {
+          "OBI": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "ABI": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Video": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+
+        }
+      }
+    ]
+  }),
+  new FilterGroup({
+    title: "Quaternary Core Data",
+    prop: 'Data_Type',
+    'Data_Type': 'Quaternary Core Data',
+    toggleable: true,
+    sections: [
+      {
+        fields: {
+          "Drill_Year": {
+            controls: [
+              new GTLTControl(true)
+            ]
+          },
+          "Depth_Ft": {
+            controls: [
+              new GTLTControl()
+            ]
+          },
+          "Drill_Meth": {
+            controls: [
+              new SelectControl()
+            ]
+          },
+        }
+      },
+      {
+        title: "Analyses available",
+        fields: {
+          "Subsamples": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Photos": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Grainsize": {
+            controls: [
+              new CheckboxControl()
+            ]
+          }
+        }
+      }
+    ]
+  })
+];
