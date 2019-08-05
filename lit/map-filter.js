@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
-import { keyLookup } from '../app/key-lookup.js';
+import { keyLookup } from '../app/site-data.js';
 import { CheckboxControl, GTLTControl, SelectControl, TextControl, ContainsControl } from './filter-controls.js';
 export { AppCollapsible } from './app-collapsible.js';
 export { InRadio } from './in-radio.js';
@@ -184,6 +184,21 @@ export class MapFilter extends LitElement {
         }
       });
     }
+  }
+
+  init(uniques) {
+    this.filterGroups.forEach((group) => {
+      group.sections.forEach((section) => {
+        Object.entries(section.fields).forEach((field) => {
+          field[1].controls.forEach((control) => {
+            if (control.init && control.prop) {
+              control.init(uniques[control.prop]);
+            }
+          })
+        })
+      })
+    });
+    this.requestUpdate();
   }
 
   constructor() {

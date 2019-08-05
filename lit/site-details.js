@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
-import { ignoredKeys, keyLookup } from '../app/key-lookup.js';
+import { ignoredKeys, keyLookup } from '../app/site-data.js';
 export { PDFView, PDFViewPanel, PDFViewButton } from './pdf-view.js';
 
 export class SiteDetails extends LitElement {

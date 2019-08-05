@@ -70,8 +70,9 @@ export class GTLTControl {
 }
 
 export class SelectControl {
-  constructor() {
+  constructor(prop) {
     this.id = genId();
+    this.prop = prop;
   }
   get next() {
     return html`
@@ -83,12 +84,14 @@ export class SelectControl {
       </select>
     `;
   }
+  
+  init(uniques) {
+    if (!this.options) {
+      this.options = Array.from(uniques).sort();
+    }
+  }
   handle(context) {
     let result = null;
-
-    if (!this.options) {
-      this.options = Array.from(Object.entries(window.siteMap.map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set())).sort();
-    }
 
     const input = context.target.nextElementSibling.value;
     // blank selects all, apply filter if non-blank
