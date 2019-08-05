@@ -39,15 +39,17 @@ export class InRadio extends LitElement {
     }
   }
 
-  inChange(e) {
-    this.choice = e.target.value;
-
+  updated() {
     let event = new CustomEvent('choice-change', {
       detail: {
         choice: this.choice
       }
     });
     this.dispatchEvent(event);
+  }
+
+  inChange(e) {
+    this.choice = e.target.value;
   }
 
   render() {

@@ -1,12 +1,17 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
-import { keyLookup } from '../app/key-lookups.js';
+import { keyLookup, filterLookup } from '../app/site-data.js';
 export { AppCollapsible } from './app-collapsible.js';
 export { InRadio } from './in-radio.js';
+export { ToggleSwitch } from './toggle-switch.js';
 
 export class MapFilter extends LitElement {
   static get properties() {
     return {
+      include: {
+        type: Array,
+        attribute: false
+      },
       filter: {
         type: Array,
         attribute: false
@@ -20,10 +25,6 @@ export class MapFilter extends LitElement {
 
   static get styles() {
     return css`
-      :host {
-        display
-      }
-
       .field {
         display: grid;
         grid-template-columns: 40% 1fr;
@@ -32,12 +33,10 @@ export class MapFilter extends LitElement {
       }
 
       .label {
-        /* background-color: var(--palette-dark); */
         font-weight: var(--font-weight-bold);
       }
 
       .selector {
-        /* background-color: var(--palette-light); */
       }
 
       .section-title {
@@ -63,10 +62,10 @@ export class MapFilter extends LitElement {
         @import url("./css/typography.css");
       </style>
       <div>
-        Show sites that have <in-radio choices='["ANY", "ALL"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
+        Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
       <div>
-        ${this.renderFilterSections()}
+        ${this.renderFilterGroups()}
       </div>
     `;
   }
@@ -76,32 +75,41 @@ export class MapFilter extends LitElement {
     return result;
   }
 
-  renderFilterSections() {
+  renderFilterGroups() {
     let name=0, config=1;
-    return this.filterSections.map((el) => html`
-      <app-collapsible open>
+    return this.filterGroups.map((group) => html`
+      <app-collapsible
+        ?open=${group.open} @open=${this._handle(group)}>
         <i slot="header-before" class="material-icons">expand_more</i>
-        <span slot="header">${el.title}</span>
+        <span slot="header">${group.title}</span>
+        ${(!group.toggleable)?'':html`
+          <toggle-switch
+            name="${group.mapName}"
+            slot="header-after"
+            ?checked=${group.open}
+            @change=${this._handleGroup(group, this.include)}
+          ></toggle-switch>
+        `}
         <div slot="content">
-          ${el.sections.map((section, index) => html`
+          ${group.sections.map((section, index) => html`
             ${!(section.title)?'':html`
               <h2 class="section-title">${section.title}</h2>
             `}
             ${Object.entries(section.fields).map((entry, index) => html`
               <div class="field">
-              ${(entry[config].controls.length === 0)?'':entry[config].controls.map(el => html`
+              ${(entry[config].controls.length === 0)?'':entry[config].controls.map(control => html`
                 <td class="label">
                   <label for="${this.genId(index)}" >
                     ${this.resolveKeyLookup(entry[name])}
                   </label>
                 </td>
                 <td class="selector" 
-                    @change="${el.handle.bind(el)}">
+                    @change="${this._handleControl(group, control, this.filter)}">
                   <input
-                    id="${el.id}"
-                    type="checkbox"
+                    type="hidden"
+                    id="${control.id}"
                     name="${entry[name]}">
-                  ${el.next}
+                  ${control.next}
                 </td>
               `)}
               </div>
@@ -112,21 +120,81 @@ export class MapFilter extends LitElement {
     `);
   }
 
-  updated() {
+  get _eventHandlers() {
+    return {
+      'open' : (context, e) => {
+        context.open = e.detail.value;
+      }
+    }
+  }
+
+  _handle(context) {
+    return (e) => {
+      const handler = this._eventHandlers[e.type];
+      if (handler) {
+        handler(context, e);
+        this.requestUpdate();
+      }
+    }
+  }
+
+  _handleGroup(group, filter) {
+    const id = group.id;
+    const handle = group.activate.bind(group);
+    return (e) => {
+      const context = {};
+      context.id = id;
+      context.toggleable = group.toggleable;
+      context.detail = e.detail;
+      context.prop = group.prop;
+      context.value = group[group.prop];
+      removeFromFilter(filter, id);
+      let resolver = handle(context);
+      if (resolver) {
+        filter.push(resolver);
+      }
+      this.requestUpdate();
+    }
+  }
+
+  _handleControl(group, control, filter) {
+    const id = control.id;
+    const handle = control.handle.bind(control);
+    return (e) => {
+      const context = {};
+      context.id = id;
+      context.group = group;
+      context.target = e.currentTarget.querySelector('#'+id);
+      context.prop = context.target.name;
+      removeFromFilter(filter, id);
+      let resolver = handle(context);
+      if (resolver) {
+        filter.push(resolver);
+      }
+      this.requestUpdate();
+    }
+  }
+
+  updated(changed) {
     let matchClass = this.matchClass;
+    let incl = this.include;
     let filt = this.filter;
     if (window.siteMap) {
       window.siteMap.map.fire('filterpoints', {
         detail: {
           resolve: function(props) {
-            let result = filt.length < 1;
-            if (!result) {
+            let included = incl.length > 0 && incl.reduce((prev, curr) => {
+              return prev || curr.resolve(props);
+            }, false);
+            let spec = filt.filter((rule) => rule.resolveGroup(props));
+            let result = included && spec.length < 1;
+            if (included && !result) {
               if ("ALL" === matchClass) {
-                result = filt.reduce((prev, curr) => {
+                result = spec.reduce((prev, curr) => {
                   return prev && curr.resolve(props);
                 }, true);
               } else {
-                result = filt.reduce((prev, curr) => {
+                result = spec.reduce((prev, curr) => {
                   return prev || curr.resolve(props);
                 }, false);
               }
@@ -138,7 +206,20 @@ export class MapFilter extends LitElement {
     }
   }
 
-
+  init(uniques) {
+    this.filterGroups.forEach((group) => {
+      group.sections.forEach((section) => {
+        Object.entries(section.fields).forEach((field) => {
+          field[1].controls.forEach((control) => {
+            if (control.init) {
+              control.init(uniques[field[0]]);
+            }
+          })
+        })
+      })
+    });
+    this.requestUpdate();
+  }
 
   constructor() {
     super();
@@ -151,412 +232,20 @@ export class MapFilter extends LitElement {
         return memo[index];
       }
     })();
+    this.include = [];
     this.filter = [];
-    this.filterSections = [
-      {
-        title: "Site Information",
-        sections: [
-          {
-            fields: {
-              "County": {
-                controls: [
-                  new SelectControl(this, "County")
-                ]
-              },
-              "SiteName": {
-                controls: [
-                  new ContainsControl(this)
-                ]
-              },
-              "Site_Name": {
-                controls: [
-                  new ContainsControl(this)
-                ]
-              },
-              "Wid": {
-                controls: [
-                  new TextControl(this)
-                ]
-              },
-            }
-          }
-        ]
-      },
-      {
-        title: "Geophysical Logs",
-        sections: [
-          {
-            fields: {
-              "RecentLog": {
-                controls: [
-                  new GTLTControl(this, true)
-                ]
-              },
-              "MaxDepth": {
-                controls: [
-                  new GTLTControl(this)
-                ]
-              }
-            }
-          },
-          {
-            title: "Geologic",
-            fields: {
-              "Norm_Res": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Caliper": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Gamma": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "SP": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "SPR": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Spec_Gamma": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-
-            }
-          },
-          {
-            title: "Hydrogeologic",
-            fields: {
-              "Fluid_Cond": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Flow_Spin": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Fluid_Temp": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Fluid_Res": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Flow_HP": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-
-            }
-          },
-          {
-            title: "Image",
-            fields: {
-              "OBI": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "ABI": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Video": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-
-            }
-          }
-        ]
-      },
-      {
-        title: "Quaternary Core Data",
-        sections: [
-          {
-            fields: {
-              "Drill_Year": {
-                controls: [
-                  new GTLTControl(this, true)
-                ]
-              },
-              "Depth_Ft": {
-                controls: [
-                  new GTLTControl(this)
-                ]
-              },
-              "Drill_Meth": {
-                controls: [
-                  new SelectControl(this, 'Drill_Meth')
-                ]
-              },
-            }
-          },
-          {
-            title: "Analyses available",
-            fields: {
-              "Subsamples": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Photos": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              },
-              "Grainsize": {
-                controls: [
-                  new CheckboxControl(this)
-                ]
-              }
-            }
-          }
-        ]
-      }
-    ];
+    this.filterGroups = filterLookup;
   }
 }
 customElements.define('map-filter', MapFilter);
 
-
-
-class CheckboxControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = e.target.name;
-
-    for (
-      var idx = this.filter.findIndex(el => el.id === id); 
-      idx >= 0;
-      idx = this.filter.findIndex(el => el.id === id)
-    ) {
-      this.filter.splice(idx, 1);
-    }
-    let isOn = context.target.checked;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          return !!el[context.prop];
-        }
-      })
-    }
-    this.postHandle();
+const removeFromFilter = (filter, id) => {
+  for (
+    var idx = filter.findIndex(el => el.id === id); 
+    idx >= 0;
+    idx = filter.findIndex(el => el.id === id)
+  ) {
+    filter.splice(idx, 1);
   }
 }
 
-class GTLTControl {
-  constructor(element, isDate) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-    this.gtName = (isDate)?'after':'at least';
-    this.ltName = (isDate)?'before':'less than';
-  }
-  get next() {
-    return html`
-      <select>
-        <option value="gt">${this.gtName}</option>
-        <option value="lt">${this.ltName}</option>
-      </select>
-      <input type="text">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-    context['gt'] = (a, b) => (a >= b);
-    context['lt'] = (a, b) => (a < b);
-
-    for (
-      var idx = this.filter.findIndex(el => el.id === id); 
-      idx >= 0;
-      idx = this.filter.findIndex(el => el.id === id)
-    ) {
-      this.filter.splice(idx, 1);
-    }
-    let isOn = context.target.checked;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          let result = !!el[context.prop];
-          if (result) {
-            result = context[context.target.nextElementSibling.value](el[context.prop], context.target.nextElementSibling.nextElementSibling.value);
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class SelectControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <select ?disabled="${!this.options}">
-        <option></option>
-        ${(!this.options)?'':this.options.map((el) => html`
-        <option value="${el}">${el}</option>
-        `)}
-      </select>
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    if (!this.options) {
-      this.options = Array.from(Object.entries(window.siteMap.map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set())).sort();
-    }
-
-    for (
-      var idx = this.filter.findIndex(el => el.id === id); 
-      idx >= 0;
-      idx = this.filter.findIndex(el => el.id === id)
-    ) {
-      this.filter.splice(idx, 1);
-    }
-    let isOn = context.target.checked;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          let result = !!el[context.prop];
-          if (result) {
-            result = !context.target.nextElementSibling.value || el[context.prop] === context.target.nextElementSibling.value;
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class TextControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <input type="text">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    for (
-      var idx = this.filter.findIndex(el => el.id === id); 
-      idx >= 0;
-      idx = this.filter.findIndex(el => el.id === id)
-    ) {
-      this.filter.splice(idx, 1);
-    }
-    let isOn = context.target.checked;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          let result = !!el[context.prop];
-          if (result) {
-            result = !context.target.nextElementSibling.value || el[context.prop] == context.target.nextElementSibling.value;
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class ContainsControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <input type="text">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    for (
-      var idx = this.filter.findIndex(filterEl => filterEl.id === id); 
-      idx >= 0;
-      idx = this.filter.findIndex(filterEl => filterEl.id === id)
-    ) {
-      this.filter.splice(idx, 1);
-    }
-    let isOn = context.target.checked;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(feature) {
-          // filter out features without the property
-          let result = !!feature[context.prop];
-          if (result) {
-            let input = context.target.nextElementSibling.value;
-            // blank filter selects all
-            if (input) {
-              let cleanInput = input.trim().toUpperCase();
-              let cleanProp = feature[context.prop].toUpperCase();
-              result = cleanProp.includes(cleanInput);
-            }
-              
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}

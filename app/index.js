@@ -8,6 +8,8 @@ window.sidebar = document.querySelector('#sidebar');
 window.siteMap.once('init', function() {
   window.siteData = new SiteData(window.siteMap.bore, window.siteMap.quat);
   window.aggrData = siteData.aggrData;
+  document.querySelector('#filter').init(window.siteData.uniques);
+
 
   var deselectFeature = function() {
     document.dispatchEvent(new CustomEvent('toggle-pdf', {bubbles: true, detail: {closed: true}}));
