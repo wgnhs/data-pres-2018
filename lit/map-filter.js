@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
-import { keyLookup } from '../app/key-lookups.js';
+import { keyLookup } from '../app/key-lookup.js';
+import { CheckboxControl, GTLTControl, SelectControl, TextControl, ContainsControl } from './filter-controls.js';
 export { AppCollapsible } from './app-collapsible.js';
 export { InRadio } from './in-radio.js';
 export { ToggleSwitch } from './toggle-switch.js';
@@ -104,7 +105,7 @@ export class MapFilter extends LitElement {
                   </label>
                 </td>
                 <td class="selector" 
-                    @change="${control.handle.bind(control)}">
+                    @change="${this._controlHandle(control, this.filter)}">
                   <input
                     type="hidden"
                     id="${control.id}"
@@ -136,7 +137,23 @@ export class MapFilter extends LitElement {
         handler(context, e);
       }
     }
+  }
 
+  _controlHandle(control, filter) {
+    const id = control.id;
+    const handle = control.handle.bind(control);
+    return (e) => {
+      let context = {};
+      context.id = id;
+      context.target = e.currentTarget.querySelector('#'+id);
+      context.prop = context.target.name;
+      removeFromFilter(filter, id);
+      let item = handle(context);
+      if (item) {
+        filter.push(item);
+      }
+      this.requestUpdate();
+    }
   }
 
   updated(changed) {
@@ -191,22 +208,22 @@ export class MapFilter extends LitElement {
             fields: {
               "County": {
                 controls: [
-                  new SelectControl(this, "County")
+                  new SelectControl("County")
                 ]
               },
               "SiteName": {
                 controls: [
-                  new ContainsControl(this)
+                  new ContainsControl()
                 ]
               },
               "Site_Name": {
                 controls: [
-                  new ContainsControl(this)
+                  new ContainsControl()
                 ]
               },
               "Wid": {
                 controls: [
-                  new TextControl(this)
+                  new TextControl()
                 ]
               },
             }
@@ -220,7 +237,7 @@ export class MapFilter extends LitElement {
         activate: (e) => {
           const id = e.target.id;
           const isOn = e.detail.checked;
-
+    
           removeFromFilter(this.include, id)
           if (isOn) {
             this.include.push({
@@ -237,12 +254,12 @@ export class MapFilter extends LitElement {
             fields: {
               "RecentLog": {
                 controls: [
-                  new GTLTControl(this, true)
+                  new GTLTControl(true)
                 ]
               },
               "MaxDepth": {
                 controls: [
-                  new GTLTControl(this)
+                  new GTLTControl()
                 ]
               }
             }
@@ -252,35 +269,35 @@ export class MapFilter extends LitElement {
             fields: {
               "Norm_Res": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Caliper": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Gamma": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "SP": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "SPR": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Spec_Gamma": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
-
+    
             }
           },
           {
@@ -288,30 +305,30 @@ export class MapFilter extends LitElement {
             fields: {
               "Fluid_Cond": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Flow_Spin": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Fluid_Temp": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Fluid_Res": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Flow_HP": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
-
+    
             }
           },
           {
@@ -319,20 +336,20 @@ export class MapFilter extends LitElement {
             fields: {
               "OBI": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "ABI": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Video": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
-
+    
             }
           }
         ]
@@ -344,7 +361,7 @@ export class MapFilter extends LitElement {
         activate: (e) => {
           const id = e.target.id;
           const isOn = e.detail.checked;
-
+    
           removeFromFilter(this.include, id)
           if (isOn) {
             this.include.push({
@@ -361,17 +378,17 @@ export class MapFilter extends LitElement {
             fields: {
               "Drill_Year": {
                 controls: [
-                  new GTLTControl(this, true)
+                  new GTLTControl(true)
                 ]
               },
               "Depth_Ft": {
                 controls: [
-                  new GTLTControl(this)
+                  new GTLTControl()
                 ]
               },
               "Drill_Meth": {
                 controls: [
-                  new SelectControl(this, 'Drill_Meth')
+                  new SelectControl('Drill_Meth')
                 ]
               },
             }
@@ -381,17 +398,17 @@ export class MapFilter extends LitElement {
             fields: {
               "Subsamples": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Photos": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               },
               "Grainsize": {
                 controls: [
-                  new CheckboxControl(this)
+                  new CheckboxControl()
                 ]
               }
             }
@@ -413,202 +430,3 @@ const removeFromFilter = (filter, id) => {
   }
 }
 
-class CheckboxControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <input type="checkbox">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    removeFromFilter(this.filter, id);
-
-    let isOn = context.target.nextElementSibling.checked;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          return !!el[context.prop];
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class GTLTControl {
-  constructor(element, isDate) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-    this.gtName = (isDate)?'after':'at least';
-    this.ltName = (isDate)?'before':'less than';
-  }
-  get next() {
-    return html`
-      <select>
-        <option value="gt">${this.gtName}</option>
-        <option value="lt">${this.ltName}</option>
-      </select>
-      <input type="text">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-    context['gt'] = (a, b) => (a >= b);
-    context['lt'] = (a, b) => (a < b);
-
-    removeFromFilter(this.filter, id);
-
-    let isOn = context.target.nextElementSibling.nextElementSibling.value;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          let result = !!el[context.prop];
-          if (result) {
-            result = context[context.target.nextElementSibling.value](el[context.prop], context.target.nextElementSibling.nextElementSibling.value);
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class SelectControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <select ?disabled="${!this.options}">
-        <option></option>
-        ${(!this.options)?'':this.options.map((el) => html`
-        <option value="${el}">${el}</option>
-        `)}
-      </select>
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    if (!this.options) {
-      this.options = Array.from(Object.entries(window.siteMap.map._layers).reduce(((prev, ent) => (ent[1].feature && ent[1].feature.properties[context.prop])?prev.add(ent[1].feature.properties[context.prop]):prev), new Set())).sort();
-    }
-
-    removeFromFilter(this.filter, id);
-
-    let isOn = context.target.nextElementSibling.value;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          let result = !!el[context.prop];
-          if (result) {
-            result = !context.target.nextElementSibling.value || el[context.prop] === context.target.nextElementSibling.value;
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class TextControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <input type="text">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    removeFromFilter(this.filter, id);
-
-    let isOn = context.target.nextElementSibling.value;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(el) {
-          let result = !!el[context.prop];
-          if (result) {
-            result = !context.target.nextElementSibling.value || el[context.prop] == context.target.nextElementSibling.value;
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}
-
-class ContainsControl {
-  constructor(element) {
-    this.id = genId();
-    this.filter = element.filter;
-    this.postHandle = element.requestUpdate.bind(element);
-  }
-  get next() {
-    return html`
-      <input type="text">
-    `;
-  }
-  handle(e) {
-    let id = this.id;
-    let context = {};
-    context.target = e.currentTarget.querySelector('#'+id);
-    context.prop = context.target.name;
-
-    removeFromFilter(this.filter, id);
-
-    let isOn = context.target.nextElementSibling.value;
-    if (isOn) {
-      this.filter.push({
-        id: id,
-        resolve: function(feature) {
-          // filter out features without the property
-          let result = !!feature[context.prop];
-          if (result) {
-            let input = context.target.nextElementSibling.value;
-            // blank filter selects all
-            if (input) {
-              let cleanInput = input.trim().toUpperCase();
-              let cleanProp = feature[context.prop].toUpperCase();
-              result = cleanProp.includes(cleanInput);
-            }
-          }
-          return result;
-        }
-      })
-    }
-    this.postHandle();
-  }
-}

@@ -11,7 +11,7 @@ export const keyLookup = {
   'Site_Name': {title: 'Site Name', desc: ''},
   'Wid': {title: 'WID', desc: ''},
   'ID': {title: 'ID', desc: ''},
-  'RecentLog': {title: 'Most recent log', desc: ''},
+  'RecentLog': {title: 'Most recent log (year)', desc: ''},
   'MaxDepth': {title: 'Max depth (ft)', desc: ''},
   'Norm_Res': {title: 'Normal Resistivity', desc: ''},
   'Caliper': {title: 'Caliper', desc: ''},
