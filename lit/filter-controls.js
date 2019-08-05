@@ -84,7 +84,6 @@ export class SelectControl {
       </select>
     `;
   }
-  
   init(uniques) {
     if (!this.options) {
       this.options = Array.from(uniques).sort();
