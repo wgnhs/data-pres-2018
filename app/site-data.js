@@ -104,11 +104,11 @@ export const filterLookup = [
               new SelectControl()
             ]
           },
-          "SiteName": {
-            controls: [
-              new ContainsControl()
-            ]
-          },
+          // "SiteName": {
+          //   controls: [
+          //     new ContainsControl()
+          //   ]
+          // },
           "Site_Name": {
             controls: [
               new ContainsControl()

@@ -95,6 +95,8 @@ export class SiteMap extends window.L.Evented {
         layer.eachFeature(function(obj) {
           let siteCode = SiteMap.getSiteCode(obj.feature.properties);
           obj.feature.properties['Site_Code'] = siteCode;
+          obj.feature.properties['Site_Name'] = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
+          obj.feature.properties['SiteName'] = obj.feature.properties['SiteName'] || obj.feature.properties['Site_Name'];
           obj.feature.properties['Data_Type'] = layer.options.name;
           obj.feature.properties.Latitude = obj.getLatLng()['lat'];
           obj.feature.properties.Longitude = obj.getLatLng()['lng'];
