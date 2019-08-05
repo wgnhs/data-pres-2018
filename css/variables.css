@@ -6,6 +6,10 @@ html {
     --palette-accent-transparent: #777777AA;
     --palette-900: #333333;
     --palette-black: #000000;
+    --palette-blue: #3388FF;
+    --palette-green: #33AA44;
+    --palette-orange: orange;
+    --palette-active: var(--palette-orange);
     --font-family: 'open_sansregular','Open Sans',sans_serif;
     --font-size-small: 0.8rem;
     --font-size: 16px;

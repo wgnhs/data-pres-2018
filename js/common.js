@@ -10556,13 +10556,34 @@
     var pushStateLocationPlugin = locationPluginFactory('vanilla.pushStateLocation', true, PushStateLocationService, BrowserLocationConfig);
 
     // https://gist.github.com/gordonbrander/2230317
-    const genId = function() {
+    function genId() {
       return '_' + Math.random().toString(36).substr(2, 9);
-    };
+    }
+
+    /**
+     * @param {HTMLElement} context element to dispatch event from
+     * @param {String} eventName custom event name
+     * @param {Object} detail 
+     * @param {Boolean} bubbles does the event bubble up the elements
+     * @param {Boolean} composed does the event bubble up through ShadowDOM?
+     */
+    function dispatch(context, eventName, detail, bubbles, composed) {
+      context.dispatchEvent(
+        new CustomEvent(
+          eventName, 
+          {
+            bubbles,
+            composed,
+            detail
+          }
+        )
+      );
+    }
 
     exports.LitElement = LitElement;
     exports.UIRouter = UIRouter;
     exports.css = css;
+    exports.dispatch = dispatch;
     exports.genId = genId;
     exports.html = html;
     exports.pushStateLocationPlugin = pushStateLocationPlugin;

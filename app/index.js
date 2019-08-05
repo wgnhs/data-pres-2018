@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('@uirouter/core')) :
-  typeof define === 'function' && define.amd ? define(['@uirouter/core'], factory) :
-  (global = global || self, factory(global.common));
-}(this, function (core) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('lit-element'), require('@uirouter/core')) :
+  typeof define === 'function' && define.amd ? define(['lit-element', '@uirouter/core'], factory) :
+  (global = global || self, factory(global.common, global.common));
+}(this, function (litElement, core) { 'use strict';
 
   const RestylingCircleMarker = L.CircleMarker.extend({
     getEvents: function() {
@@ -29,12 +29,20 @@
       }
     },
     highlight: function() {
-      this._activeBackup = this.options.color;
-      this.setStyle({'color': 'orange'});
+      this._activeBackup = {
+        color: this.options.color,
+        stroke: this.options.stroke,
+        fill: this.options.fill
+      };
+      this.setStyle({
+        color: 'var(--palette-active)',
+        stroke: true,
+        fill: true
+      });
     },
     removeHighlight: function() {
       if (this._activeBackup) {
-        this.setStyle({'color': this._activeBackup});
+        this.setStyle(this._activeBackup);
         this._activeBackup = null;
       }
     }
@@ -81,11 +89,15 @@
 
       /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
       let bore = this.bore = L.esri.featureLayer({
+        name: 'Geophysical Log Data',
         url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
         pointToLayer: function(geoJsonPoint, latlon) {
           return new RestylingCircleMarker(latlon, {
             weight: 2,
-            radius: RestylingCircleMarker.calcRadius(map.getZoom())
+            color: 'var(--palette-blue)',
+            radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+            stroke: false,
+            fill: false
           });
         }
       }).on('click', (function(e) {
@@ -98,12 +110,15 @@
 
       /* +++++++++++ Sediment Core layer +++++++++++ */ 
       let quat = this.quat = L.esri.featureLayer({
+        name: 'Quaternary Core Data',
         url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
         pointToLayer: function(geoJsonPoint, latlon) {
           return new RestylingCircleMarker(latlon, {
             weight: 2,
-            color: '#33AA44',
-            radius: RestylingCircleMarker.calcRadius(map.getZoom())
+            color: 'var(--palette-green)',
+            radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+            stroke: false,
+            fill: false
           });
         }
       }).on('click', (function(e) {
@@ -130,6 +145,9 @@
           layer.eachFeature(function(obj) {
             let siteCode = SiteMap.getSiteCode(obj.feature.properties);
             obj.feature.properties['Site_Code'] = siteCode;
+            obj.feature.properties['Site_Name'] = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
+            obj.feature.properties['SiteName'] = obj.feature.properties['SiteName'] || obj.feature.properties['Site_Name'];
+            obj.feature.properties['Data_Type'] = layer.options.name;
             obj.feature.properties.Latitude = obj.getLatLng()['lat'];
             obj.feature.properties.Longitude = obj.getLatLng()['lng'];
             lookup[siteCode] = obj;
@@ -213,18 +231,240 @@
       }
     }
 
+  }
 
+  // https://gist.github.com/gordonbrander/2230317
+  function genId() {
+    return '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  class FilterGroup {
+    constructor(config) {
+      Object.assign(this, config);
+      if (!this.id) {
+        this.id = genId();
+      }
+    }
+    activate(context) {
+      let result = null;
+      const input = context.detail.checked;
+      if (context.toggleable && input) {
+        result = {
+          id: context.id,
+          resolve: function(feature) {
+            return feature[context.prop] === context.value;
+          }
+        };
+      }
+      return result;
+    }
+  }
+
+  class CheckboxControl {
+    constructor() {
+      this.id = genId();
+    }
+    get next() {
+      return litElement.html`
+      <input type="checkbox">
+    `;
+    }
+    handle(context) {
+      let result = null;
+
+      let input = context.target.nextElementSibling.checked;
+      // blank selects all, apply filter if non-blank
+      if (input) {
+        result = {
+          id: context.id,
+          resolveGroup: function(feature) {
+            return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+          },
+          resolve: function(feature) {
+            // filter out features without the property
+            let isValid = !!feature[context.prop];
+            return isValid;
+          }
+        };
+      }
+      return result;
+    }
+  }
+
+  class GTLTControl {
+    constructor(isDate) {
+      this.id = genId();
+      this.gtName = (isDate)?'after':'at least';
+      this.ltName = (isDate)?'before':'less than';
+    }
+    get next() {
+      return litElement.html`
+      <select>
+        <option value="gt">${this.gtName}</option>
+        <option value="lt">${this.ltName}</option>
+      </select>
+      <input type="text">
+    `;
+    }
+    handle(context) {
+      let result = null;
+      context['gt'] = (a, b) => (a >= b);
+      context['lt'] = (a, b) => (a < b);
+
+      const predicate = context[context.target.nextElementSibling.value];
+      const input = context.target.nextElementSibling.nextElementSibling.value;
+      // blank selects all, apply filter if non-blank
+      if (input) {
+        result = {
+          id: context.id,
+          resolveGroup: function(feature) {
+            return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+          },
+          resolve: function(feature) {
+            // filter out features without the property
+            let isValid = !!feature[context.prop];
+            if (isValid) {
+              isValid = predicate(feature[context.prop], input);
+            }
+            return isValid;
+          }
+        };
+      }
+      return result;
+    }
+  }
+
+  class SelectControl {
+    constructor() {
+      this.id = genId();
+    }
+    get next() {
+      return litElement.html`
+      <select ?disabled="${!this.options}">
+        <option></option>
+        ${(!this.options)?'':this.options.map((el) => litElement.html`
+        <option value="${el}">${el}</option>
+        `)}
+      </select>
+    `;
+    }
+    init(uniques) {
+      if (!this.options) {
+        this.options = Array.from(uniques).sort();
+      }
+    }
+    handle(context) {
+      let result = null;
+
+      const input = context.target.nextElementSibling.value;
+      // blank selects all, apply filter if non-blank
+      if (input) {
+        result = {
+          id: context.id,
+          resolveGroup: function(feature) {
+            return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+          },
+          resolve: function(feature) {
+            // filter out features without the property
+            let isValid = !!feature[context.prop];
+            if (isValid) {
+              const value = feature[context.prop];
+              isValid = value === input;
+            }
+            return isValid;
+          }
+        };
+      }
+      return result;
+    }
+  }
+
+  class TextControl {
+    constructor() {
+      this.id = genId();
+    }
+    get next() {
+      return litElement.html`
+      <input type="text">
+    `;
+    }
+    handle(context) {
+      let result = null;
+
+      const input = ('' + context.target.nextElementSibling.value).trim().toUpperCase();
+      // blank selects all, apply filter if non-blank
+      if (input) {
+        result = {
+          id: context.id,
+          resolveGroup: function(feature) {
+            return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+          },
+          resolve: function(feature) {
+            // filter out features without the property
+            let isValid = !!feature[context.prop];
+            if (isValid) {
+              const value = ('' + feature[context.prop]).trim().toUpperCase();
+              isValid = value === input;
+            }
+            return isValid;
+          }
+        };
+      }
+      return result;
+    }
+  }
+
+  class ContainsControl {
+    constructor() {
+      this.id = genId();
+    }
+    get next() {
+      return litElement.html`
+      <input type="text">
+    `;
+    }
+    handle(context) {
+      let result = null;
+
+      const input = ('' + context.target.nextElementSibling.value).trim().toUpperCase();
+      // blank selects all, apply filter if non-blank
+      if (input) {
+        result = {
+          id: context.id,
+          resolveGroup: function(feature) {
+            return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
+          },
+          resolve: function(feature) {
+            // filter out features without the property
+            let isValid = !!feature[context.prop];
+            if (isValid) {
+              const value = ('' + feature[context.prop]).trim().toUpperCase();
+              isValid = value.includes(input);
+            }
+            return isValid;
+          }
+        };
+      }
+      return result;
+    }
   }
 
   class SiteData {
     constructor(...layer) {
 
       // Define aggregated data for visualization
-      this._aggrKeys = [];
+      this._aggrKeys = [
+        'County',
+        'Drill_Meth'
+      ];
       this.aggrData = [];
       for (let l of layer) {
         this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
       }
+
+      this.datas = this.aggrData.map((el)=>el.data).reduce((prev, curr)=>prev.concat(curr),[]);
+      this.uniques = {};
+      this._aggrKeys.forEach((key) => this.uniques[key] = new Set(this.datas.map((el)=>el[key]).filter((el)=>!!el)));
     }
 
     static _gatherAggrData(layer, aggrKeys) {
@@ -241,12 +481,13 @@
           if (!aggrData.aggr[key]) {
             aggrData.aggr[key] = {};
           }
+          let group = aggrData.aggr[key];
           if (result[key] && 'number' === typeof result[key]) {
-            if (!aggrData.aggr[key].max || aggrData.aggr[key].max < result[key]) {
-              aggrData.aggr[key].max = result[key];
+            if (!group.max || group.max < result[key]) {
+              group.max = result[key];
             }
-            if (!aggrData.aggr[key].min || aggrData.aggr[key].min > result[key]) {
-              aggrData.aggr[key].min = result[key];
+            if (!group.min || group.min > result[key]) {
+              group.min = result[key];
             }
           }
         });
@@ -256,6 +497,196 @@
       return aggrData;
     }
   }
+
+  const filterLookup = [
+    new FilterGroup({
+      title: "Site Information",
+      open: true,
+      sections: [
+        {
+          fields: {
+            "County": {
+              controls: [
+                new SelectControl()
+              ]
+            },
+            // "SiteName": {
+            //   controls: [
+            //     new ContainsControl()
+            //   ]
+            // },
+            "Site_Name": {
+              controls: [
+                new ContainsControl()
+              ]
+            },
+            "Wid": {
+              controls: [
+                new TextControl()
+              ]
+            },
+          }
+        }
+      ]
+    }),
+    new FilterGroup({
+      title: "Geophysical Log Data",
+      prop: 'Data_Type',
+      'Data_Type': 'Geophysical Log Data',
+      toggleable: true,
+      sections: [
+        {
+          fields: {
+            "RecentLog": {
+              controls: [
+                new GTLTControl(true)
+              ]
+            },
+            "MaxDepth": {
+              controls: [
+                new GTLTControl()
+              ]
+            }
+          }
+        },
+        {
+          title: "Geologic",
+          fields: {
+            "Norm_Res": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Caliper": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Gamma": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "SP": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "SPR": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Spec_Gamma": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+
+          }
+        },
+        {
+          title: "Hydrogeologic",
+          fields: {
+            "Fluid_Cond": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Flow_Spin": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Fluid_Temp": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Fluid_Res": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Flow_HP": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+
+          }
+        },
+        {
+          title: "Image",
+          fields: {
+            "OBI": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "ABI": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Video": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+
+          }
+        }
+      ]
+    }),
+    new FilterGroup({
+      title: "Quaternary Core Data",
+      prop: 'Data_Type',
+      'Data_Type': 'Quaternary Core Data',
+      toggleable: true,
+      sections: [
+        {
+          fields: {
+            "Drill_Year": {
+              controls: [
+                new GTLTControl(true)
+              ]
+            },
+            "Depth_Ft": {
+              controls: [
+                new GTLTControl()
+              ]
+            },
+            "Drill_Meth": {
+              controls: [
+                new SelectControl()
+              ]
+            },
+          }
+        },
+        {
+          title: "Analyses available",
+          fields: {
+            "Subsamples": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Photos": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Grainsize": {
+              controls: [
+                new CheckboxControl()
+              ]
+            }
+          }
+        }
+      ]
+    })
+  ];
 
   const DEFAULT_ROUTE = 'entry';
 
@@ -317,6 +748,8 @@
   window.siteMap.once('init', function() {
     window.siteData = new SiteData(window.siteMap.bore, window.siteMap.quat);
     window.aggrData = siteData.aggrData;
+    document.querySelector('#filter').init(window.siteData.uniques);
+
 
     var deselectFeature = function() {
       document.dispatchEvent(new CustomEvent('toggle-pdf', {bubbles: true, detail: {closed: true}}));
