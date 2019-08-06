@@ -89,23 +89,33 @@ export class SiteMap extends window.L.Evented {
       quat.once('load', (function() {
         resolve();
       }))
-    })]).then(function() {
+    })]).then(() => {
       let lookup = {};
-      this.layers.forEach(function(layer) {
+      this.layers.forEach(function(layer, idx, arr) {
         layer.eachFeature(function(obj) {
+          let wid = obj.feature.properties['Wid'];
           let siteCode = SiteMap.getSiteCode(obj.feature.properties);
+          let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
+          let latLon = obj.getLatLng();
+          let cache = lookup[siteCode] || {
+            'Site_Code': siteCode,
+            'Site_Name': siteName,
+            'Wid': wid,
+            'Latitude': latLon['lat'],
+            'Longitude': latLon['lng'],
+            point: obj,
+            datas: new Array(arr.length)
+          };
           obj.feature.properties['Site_Code'] = siteCode;
-          obj.feature.properties['Site_Name'] = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
-          obj.feature.properties['SiteName'] = obj.feature.properties['SiteName'] || obj.feature.properties['Site_Name'];
           obj.feature.properties['Data_Type'] = layer.options.name;
-          obj.feature.properties.Latitude = obj.getLatLng()['lat'];
-          obj.feature.properties.Longitude = obj.getLatLng()['lng'];
-          lookup[siteCode] = obj;
+
+          cache.datas[idx] = obj.feature.properties;
+          lookup[siteCode] = cache;
         });
       });
       this._lookup = lookup;
       this.fire('init');
-    }.bind(this));
+    });
 
     bore.addTo(map);
     quat.addTo(map);
@@ -119,7 +129,17 @@ export class SiteMap extends window.L.Evented {
     return result;
   }
 
+  //TODO HACK
   getPoint(params) {
+    let result = null;
+    let cache = this._lookup[SiteMap.getSiteCode(params)];
+    if (cache) {
+      result = cache.point;
+    }
+    return result;
+  }
+
+  getSite(params) {
     let result = this._lookup[SiteMap.getSiteCode(params)];
     return result;
   }
@@ -160,6 +180,12 @@ export class SiteMap extends window.L.Evented {
         this.setHighlightPoint(point);
       }
     }
+    return result;
+  }
+
+  selectSite(params) {
+    let result = this.getSite(params);
+    this.selectPoint(params);
     return result;
   }
 
