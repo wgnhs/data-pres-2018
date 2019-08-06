@@ -534,6 +534,7 @@
       prop: 'Data_Type',
       'Data_Type': 'Geophysical Log Data',
       toggleable: true,
+      active: true,
       sections: [
         {
           fields: {
@@ -644,6 +645,7 @@
       prop: 'Data_Type',
       'Data_Type': 'Quaternary Core Data',
       toggleable: true,
+      active: true,
       sections: [
         {
           fields: {
