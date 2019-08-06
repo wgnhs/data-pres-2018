@@ -86,7 +86,7 @@ export class MapFilter extends LitElement {
           <toggle-switch
             name="${group.mapName}"
             slot="header-after"
-            ?checked=${group.open}
+            ?checked=${group.active}
             @change=${this._handleGroup(group, this.include)}
           ></toggle-switch>
         `}
