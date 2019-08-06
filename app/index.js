@@ -845,6 +845,9 @@
 
       },
     });
+    window.router.router.transitionService.onEnter({}, ()=>{
+      document.querySelector('#spinner').setAttribute('data-closed', true);
+    });
     // Start the router
     window.router.start();
 
