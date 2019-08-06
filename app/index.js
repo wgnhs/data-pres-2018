@@ -59,7 +59,7 @@ window.siteMap.once('init', function() {
     onEnter: function(trans, state) {
       // console.log('route-view');
       let params = trans.params();
-      let attr = window.siteMap.selectPoint(params);
+      let attr = window.siteMap.selectSite(params);
       if (attr) {
         document.querySelectorAll('site-details').forEach(function(details) {
           details['printLayout'] = false;
@@ -88,7 +88,7 @@ window.siteMap.once('init', function() {
     onEnter: function(trans, state) {
       // console.log('route-print');
       let params = trans.params();
-      let attr = window.siteMap.selectPoint(params);
+      let attr = window.siteMap.selectSite(params);
       if (attr) {
         document.querySelectorAll('site-details').forEach(function(details) {
           details['printLayout'] = true;

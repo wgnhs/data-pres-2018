@@ -3,6 +3,8 @@ import { LitElement, html, css } from 'lit-element';
 let pdfjsLib = window['pdfjs-dist/build/pdf'];
 
 const TOGGLE_EVENT = 'toggle-pdf';
+const LOADED_EVENT = 'loaded-pdf';
+const MISSING_EVENT = 'missing-pdf';
 
 export class PDFView extends LitElement {
   static get properties() {
@@ -17,6 +19,7 @@ export class PDFView extends LitElement {
   }
 
   buildImgSrc() {
+    let dispatch = this.dispatchEvent.bind(this);
     if (this.pdfsrc) {
       let renderRoot = this.renderRoot;
       let canvasEl = document.createElement('canvas');
@@ -45,11 +48,16 @@ export class PDFView extends LitElement {
           return renderTask.promise.then(function () {
             // console.log('Page rendered');
             let durl = canvasEl.toDataURL();
+            dispatch(new CustomEvent(LOADED_EVENT, {bubbles: true, composed: true}));
             return durl;
           });
         });
       }, function (reason) {
-        console.error(reason);
+        if (reason.name === 'MissingPDFException') {
+          dispatch(new CustomEvent(MISSING_EVENT, {bubbles: true, composed: true}));
+        } else {
+          console.error(reason);
+        }
       });
     }
     return Promise.resolve(null);
@@ -165,23 +173,35 @@ export class PDFViewButton extends LitElement {
       openedText: {
         type: String,
         attribute: 'opened-text'
+      },
+      closed: {
+        type: Boolean,
+        attribute: false
+      },
+      missing: {
+        type: Boolean,
+        attribute: false
       }
     };
   }
 
   constructor() {
     super();
-    this.closed=true;
+    this.closed = true;
+    this.missing = true;
   }
 
   static get styles() {
     return css`
+    [data-closed] {
+      display: none;
+    }
     `;
   }
 
   render() {
     return html`
-    <button @click="${this.toggle}">${this.buttonText}</button>
+    <button @click="${this.toggle}" ?data-closed=${this.missing}>${this.buttonText}</button>
     `;
   }
 
@@ -200,7 +220,30 @@ export class PDFViewButton extends LitElement {
     if (this.closedText && this.openedText) {
       this.buttonText = (this.closed)?this.closedText:this.openedText;
     }
-    this.dispatchEvent(new CustomEvent(TOGGLE_EVENT, {bubbles: true, detail: {closed: this.closed}}));
+    this.dispatchEvent(new CustomEvent(TOGGLE_EVENT, {bubbles: true, composed: true, detail: {closed: this.closed}}));
+  }
+
+
+  handleMissingPDF(e) {
+    this.missing = true;
+    this.requestUpdate();
+  }
+
+  handleLoadedPDF(e) {
+    this.missing = false;
+    this.requestUpdate();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
+    document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
+    document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
+    super.disconnectedCallback();
   }
 }
 customElements.define('pdf-view-button', PDFViewButton);

@@ -104,7 +104,7 @@ export class SiteDetails extends LitElement {
           <span>
             <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
           </span>
-          <h1>${this.siteinfo.SiteName || this.siteinfo.Site_Name}</h1>
+          <h1>${this.siteinfo.Site_Name}</h1>
           <span></span>
         </div>
         <div data-element="table">
@@ -113,15 +113,19 @@ export class SiteDetails extends LitElement {
           })}
         </div>
         <h2>Data Available:</h2>
-        <app-collapsible open>
-          <span slot="header">${this.siteinfo['Data_Type']}</span>
-          <div slot="content">
-            <div data-element="table">
-              ${this.renderTable(this.siteinfo)}
+        ${this.siteinfo.datas.map((props) => html`
+          <app-collapsible open>
+            <span slot="header">${props['Data_Type']}</span>
+            <div slot="content">
+              <div data-element="table">
+                ${this.renderTable(props)}
+              </div>
+              ${(!this.siteinfo.Wid)?'':html`
+                <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+              `}
             </div>
-            <slot name="sketch"></slot>
-          </div>
-        </app-collapsible>
+          </app-collapsible>
+        `)}
       `}
     `;
   }
