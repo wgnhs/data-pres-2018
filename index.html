@@ -73,6 +73,13 @@
       left: 0;
       right: 0;
     }
+    [data-view="spinner"] {
+      background-color: var(--palette-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: var(--z-index-interrupt);
+    }
     [data-closed] {
       display: none;
     }
@@ -96,6 +103,9 @@
   </style>
 </head>
 <body>
+  <div id="spinner" data-view="spinner">
+    <app-spinner></app-spinner>
+  </div>
   <div id="app" data-view="app">
     <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
       <div class="default-view">
