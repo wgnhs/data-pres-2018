@@ -653,6 +653,8 @@
   let pdfjsLib = window['pdfjs-dist/build/pdf'];
 
   const TOGGLE_EVENT = 'toggle-pdf';
+  const LOADED_EVENT = 'loaded-pdf';
+  const MISSING_EVENT = 'missing-pdf';
 
   class PDFView extends litElement.LitElement {
     static get properties() {
@@ -667,6 +669,7 @@
     }
 
     buildImgSrc() {
+      let dispatch = this.dispatchEvent.bind(this);
       if (this.pdfsrc) {
         let renderRoot = this.renderRoot;
         let canvasEl = document.createElement('canvas');
@@ -695,11 +698,16 @@
             return renderTask.promise.then(function () {
               // console.log('Page rendered');
               let durl = canvasEl.toDataURL();
+              dispatch(new CustomEvent(LOADED_EVENT, {bubbles: true, composed: true}));
               return durl;
             });
           });
         }, function (reason) {
-          console.error(reason);
+          if (reason.name === 'MissingPDFException') {
+            dispatch(new CustomEvent(MISSING_EVENT, {bubbles: true, composed: true}));
+          } else {
+            console.error(reason);
+          }
         });
       }
       return Promise.resolve(null);
@@ -815,23 +823,35 @@
         openedText: {
           type: String,
           attribute: 'opened-text'
+        },
+        closed: {
+          type: Boolean,
+          attribute: false
+        },
+        missing: {
+          type: Boolean,
+          attribute: false
         }
       };
     }
 
     constructor() {
       super();
-      this.closed=true;
+      this.closed = true;
+      this.missing = true;
     }
 
     static get styles() {
       return litElement.css`
+    [data-closed] {
+      display: none;
+    }
     `;
     }
 
     render() {
       return litElement.html`
-    <button @click="${this.toggle}">${this.buttonText}</button>
+    <button @click="${this.toggle}" ?data-closed=${this.missing}>${this.buttonText}</button>
     `;
     }
 
@@ -850,7 +870,30 @@
       if (this.closedText && this.openedText) {
         this.buttonText = (this.closed)?this.closedText:this.openedText;
       }
-      this.dispatchEvent(new CustomEvent(TOGGLE_EVENT, {bubbles: true, detail: {closed: this.closed}}));
+      this.dispatchEvent(new CustomEvent(TOGGLE_EVENT, {bubbles: true, composed: true, detail: {closed: this.closed}}));
+    }
+
+
+    handleMissingPDF(e) {
+      this.missing = true;
+      this.requestUpdate();
+    }
+
+    handleLoadedPDF(e) {
+      this.missing = false;
+      this.requestUpdate();
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      document.addEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
+      document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
+      document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
+      super.disconnectedCallback();
     }
   }
   customElements.define('pdf-view-button', PDFViewButton);
@@ -956,7 +999,7 @@
           <span>
             <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
           </span>
-          <h1>${this.siteinfo.SiteName || this.siteinfo.Site_Name}</h1>
+          <h1>${this.siteinfo.Site_Name}</h1>
           <span></span>
         </div>
         <div data-element="table">
@@ -965,15 +1008,19 @@
           })}
         </div>
         <h2>Data Available:</h2>
-        <app-collapsible open>
-          <span slot="header">${this.siteinfo['Data_Type']}</span>
-          <div slot="content">
-            <div data-element="table">
-              ${this.renderTable(this.siteinfo)}
+        ${this.siteinfo.datas.map((props) => litElement.html`
+          <app-collapsible open>
+            <span slot="header">${props['Data_Type']}</span>
+            <div slot="content">
+              <div data-element="table">
+                ${this.renderTable(props)}
+              </div>
+              ${(!this.siteinfo.Wid)?'':litElement.html`
+                <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+              `}
             </div>
-            <slot name="sketch"></slot>
-          </div>
-        </app-collapsible>
+          </app-collapsible>
+        `)}
       `}
     `;
     }
