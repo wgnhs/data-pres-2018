@@ -120,8 +120,11 @@ export class SiteDetails extends LitElement {
               <div data-element="table">
                 ${this.renderTable(props)}
               </div>
-              ${(!this.siteinfo.Wid)?'':html`
-                <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+              ${(!props.Wid)?'':html`
+                <pdf-view-button
+                  source-before="https://data.wgnhs.wisc.edu/geophysical-logs/"
+                  source="${props.Wid}"
+                  source-after=".pdf"></pdf-view-button>
               `}
             </div>
           </app-collapsible>

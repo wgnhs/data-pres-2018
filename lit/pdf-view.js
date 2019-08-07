@@ -1,4 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
+import AppCollapsible from './app-collapsible.js';
+import ButtonLink from './button-link.js';
 
 let pdfjsLib = window['pdfjs-dist/build/pdf'];
 
@@ -21,7 +23,6 @@ export class PDFView extends LitElement {
   buildImgSrc() {
     let dispatch = this.dispatchEvent.bind(this);
     if (this.pdfsrc) {
-      let renderRoot = this.renderRoot;
       let canvasEl = document.createElement('canvas');
       let loadingTask = pdfjsLib.getDocument(this.pdfsrc);
       return loadingTask.promise.then(function(pdf) {
@@ -193,6 +194,12 @@ export class PDFViewButton extends LitElement {
 
   static get styles() {
     return css`
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: var(--border-radius);
+    }
+
     [data-closed] {
       display: none;
     }
@@ -201,7 +208,19 @@ export class PDFViewButton extends LitElement {
 
   render() {
     return html`
-    <button @click="${this.toggle}" ?data-closed=${this.missing}>${this.buttonText}</button>
+    <style>
+      @import url("./css/typography.css");
+    </style>
+    <div class="container" ?data-closed=${this.missing}>
+      <button-link href="" target="_blank" download>
+        <i slot="content-before" class="material-icons" title="Download">save_alt</i>
+        <span slot="content">Download</span>
+      </button-link>
+      <app-collapsible @open="${this.toggle}" button>
+        <span slot="header">View</span>
+        <i slot="header-after" class="material-icons" title="View">chevron_right</i>
+      </app-collapsible>
+    </div>
     `;
   }
 
@@ -215,7 +234,7 @@ export class PDFViewButton extends LitElement {
     }
   }
 
-  toggle() {
+  toggle(e) {
     this.closed = !this.closed;
     if (this.closedText && this.openedText) {
       this.buttonText = (this.closed)?this.closedText:this.openedText;
@@ -242,7 +261,7 @@ export class PDFViewButton extends LitElement {
 
   disconnectedCallback() {
     document.removeEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
-    document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
+    document.removeEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
     super.disconnectedCallback();
   }
 }

@@ -16,18 +16,12 @@ window.siteMap.once('init', function() {
     document.querySelectorAll('site-details').forEach(function(details) {
       details['siteinfo'] = null;
     });
-    document.querySelectorAll('pdf-view').forEach(function(sketch) {
-      sketch['pdfsrc'] = null;
-    });
   }
 
   async function selectFeature(info) {
     deselectFeature();
     document.querySelectorAll('site-details').forEach(function(details) {
       details['siteinfo'] = info;
-    });
-    document.querySelectorAll('pdf-view').forEach(function(sketch) {
-      sketch['pdfsrc'] = (info.Wid)?'https://data.wgnhs.wisc.edu/geophysical-logs/'+info.Wid+'.pdf':null;
     });
     return true;
   };
