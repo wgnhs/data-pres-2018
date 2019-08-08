@@ -4,15 +4,18 @@ import { SiteRouter } from './site-router.js';
 
 window.siteMap = new SiteMap();
 window.sidebar = document.querySelector('#sidebar');
+window.pdfPanel = document.querySelector('#sketch');
+document.querySelectorAll('site-details').forEach(function(details) {
+  details['pdfpanel'] = window.pdfPanel;
+});
 
 window.siteMap.once('init', function() {
   window.siteData = new SiteData(window.siteMap.bore, window.siteMap.quat);
   window.aggrData = siteData.aggrData;
   document.querySelector('#filter').init(window.siteData.uniques);
 
-
   var deselectFeature = function() {
-    document.dispatchEvent(new CustomEvent('toggle-pdf', {bubbles: true, detail: {closed: true}}));
+    window.pdfPanel.hide();
     document.querySelectorAll('site-details').forEach(function(details) {
       details['siteinfo'] = null;
     });
@@ -127,6 +130,6 @@ document.addEventListener('toggle-print', function(e) {
   }
 });
 
-document.addEventListener('toggle-pdf', function(e) {
+document.addEventListener('toggle-pdf-panel', function(e) {
   window.siteMap.setVisibility(e.detail.closed);
 });

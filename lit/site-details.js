@@ -1,12 +1,15 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from '../js/common.js';
 import { ignoredKeys, keyLookup } from '../app/site-data.js';
-export { PDFView, PDFViewPanel, PDFViewButton } from './pdf-view.js';
+export { PDFViewButton } from './pdf-view.js';
 
 export class SiteDetails extends LitElement {
   static get properties() {
     return {
       siteinfo: {
+        type: Object
+      },
+      pdfpanel: {
         type: Object
       }
     };
@@ -122,9 +125,9 @@ export class SiteDetails extends LitElement {
               </div>
               ${(!props.Wid)?'':html`
                 <pdf-view-button
-                  source-before="https://data.wgnhs.wisc.edu/geophysical-logs/"
-                  source="${props.Wid}"
-                  source-after=".pdf"></pdf-view-button>
+                  .panel=${this.pdfpanel}
+                  src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + props.Wid + '.pdf'}"
+                  ></pdf-view-button>
               `}
             </div>
           </app-collapsible>
