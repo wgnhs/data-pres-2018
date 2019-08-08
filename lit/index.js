@@ -650,67 +650,162 @@
     })
   ];
 
-  let pdfjsLib = window['pdfjs-dist/build/pdf'];
-
-  const TOGGLE_EVENT = 'toggle-pdf';
-  const LOADED_EVENT = 'loaded-pdf';
-  const MISSING_EVENT = 'missing-pdf';
-
-  class PDFView extends litElement.LitElement {
+  /**
+   * Code use and modified from
+   * https://alligator.io/css/collapsible/
+   */
+  class AppCollapsible extends litElement.LitElement {
     static get properties() {
       return {
-        pdfsrc: {
-          type: String
+        genId: {
+          type: String,
+          attribute: false
         },
-        imgsrc: {
-          type: String
+        open: {
+          type: Boolean,
+          reflect: true
+        },
+        button: {
+          type: Boolean
         }
       };
     }
 
-    buildImgSrc() {
-      let dispatch = this.dispatchEvent.bind(this);
-      if (this.pdfsrc) {
-        let renderRoot = this.renderRoot;
-        let canvasEl = document.createElement('canvas');
-        let loadingTask = pdfjsLib.getDocument(this.pdfsrc);
-        return loadingTask.promise.then(function(pdf) {
-          // console.log('PDF Loaded');
-          var pageNumber = 1;
-          return pdf.getPage(pageNumber).then(function(page) {
-            // console.log('Page loaded');
-            
-            var scale = 1.0;
-            var viewport = page.getViewport({scale: scale});
+    constructor() {
+      super();
+      this.genId = genId();
+    }
 
-            // Prepare canvas using PDF page dimensions
-            var canvas = canvasEl;
-            var context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+    static get styles() {
+      return litElement.css`
+    .wrap-collapsible {
+      margin: var(--border-radius) 0;
+    }
 
-            // Render PDF page into canvas context
-            var renderContext = {
-              canvasContext: context,
-              viewport: viewport
-            };
-            var renderTask = page.render(renderContext);
-            return renderTask.promise.then(function () {
-              // console.log('Page rendered');
-              let durl = canvasEl.toDataURL();
-              dispatch(new CustomEvent(LOADED_EVENT, {bubbles: true, composed: true}));
-              return durl;
-            });
-          });
-        }, function (reason) {
-          if (reason.name === 'MissingPDFException') {
-            dispatch(new CustomEvent(MISSING_EVENT, {bubbles: true, composed: true}));
-          } else {
-            console.error(reason);
-          }
-        });
+    input[type='checkbox'] {
+      display: none;
+    }
+
+    .lbl-toggle {
+      display: block;
+
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-extra-large);
+      text-align: center;
+
+      padding: var(--border-radius);
+
+      color: var(--palette-accent);
+      background: var(--palette-light);
+
+      cursor: pointer;
+
+      border-radius: var(--border-radius);
+      transition: all 0.3s cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    }
+
+    .lbl-toggle:hover {
+      color: var(--palette-900);
+    }
+
+    .lbl-toggle:focus {
+      outline: thin dotted;
+    }
+
+    .collapsible-content {
+      max-height: 0px;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0.86, 0, 0.07, 1);
+    }
+
+    .wrap-collapsible:not([button]) .toggle:checked ~ .collapsible-content {
+      max-height: var(--collapsible-max-height, 3000px);
+    }
+
+    .wrap-collapsible:not([button]) .toggle:checked ~ .lbl-toggle {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+      transition: border 0s;
+    }
+
+    .collapsible-content .content-inner {
+      background: var(--palette-white);
+      border-bottom: 1px solid var(--palette-light);
+      border-right: 1px solid var(--palette-light);
+      border-left: 1px solid var(--palette-light);
+      border-bottom-left-radius: var(--border-radius);
+      border-bottom-right-radius: var(--border-radius);
+      padding: var(--font-size);
+    }
+    .collapsible-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
       }
-      return Promise.resolve(null);
+    `;
+    }
+
+    render() {
+      return litElement.html`
+    <div class="wrap-collapsible" ?button=${this.button}>
+      <input id="${this.genId}" class="toggle" type="checkbox" ?checked="${this.open}" @change=${this._handleChange}>
+      <label for="${this.genId}" class="lbl-toggle" tabindex="0">
+        <div class="collapsible-header">
+          <div><slot name="header-before"></slot></div>
+          <div><slot name="header"></slot></div>
+          <div><slot name="header-after"></slot></div>
+        </div>
+      </label>
+      <div class="collapsible-content">
+        <div class="content-inner">
+          <slot name="content"></slot>
+        </div>
+      </div>
+    </div>
+    `;
+    }
+
+    firstUpdated() {
+      let myLabels = this.renderRoot.querySelectorAll('.lbl-toggle');
+
+      Array.from(myLabels).forEach(label => {
+        label.addEventListener('keydown', e => {
+          // 32 === spacebar
+          // 13 === enter
+          if (e.which === 32 || e.which === 13) {
+            e.preventDefault();
+            label.click();
+          }      });
+      });
+    }
+
+    updated(changed) {
+      let eventName = 'open';
+      if (changed.has(eventName)) {
+        dispatch(this, eventName, { value: this[eventName] });
+      }
+    }
+
+    _handleChange(e) {
+      this.open = e.target.checked;
+    }
+  }
+  customElements.define('app-collapsible', AppCollapsible);
+
+  class ButtonLink extends litElement.LitElement {
+    static get properties() {
+      return {
+        href: {
+          type: String
+        },
+        target: {
+          type: String
+        },
+        download: {
+          type: Boolean
+        }
+      };
     }
 
     constructor() {
@@ -719,52 +814,115 @@
 
     static get styles() {
       return litElement.css`
-      div {
-        min-height: 10em;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      img {
-        max-width: 45vw;
-      }
+    a {
+      text-decoration: none;
+      margin: var(--border-radius) 0;
+    }
+    .button-link:hover {
+      color: var(--palette-900);
+    }
+    .button-link:focus {
+      outline: thin dotted;
+    }
+    .button-link {
+      display: block;
+
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-extra-large);
+      text-align: center;
+
+      cursor: pointer;
+      text-align: center;
+      background: var(--palette-light);
+      color: var(--palette-accent);
+      border-radius: var(--border-radius);
+      padding: var(--border-radius);
+    }
+    .wrap-content {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .icon {
+      font-size: var(--icon-size-extra-large);
+    }
     `;
     }
 
     render() {
       return litElement.html`
-    <div>
-      ${(!this.imgsrc)?'':litElement.html`
-      <img src="${this.imgsrc}" />
-      `}
-    </div>
+    <a class="button-link"
+      href="${this.href}"
+      target="${this.target}"
+      ?download=${this.download}>
+      <div class="wrap-content">
+        <div><slot name="content-before"></slot></div>
+        <div><slot name="content"></slot></div>
+        <div><slot name="content-after"></slot></div>
+      </div>
+    </a>
     `;
     }
+  }
+  customElements.define('button-link', ButtonLink);
 
-    updated(old) {
-      var el = this;
-      if (old.has('pdfsrc')) {
-        if (el.pdfsrc) {
-          el.buildImgSrc().then(function(url) {
-            el.imgsrc = url;
-          });
-        } else {
-          el.imgsrc = null;
-        }
+  let pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+  const TOGGLE_EVENT = 'toggle-pdf-panel';
+
+  class PDFRenderer {
+    render(url) {
+      if (url) {
+        let canvasEl = document.createElement('canvas');
+        let loadingTask = pdfjsLib.getDocument(url);
+        return loadingTask.promise.then(function(pdf) {
+          // console.log('PDF Loaded');
+          var pageNumber = 1;
+          return pdf.getPage(pageNumber);
+        }).then(function(page) {
+          // console.log('Page loaded');
+          
+          var scale = 1.0;
+          var viewport = page.getViewport({scale: scale});
+
+          // Prepare canvas using PDF page dimensions
+          var canvas = canvasEl;
+          var context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          // Render PDF page into canvas context
+          var renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+          var renderTask = page.render(renderContext);
+          return renderTask.promise;
+        }).then(function () {
+          // console.log('Page rendered');
+          let durl = canvasEl.toDataURL();
+          return durl;
+        });
       }
+      return Promise.reject(null);
     }
   }
-  customElements.define('pdf-view', PDFView);
 
   class PDFViewPanel extends litElement.LitElement {
     static get properties() {
       return {
-
+        imgsrc: {
+          type: String,
+          attribute: false
+        }
       };
     }
 
     constructor() {
       super();
+      this.cache = {};
+      this.renderer = new PDFRenderer();
     }
 
     static get styles() {
@@ -772,60 +930,94 @@
     :host {
       overflow: auto;
     }
-    div {
+    .container {
       min-height: 10em;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    .content {
+      max-width: 45vw;
+    }
+    .hide {
+      position: absolute;
+      top: 0px;
+      margin: var(--border-radius);
+      z-index: 10;
+
+      font-size: var(--icon-size-large);
+      color: var(--palette-accent);
+      cursor: pointer;
+
+      padding: var(--border-radius);
+      background-color: var(--palette-light);
+      border-radius: 50%;
     }
     `;
     }
 
     render() {
       return litElement.html`
-    <div>
-      <slot></slot>
+    <style>
+      @import url("./css/typography.css");
+    </style>
+    <i class="material-icons hide" title="Hide" @click=${this.hide}>close</i>
+    <div class="container">
+      ${(!this.imgsrc)?'':litElement.html`
+      <img class="content" src="${this.imgsrc}" />
+      `}
     </div>
     `;
     }
 
-    handleSketchToggle(e) {
-      if (e.detail.closed) {
-        this.setAttribute('data-closed', true);
-      } else {
-        this.removeAttribute('data-closed');
-      }
+    show(url) {
+      // console.log('show', url);
+      this.dispatchEvent(new CustomEvent(TOGGLE_EVENT,
+        {bubbles: true, composed: true, detail: {closed: false}}));
+      this.imgsrc = this.cache[url];
+      this.removeAttribute('data-closed');
     }
 
-    connectedCallback() {
-      super.connectedCallback();
-      document.addEventListener(TOGGLE_EVENT, this.handleSketchToggle.bind(this));
+    hide() {
+      // console.log('hide');
+      this.imgsrc = null;
+      this.setAttribute('data-closed', true);
+      this.dispatchEvent(new CustomEvent(TOGGLE_EVENT,
+        {bubbles: true, composed: true, detail: {closed: true}}));
     }
 
-    disconnectedCallback() {
-      document.removeEventListener(TOGGLE_EVENT, this.handleSketchToggle.bind(this));
-      super.disconnectedCallback();
+    _getFromCache(url) {
+      return new Promise((resolve, reject) => {
+        let result = this.cache[url];
+        if (result) {
+          resolve(result);
+        } else {
+          reject('Not in cache');
+        }
+      });
     }
+
+    request(url) {
+      // console.log('request', url);
+      return this._getFromCache(url).catch(() => {
+        return this.renderer.render(url).then((value) => {
+          this.cache[url] = value;
+          return value;
+        });
+      });
+    }
+
   }
   customElements.define('pdf-view-panel', PDFViewPanel);
 
   class PDFViewButton extends litElement.LitElement {
     static get properties() {
       return {
-        buttonText: {
-          type: String,
-          attribute: 'button-text'
+        src: {
+          type: String
         },
-        closedText: {
-          type: String,
-          attribute: 'closed-text'
-        },
-        openedText: {
-          type: String,
-          attribute: 'opened-text'
-        },
-        closed: {
-          type: Boolean,
+        panel: {
+          type: Object,
           attribute: false
         },
         missing: {
@@ -837,12 +1029,17 @@
 
     constructor() {
       super();
-      this.closed = true;
       this.missing = true;
     }
 
     static get styles() {
       return litElement.css`
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: var(--border-radius);
+    }
+
     [data-closed] {
       display: none;
     }
@@ -851,49 +1048,48 @@
 
     render() {
       return litElement.html`
-    <button @click="${this.toggle}" ?data-closed=${this.missing}>${this.buttonText}</button>
+    <style>
+      @import url("./css/typography.css");
+    </style>
+    <div class="container" ?data-closed=${this.missing}>
+      <button-link href="${this.src}" target="_blank" download>
+        <i slot="content-before" class="material-icons" title="Download">save_alt</i>
+        <span slot="content">Download</span>
+      </button-link>
+      <app-collapsible @open="${this.toggle}" button>
+        <span slot="header">View</span>
+        <i slot="header-after" class="material-icons" title="View">chevron_right</i>
+      </app-collapsible>
+    </div>
     `;
     }
 
-    firstUpdated() {
-      if (this.closedText && this.openedText) {
-        this.buttonText = (this.closed)?this.closedText: this.openedText;
-      } else {
-        if (!this.buttonText) {
-          this.buttonText = "toggle";
+    updated(prev) {
+      if ((prev.has('panel') || prev.has('src'))) {
+        this.handleMissingPDF();
+        if (this.panel && this.src) {
+          this.panel.request(this.src)
+            .then(this.handleLoadedPDF.bind(this), this.handleMissingPDF.bind(this));
         }
       }
     }
 
-    toggle() {
-      this.closed = !this.closed;
-      if (this.closedText && this.openedText) {
-        this.buttonText = (this.closed)?this.closedText:this.openedText;
+    toggle(e) {
+      if (this.panel) {
+        this.panel.show(this.src);
       }
-      this.dispatchEvent(new CustomEvent(TOGGLE_EVENT, {bubbles: true, composed: true, detail: {closed: this.closed}}));
     }
 
-
-    handleMissingPDF(e) {
-      this.missing = true;
-      this.requestUpdate();
+    handleMissingPDF() {
+      if (!this.missing) {
+        this.missing = true;
+      }
     }
 
-    handleLoadedPDF(e) {
-      this.missing = false;
-      this.requestUpdate();
-    }
-
-    connectedCallback() {
-      super.connectedCallback();
-      document.addEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
-      document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
-    }
-
-    disconnectedCallback() {
-      document.removeEventListener(MISSING_EVENT, this.handleMissingPDF.bind(this));
-      document.addEventListener(LOADED_EVENT, this.handleLoadedPDF.bind(this));
-      super.disconnectedCallback();
+    handleLoadedPDF() {
+      if (this.missing) {
+        this.missing = false;
+      }
     }
   }
   customElements.define('pdf-view-button', PDFViewButton);
@@ -902,6 +1098,9 @@
     static get properties() {
       return {
         siteinfo: {
+          type: Object
+        },
+        pdfpanel: {
           type: Object
         }
       };
@@ -1015,8 +1214,11 @@
               <div data-element="table">
                 ${this.renderTable(props)}
               </div>
-              ${(!this.siteinfo.Wid)?'':litElement.html`
-                <pdf-view-button opened-text="Hide Log" closed-text="Show Log"></pdf-view-button>
+              ${(!props.Wid)?'':litElement.html`
+                <pdf-view-button
+                  .panel=${this.pdfpanel}
+                  src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + props.Wid + '.pdf'}"
+                  ></pdf-view-button>
               `}
             </div>
           </app-collapsible>
@@ -1034,144 +1236,6 @@
     }
   }
   customElements.define('site-details', SiteDetails);
-
-  /**
-   * Code use and modified from
-   * https://alligator.io/css/collapsible/
-   */
-  class AppCollapsible extends litElement.LitElement {
-    static get properties() {
-      return {
-        genId: {
-          type: String,
-          attribute: false
-        },
-        open: {
-          type: Boolean
-        }
-      };
-    }
-
-    constructor() {
-      super();
-      this.genId = genId();
-    }
-
-    static get styles() {
-      return litElement.css`
-    .wrap-collapsible {
-      margin: var(--border-radius) 0;
-    }
-
-    input[type='checkbox'] {
-      display: none;
-    }
-
-    .lbl-toggle {
-      display: block;
-
-      font-weight: var(--font-weight-bold);
-      font-size: var(--font-size-extra-large);
-      text-align: center;
-
-      padding: var(--border-radius);
-
-      color: var(--palette-accent);
-      background: var(--palette-light);
-
-      cursor: pointer;
-
-      border-radius: var(--border-radius);
-      transition: all 0.3s cubic-bezier(0.755, 0.05, 0.855, 0.06);
-    }
-
-    .lbl-toggle:hover {
-      color: var(--palette-900);
-    }
-
-    .lbl-toggle:focus {
-      outline: thin dotted;
-    }
-
-    .collapsible-content {
-      max-height: 0px;
-      overflow: hidden;
-      transition: max-height 0.3s cubic-bezier(0.86, 0, 0.07, 1);
-    }
-
-    .toggle:checked + .lbl-toggle + .collapsible-content {
-      max-height: var(--collapsible-max-height, 3000px);
-    }
-
-    .toggle:checked + .lbl-toggle {
-      border-bottom-right-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-
-    .collapsible-content .content-inner {
-      background: var(--palette-white);
-      border-bottom: 1px solid var(--palette-light);
-      border-right: 1px solid var(--palette-light);
-      border-left: 1px solid var(--palette-light);
-      border-bottom-left-radius: var(--border-radius);
-      border-bottom-right-radius: var(--border-radius);
-      padding: var(--font-size);
-    }
-    .collapsible-header {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-      }
-    `;
-    }
-
-    render() {
-      return litElement.html`
-    <div class="wrap-collapsible">
-      <input id="${this.genId}" class="toggle" type="checkbox" ?checked="${this.open}" @change=${this._handleChange}>
-      <label for="${this.genId}" class="lbl-toggle" tabindex="0">
-        <div class="collapsible-header">
-          <div><slot name="header-before"></slot></div>
-          <div><slot name="header"></slot></div>
-          <div><slot name="header-after"></slot></div>
-        </div>
-      </label>
-      <div class="collapsible-content">
-        <div class="content-inner">
-          <slot name="content"></slot>
-        </div>
-      </div>
-    </div>
-    `;
-    }
-
-    firstUpdated() {
-      let myLabels = this.renderRoot.querySelectorAll('.lbl-toggle');
-
-      Array.from(myLabels).forEach(label => {
-        label.addEventListener('keydown', e => {
-          // 32 === spacebar
-          // 13 === enter
-          if (e.which === 32 || e.which === 13) {
-            e.preventDefault();
-            label.click();
-          }      });
-      });
-    }
-
-    updated(changed) {
-      let eventName = 'open';
-      if (changed.has(eventName)) {
-        dispatch(this, eventName, { value: this[eventName] });
-      }
-    }
-
-    _handleChange(e) {
-      this.open = e.target.checked;
-    }
-  }
-  customElements.define('app-collapsible', AppCollapsible);
 
   class InRadio extends litElement.LitElement {
     static get properties() {
@@ -1581,6 +1645,7 @@
   exports.AppSidebar = AppSidebar;
   exports.AppSpinner = AppSpinner;
   exports.MapFilter = MapFilter;
+  exports.PDFViewPanel = PDFViewPanel;
   exports.SiteDetails = SiteDetails;
 
   Object.defineProperty(exports, '__esModule', { value: true });
