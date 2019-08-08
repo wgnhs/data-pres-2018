@@ -939,14 +939,20 @@
     .content {
       max-width: 45vw;
     }
-    .hide {
+    .controls {
+      display: grid;
+      grid-column-template: 1fr;
+      grid-gap: var(--border-radius);
       position: absolute;
-      top: 0px;
+      top: 0;
+      right: var(--border-radius);
       margin: var(--border-radius);
       z-index: 10;
-
+    }
+    .control {
       font-size: var(--icon-size-large);
       color: var(--palette-accent);
+      text-align: center;
       cursor: pointer;
 
       padding: var(--border-radius);
@@ -961,7 +967,9 @@
     <style>
       @import url("./css/typography.css");
     </style>
-    <i class="material-icons hide" title="Hide" @click=${this.hide}>close</i>
+    <div class="controls">
+      <i class="material-icons control" title="Hide" @click=${this.hide}>close</i>
+    </div>
     <div class="container">
       ${(!this.imgsrc)?'':litElement.html`
       <img class="content" src="${this.imgsrc}" />
@@ -973,7 +981,7 @@
     show(url) {
       // console.log('show', url);
       this.dispatchEvent(new CustomEvent(TOGGLE_EVENT,
-        {bubbles: true, composed: true, detail: {closed: false}}));
+        {bubbles: true, composed: true, detail: {url, closed: false}}));
       this.imgsrc = this.cache[url];
       this.removeAttribute('data-closed');
     }
@@ -1030,6 +1038,7 @@
     constructor() {
       super();
       this.missing = true;
+      this.alt = false;
     }
 
     static get styles() {
@@ -1058,7 +1067,9 @@
       </button-link>
       <app-collapsible @open="${this.toggle}" button>
         <span slot="header">View</span>
-        <i slot="header-after" class="material-icons" title="View">chevron_right</i>
+        <i slot="header-after" class="material-icons" title="View">${
+          (this.alt)?'chevron_left':'chevron_right'
+        }</i>
       </app-collapsible>
     </div>
     `;
@@ -1075,7 +1086,9 @@
     }
 
     toggle(e) {
-      if (this.panel) {
+      if (this.alt) {
+        this.panel.hide();
+      } else {
         this.panel.show(this.src);
       }
     }
@@ -1090,6 +1103,26 @@
       if (this.missing) {
         this.missing = false;
       }
+    }
+
+    handleAlt(e) {
+      if (e.detail.url === this.src) {
+        this.alt = true;
+      } else {
+        this.alt = false;
+      }
+      this.requestUpdate();
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.__altHandler = this.handleAlt.bind(this);
+      document.addEventListener(TOGGLE_EVENT, this.__altHandler);
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener(TOGGLE_EVENT, this.__altHandler);
+      super.disconnectedCallback();
     }
   }
   customElements.define('pdf-view-button', PDFViewButton);
