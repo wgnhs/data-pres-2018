@@ -27,7 +27,7 @@ h2,
 h3,
 h4,
 h5 {
-    padding: 0.25em 0 0.75em 0;
+    padding: 0.25rem 0 0.75rem 0;
     font-weight: var(--font-weight-bold);
 }
 
@@ -41,8 +41,8 @@ h2 {
 }
 
 p {
-    line-height: 1.4em;
-    margin: 0 0 1em 0;
+    line-height: 1.4rem;
+    margin: 0 0 1rem 0;
 }
 
 a {
