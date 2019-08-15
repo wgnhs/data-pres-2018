@@ -50,6 +50,12 @@ export class PDFViewPanel extends LitElement {
       imgsrc: {
         type: String,
         attribute: false
+      },
+      rotate: {
+        type: Number
+      },
+      zoom: {
+        type: Number
       }
     };
   }
@@ -58,6 +64,8 @@ export class PDFViewPanel extends LitElement {
     super();
     this.cache = {};
     this.renderer = new PDFRenderer();
+    this.rotate = 0;
+    this.zoom = 1;
   }
 
   static get styles() {
@@ -104,13 +112,77 @@ export class PDFViewPanel extends LitElement {
     </style>
     <div class="controls">
       <i class="material-icons control" title="Hide" @click=${this.hide}>close</i>
+      <i class="material-icons control" title="Zoom In" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}>zoom_in</i>
+      <i class="material-icons control" title="Zoom Out" @click=${this.zoomOut} ?disabled=${this.isMinZoom}>zoom_out</i>
+      <i class="material-icons control" title="Rotate Left" @click=${this.rotateLeft}>rotate_left</i>
+      <i class="material-icons control" title="Rotate Right" @click=${this.rotateRight}>rotate_right</i>
     </div>
     <div class="container">
-      ${(!this.imgsrc)?'':html`
-      <img class="content" src="${this.imgsrc}" />
-      `}
+      ${this.imageTag}
     </div>
     `;
+  }
+
+  static get MOD_ROTATE() {
+    return 4;
+  }
+
+  static get MAX_ZOOM() {
+    return 2;
+  }
+  get isMaxZoom() {
+    return this.zoom >= PDFViewPanel.MAX_ZOOM;
+  }
+
+  static get MIN_ZOOM() {
+    return 0.5;
+  }
+  get isMinZoom() {
+    return this.zoom <= PDFViewPanel.MIN_ZOOM;
+  }
+
+  zoomIn() {
+    this.zoom += 0.25;
+  }
+  zoomOut() {
+    this.zoom -= 0.25;
+  }
+  rotateLeft() {
+    //TODO
+  }
+  rotateRight() {
+
+  }
+
+  get imageTag() {
+    return (!this.imgsrc)?'':html`
+    <img class="content"
+      src="${this.imgsrc}"
+      style="${this.contentTransform}" />
+    `;
+  }
+
+  get contentTransform() {
+    let result = 'transform-origin: top left; ';
+
+    let fix = {
+      x: 0,
+      y: 0
+    }
+
+    let rot = (Math.floor(this.rotate) % PDFViewPanel.MOD_ROTATE);
+    let zoom = Math.min(Math.max(this.zoom, PDFViewPanel.MIN_ZOOM), PDFViewPanel.MAX_ZOOM);
+
+    if (rot) {
+      fix.x = (rot === 1)? 0 : (100 * zoom);
+      fix.y = (rot === 3)? 0 : (100 * zoom);
+    }
+
+    rot = rot / PDFViewPanel.MOD_ROTATE;
+    let transform = `transform: rotate(${rot}turn) translate(-${fix.x}%, -${fix.y}%) scale(${zoom})`;
+    result += transform;
+
+    return result;
   }
 
   show(url) {
