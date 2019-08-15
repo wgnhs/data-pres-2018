@@ -116,6 +116,10 @@ window.siteMap.once('init', function() {
       window.router.clearRoute();
     }
   });
+  window.siteMap.on('filtered', ()=>{
+    console.log('ooh');
+    document.querySelector('#filter').$summary.setCounts(window.siteMap.getResultsInfo());
+  });
 });
 
 document.addEventListener('clear-selection', function(e) {

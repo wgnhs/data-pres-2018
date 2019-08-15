@@ -4,6 +4,7 @@ import { keyLookup, filterLookup } from '../app/site-data.js';
 export { AppCollapsible } from './app-collapsible.js';
 export { InRadio } from './in-radio.js';
 export { ToggleSwitch } from './toggle-switch.js';
+export { FilterSummary } from './filter-summary.js';
 
 export class MapFilter extends LitElement {
   static get properties() {
@@ -61,6 +62,9 @@ export class MapFilter extends LitElement {
       <style>
         @import url("./css/typography.css");
       </style>
+      <div>
+        <filter-summary .counts="${this.counts}"></filter-summary>
+      </div>
       <div>
         Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
@@ -179,31 +183,14 @@ export class MapFilter extends LitElement {
     let matchClass = this.matchClass;
     let incl = this.include;
     let filt = this.filter;
+    console.log(changed, matchClass, incl, filt);
     if (window.siteMap) {
-      window.siteMap.map.fire('filterpoints', {
-        detail: {
-          resolve: function(props) {
-            let included = incl.length > 0 && incl.reduce((prev, curr) => {
-              return prev || curr.resolve(props);
-            }, false);
-            let spec = filt.filter((rule) => rule.resolveGroup(props));
-            let result = included && spec.length < 1;
-            if (included && !result) {
-              if ("ALL" === matchClass) {
-                result = spec.reduce((prev, curr) => {
-                  return prev && curr.resolve(props);
-                }, true);
-              } else {
-                result = spec.reduce((prev, curr) => {
-                  return prev || curr.resolve(props);
-                }, false);
-              }
-            }
-            return result;
-          }
-        }
-      });
+      window.siteMap.runFilter({matchClass, incl, filt});
     }
+  }
+
+  firstUpdated() {
+    this.$summary = this.renderRoot.querySelector('filter-summary');
   }
 
   init(uniques) {
