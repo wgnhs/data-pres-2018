@@ -198,6 +198,21 @@ export class SiteMap extends window.L.Evented {
     this._highlight = null;
   }
 
+  updatePoints(activePoints) {
+    this.map.fire('filterpoints', {
+      detail: {
+        resolve: (props) => {
+          return activePoints.reduce((prev, activeSet) => {
+            const code = SiteMap.getSiteCode(props);
+            const has = activeSet.has('' + code);
+            const result = prev || has;
+            return result;
+          }, false);
+        }
+      }
+    });
+  }
+
   setVisibility(isVisible) {
     if (isVisible) {
       this.el.removeAttribute('data-closed');

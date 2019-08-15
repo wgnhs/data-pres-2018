@@ -8,11 +8,12 @@ window.pdfPanel = document.querySelector('#sketch');
 document.querySelectorAll('site-details').forEach(function(details) {
   details['pdfpanel'] = window.pdfPanel;
 });
+window.filter = document.querySelector('#filter');
 
 window.siteMap.once('init', function() {
-  window.siteData = new SiteData(window.siteMap.bore, window.siteMap.quat);
+  window.siteData = new SiteData(window.siteMap.layers);
   window.aggrData = siteData.aggrData;
-  document.querySelector('#filter').init(window.siteData.uniques);
+  filter.init(window.siteData.uniques, window.siteMap.layers);
 
   var deselectFeature = function() {
     window.pdfPanel.hide();
@@ -132,4 +133,8 @@ document.addEventListener('toggle-print', function(e) {
 
 document.addEventListener('toggle-pdf-panel', function(e) {
   window.siteMap.setVisibility(e.detail.closed);
+});
+
+window.filter.addEventListener('filtered', function(e) {
+  window.siteMap.updatePoints(e.detail.activePoints);
 });
