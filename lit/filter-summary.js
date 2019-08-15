@@ -23,6 +23,13 @@ export class FilterSummary extends LitElement {
     <div>
       <span>Showing:</span>
       <ul>
+        <li>
+          <span>
+          ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
+          </span> of <span>
+          ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
+          </span> total sites
+        </li>
         ${this.counts.map((el) => html`
         <li>
           <span>${el.current}</span> of <span>${el.total}</span> sites having <span>${el.name}</span>

@@ -8,7 +8,7 @@ import {
 } from '../lit/filter-controls.js';
 
 export class SiteData {
-  constructor(...layer) {
+  constructor(layers) {
 
     // Define aggregated data for visualization
     this._aggrKeys = [
@@ -16,7 +16,7 @@ export class SiteData {
       'Drill_Meth'
     ];
     this.aggrData = [];
-    for (let l of layer) {
+    for (let l of layers) {
       this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
     }
 

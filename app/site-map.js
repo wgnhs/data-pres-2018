@@ -198,67 +198,19 @@ export class SiteMap extends window.L.Evented {
     this._highlight = null;
   }
 
-  runFilter({matchClass, incl, filt}) {
-    const resolve = function runPointThroughFilters(props) {
-      let included = incl.length > 0 && incl.reduce((prev, curr) => {
-        return prev || curr.resolve(props);
-      }, false);
-      let spec = filt.filter((rule) => rule.resolveGroup(props));
-      let result = included && spec.length < 1;
-      if (included && !result) {
-        if ("ALL" === matchClass) {
-          result = spec.reduce((prev, curr) => {
-            return prev && curr.resolve(props);
-          }, true);
-        } else {
-          result = spec.reduce((prev, curr) => {
-            return prev || curr.resolve(props);
-          }, false);
-        }
-      }
-      return result;
-    }
-
-    console.log('eh');
-    this.layers.forEach((layer) => {
-      layer._d_activePoints = new Set();
-      Object.entries(layer._layers).forEach((ent) => {
-        if (resolve(ent[1].feature.properties)) {
-          layer._d_activePoints.add('' + ent[0]);
-        }
-      })
-    });
+  updatePoints(activePoints) {
     this.map.fire('filterpoints', {
       detail: {
         resolve: (props) => {
-          return this.layers.reduce((prev, layer) => {
+          return activePoints.reduce((prev, activeSet) => {
             const code = SiteMap.getSiteCode(props);
-            const has = (layer._d_activePoints)?layer._d_activePoints.has('' + code): false;
+            const has = activeSet.has('' + code);
             const result = prev || has;
             return result;
           }, false);
         }
       }
     });
-    this.fire('filtered');
-  }
-
-  getResultsInfo() {
-    const stats = ()=>{
-      let result = [];
-      this.layers.forEach((layer) => {
-        let stats = {};
-        stats.name = layer.options.name;
-  
-        let entries = Object.entries(layer._layers);
-        stats.total = entries.length;
-        stats.current = (layer._d_activePoints)?layer._d_activePoints.size:0;
-
-        result.push(stats);
-      })
-      return result;
-    }
-    return stats();
   }
 
   setVisibility(isVisible) {
