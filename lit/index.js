@@ -1431,6 +1431,52 @@
   }
   customElements.define('toggle-switch', ToggleSwitch);
 
+  class FilterSummary extends litElement.LitElement {
+    static get properties() {
+      return {
+        counts: {
+          type: Array
+        }
+      };
+    }
+
+    constructor() {
+      super();
+    }
+
+    static get styles() {
+      return litElement.css`
+    `;
+    }
+
+    render() {
+      return (!this.counts)?litElement.html``:litElement.html`
+    <div>
+      <span>Showing:</span>
+      <ul>
+        <li>
+          <span>
+          ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
+          </span> of <span>
+          ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
+          </span> total sites
+        </li>
+        ${this.counts.map((el) => litElement.html`
+        <li>
+          <span>${el.current}</span> of <span>${el.total}</span> sites having <span>${el.name}</span>
+        </li>
+        `)}
+      </ul>
+    </div>
+    `;
+    }
+
+    setCounts(counts) {
+      this.counts = counts;
+    }
+  }
+  customElements.define('filter-summary', FilterSummary);
+
   class MapFilter extends litElement.LitElement {
     static get properties() {
       return {
@@ -1444,6 +1490,10 @@
         },
         matchClass: {
           type: String,
+          attribute: false
+        },
+        sources: {
+          type: Array,
           attribute: false
         }
       };
@@ -1488,6 +1538,9 @@
         @import url("./css/typography.css");
       </style>
       <div>
+        <filter-summary></filter-summary>
+      </div>
+      <div>
         Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
       <div>
@@ -1513,7 +1566,7 @@
             name="${group.mapName}"
             slot="header-after"
             ?checked=${group.active}
-            @change=${this._handleGroup(group, this.include)}
+            @change=${this._handleGroup(group, 'include')}
           ></toggle-switch>
         `}
         <div slot="content">
@@ -1530,7 +1583,7 @@
                   </label>
                 </td>
                 <td class="selector" 
-                    @change="${this._handleControl(group, control, this.filter)}">
+                    @change="${this._handleControl(group, control, 'filter')}">
                   <input
                     type="hidden"
                     id="${control.id}"
@@ -1559,14 +1612,16 @@
         const handler = this._eventHandlers[e.type];
         if (handler) {
           handler(context, e);
-          this.requestUpdate();
+          this.requestUpdate('handle_'+e.type);
         }
       }
     }
 
-    _handleGroup(group, filter) {
+    _handleGroup(group, type) {
       const id = group.id;
       const handle = group.activate.bind(group);
+      const filter = this[type];
+      const callback = this.requestUpdate.bind(this);
       return (e) => {
         const context = {};
         context.id = id;
@@ -1579,13 +1634,15 @@
         if (resolver) {
           filter.push(resolver);
         }
-        this.requestUpdate();
+        callback(type);
       }
     }
 
-    _handleControl(group, control, filter) {
+    _handleControl(group, control, type) {
       const id = control.id;
       const handle = control.handle.bind(control);
+      const filter = this[type];
+      const callback = this.requestUpdate.bind(this);
       return (e) => {
         const context = {};
         context.id = id;
@@ -1597,42 +1654,34 @@
         if (resolver) {
           filter.push(resolver);
         }
-        this.requestUpdate();
+        callback(type);
       }
     }
 
     updated(changed) {
-      let matchClass = this.matchClass;
-      let incl = this.include;
-      let filt = this.filter;
-      if (window.siteMap) {
-        window.siteMap.map.fire('filterpoints', {
-          detail: {
-            resolve: function(props) {
-              let included = incl.length > 0 && incl.reduce((prev, curr) => {
-                return prev || curr.resolve(props);
-              }, false);
-              let spec = filt.filter((rule) => rule.resolveGroup(props));
-              let result = included && spec.length < 1;
-              if (included && !result) {
-                if ("ALL" === matchClass) {
-                  result = spec.reduce((prev, curr) => {
-                    return prev && curr.resolve(props);
-                  }, true);
-                } else {
-                  result = spec.reduce((prev, curr) => {
-                    return prev || curr.resolve(props);
-                  }, false);
-                }
-              }
-              return result;
-            }
-          }
+      const isNeeded = (
+        changed.has('matchClass') ||
+        changed.has('include') ||
+        changed.has('filter') ||
+        changed.has('sources'));
+
+      if (this.sources && isNeeded) {
+        const activePoints = MapFilter.runFilter({
+          matchClass: this.matchClass,
+          incl: this.include,
+          filt: this.filter,
+          sources: this.sources
         });
+        this.$summary.setCounts(MapFilter.getResultsInfo(this.sources, activePoints));
+        dispatch(this, 'filtered', {activePoints});
       }
     }
 
-    init(uniques) {
+    firstUpdated() {
+      this.$summary = this.renderRoot.querySelector('filter-summary');
+    }
+
+    init(uniques, layers) {
       this.filterGroups.forEach((group) => {
         group.sections.forEach((section) => {
           Object.entries(section.fields).forEach((field) => {
@@ -1644,7 +1693,56 @@
           });
         });
       });
-      this.requestUpdate();
+
+      this.sources = layers;
+    }
+
+    static runFilter({matchClass, incl, filt, sources}) {
+      const resolve = function runPointThroughFilters(props) {
+        let included = incl.length > 0 && incl.reduce((prev, curr) => {
+          return prev || curr.resolve(props);
+        }, false);
+        let spec = filt.filter((rule) => rule.resolveGroup(props));
+        let result = included && spec.length < 1;
+        if (included && !result) {
+          if ("ALL" === matchClass) {
+            result = spec.reduce((prev, curr) => {
+              return prev && curr.resolve(props);
+            }, true);
+          } else {
+            result = spec.reduce((prev, curr) => {
+              return prev || curr.resolve(props);
+            }, false);
+          }
+        }
+        return result;
+      };
+
+      const result = sources.map((layer) => {
+        const activePoints = new Set();
+        Object.entries(layer._layers).forEach((ent) => {
+          if (resolve(ent[1].feature.properties)) {
+            activePoints.add('' + ent[0]);
+          }
+        });
+        return activePoints;
+      });
+
+      return result;
+    }
+
+    static getResultsInfo(sources, activePoints) {
+      const result = sources.map((layer, i) => {
+        let stats = {};
+        stats.name = layer.options.name;
+
+        let entries = Object.entries(layer._layers);
+        stats.total = entries.length;
+        stats.current = activePoints[i].size;
+
+        return stats;
+      });
+      return result;
     }
 
     constructor() {

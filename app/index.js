@@ -248,6 +248,21 @@
       this._highlight = null;
     }
 
+    updatePoints(activePoints) {
+      this.map.fire('filterpoints', {
+        detail: {
+          resolve: (props) => {
+            return activePoints.reduce((prev, activeSet) => {
+              const code = SiteMap.getSiteCode(props);
+              const has = activeSet.has('' + code);
+              const result = prev || has;
+              return result;
+            }, false);
+          }
+        }
+      });
+    }
+
     setVisibility(isVisible) {
       if (isVisible) {
         this.el.removeAttribute('data-closed');
@@ -476,7 +491,7 @@
   }
 
   class SiteData {
-    constructor(...layer) {
+    constructor(layers) {
 
       // Define aggregated data for visualization
       this._aggrKeys = [
@@ -484,7 +499,7 @@
         'Drill_Meth'
       ];
       this.aggrData = [];
-      for (let l of layer) {
+      for (let l of layers) {
         this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
       }
 
@@ -776,11 +791,12 @@
   document.querySelectorAll('site-details').forEach(function(details) {
     details['pdfpanel'] = window.pdfPanel;
   });
+  window.filter = document.querySelector('#filter');
 
   window.siteMap.once('init', function() {
-    window.siteData = new SiteData(window.siteMap.bore, window.siteMap.quat);
+    window.siteData = new SiteData(window.siteMap.layers);
     window.aggrData = siteData.aggrData;
-    document.querySelector('#filter').init(window.siteData.uniques);
+    filter.init(window.siteData.uniques, window.siteMap.layers);
 
     var deselectFeature = function() {
       window.pdfPanel.hide();
@@ -899,6 +915,10 @@
 
   document.addEventListener('toggle-pdf-panel', function(e) {
     window.siteMap.setVisibility(e.detail.closed);
+  });
+
+  window.filter.addEventListener('filtered', function(e) {
+    window.siteMap.updatePoints(e.detail.activePoints);
   });
 
 }));
