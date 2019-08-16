@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId } from 'wgnhs-common';
 export { PDFViewButton } from 'wgnhs-viz';
-import { ignoredKeys, keyLookup } from '../site-data.js';
+import { layoutResolver } from './layout-resolver.js';
 
 export class SiteDetails extends LitElement {
   static get properties() {
@@ -75,49 +75,9 @@ export class SiteDetails extends LitElement {
     `;
   }
 
-  getLayout(layoutName) {
-    let result = null;
-    if (layoutName === 'Geophysical Log Data') {
-      result = (info, context) => {
-        return html`
-        ${this.renderTable(info, context)}
-        <pdf-view-button
-          .panel=${this.pdfpanel}
-          src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + info.Wid + '.pdf'}">
-        </pdf-view-button>
-        `;
-      }
-    }
-    return result;
-  }
-
   renderData(info, layoutName) {
-    const layout = this.getLayout(layoutName) || this.renderTable;
-    const context = {genId: this.genId}
-    return layout(info, context);
-  }
-
-  renderTable(info, context) {
-    let key = 0, value = 1;
-    let entries = Object.entries(info).filter((el) => {
-      return !ignoredKeys.includes(el[key]);
-    }).map((el, index) => html`
-      <td class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-        <label for="${context.genId(index)}" >
-          ${(keyLookup[el[key]])?keyLookup[el[key]].title:el[key]}
-        </label>
-      </td>
-      <td class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-        <span id="${context.genId(index)}">
-          ${el[value]}
-        </span>
-      </td>
-    `);
-    return html`
-      <div data-element="table">
-        ${entries}
-      </div>
-    `;
+    const layout = layoutResolver.getLayout(layoutName);
+    return layout(info, this);
   }
 
   render() {
