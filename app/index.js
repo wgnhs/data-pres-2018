@@ -1,6 +1,8 @@
-import { SiteMap } from './site-map.js';
+import { SiteMap } from './map/site-map.js';
 import { SiteData } from './site-data.js';
 import { SiteRouter } from './site-router.js';
+export { SiteDetails } from './details/site-details.js';
+export { MapFilter } from './filter/map-filter.js';
 
 window.siteMap = new SiteMap();
 window.sidebar = document.querySelector('#sidebar');

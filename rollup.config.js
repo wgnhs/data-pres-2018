@@ -32,16 +32,24 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
     plugins: buildPlugins({dir, min}),
     external: [
       'lit-element',
-      '@uirouter/core'
+      '@uirouter/core',
+      'wgnhs-common',
+      'wgnhs-interact',
+      'wgnhs-layout',
+      'wgnhs-viz'
     ],
     output: {
       file: `dist/${dir}/${filename}${minifyToken}.js`,
       format: format,
-      name: filename,
+      name: dir,
       sourcemap: min,
       globals: {
         'lit-element': 'common',
-        '@uirouter/core': 'common'
+        '@uirouter/core': 'common',
+        'wgnhs-common': 'common',
+        'wgnhs-interact': 'lit',
+        'wgnhs-layout': 'lit',
+        'wgnhs-viz': 'lit'
       }
     }
   }

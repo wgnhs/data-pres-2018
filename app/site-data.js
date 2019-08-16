@@ -5,7 +5,7 @@ import {
   SelectControl,
   TextControl,
   ContainsControl
-} from '../lit/filter-controls.js';
+} from './filter/filter-controls.js';
 
 export class SiteData {
   constructor(layers) {

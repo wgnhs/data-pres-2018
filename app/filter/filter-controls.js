@@ -1,5 +1,5 @@
 import { html } from 'lit-element';
-import { genId } from '../js/common.js';
+import { genId } from 'wgnhs-common';
 
 export class FilterGroup {
   constructor(config) {

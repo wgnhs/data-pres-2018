@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-import { genId, dispatch } from '../js/common.js';
+import { genId, dispatch } from 'wgnhs-common';
 
 export class ToggleSwitch extends LitElement {
   static get properties() {

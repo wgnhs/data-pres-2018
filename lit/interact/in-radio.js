@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-import { genId } from '../js/common.js';
+import { genId } from 'wgnhs-common';
 
 
 export class InRadio extends LitElement {

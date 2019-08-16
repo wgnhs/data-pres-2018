@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
-import { genId } from '../js/common.js';
-import { ignoredKeys, keyLookup } from '../app/site-data.js';
-export { PDFViewButton } from './pdf-view.js';
+import { genId } from 'wgnhs-common';
+export { PDFViewButton } from 'wgnhs-viz';
+import { ignoredKeys, keyLookup } from '../site-data.js';
 
 export class SiteDetails extends LitElement {
   static get properties() {
@@ -76,8 +76,19 @@ export class SiteDetails extends LitElement {
   }
 
   getLayout(layoutName) {
-    console.log('getLayout', layoutName);
-    return null;
+    let result = null;
+    if (layoutName === 'Geophysical Log Data') {
+      result = (info, context) => {
+        return html`
+        ${this.renderTable(info, context)}
+        <pdf-view-button
+          .panel=${this.pdfpanel}
+          src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + info.Wid + '.pdf'}">
+        </pdf-view-button>
+        `;
+      }
+    }
+    return result;
   }
 
   renderData(info, layoutName) {
@@ -135,12 +146,6 @@ export class SiteDetails extends LitElement {
             <span slot="header">${props['Data_Type']}</span>
             <div slot="content">
               ${this.renderData(props, props['Data_Type'])}
-              ${(!props.Wid)?'':html`
-                <pdf-view-button
-                  .panel=${this.pdfpanel}
-                  src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + props.Wid + '.pdf'}"
-                  ></pdf-view-button>
-              `}
             </div>
           </app-collapsible>
         `)}
