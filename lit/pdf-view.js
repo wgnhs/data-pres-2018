@@ -127,6 +127,23 @@ export class PDFViewPanel extends LitElement {
     return 4;
   }
 
+  get rotate() {
+    return this._rotate;
+  }
+  set rotate(val) {
+    const old = this.rotate;
+    let rot = Math.round(val) + PDFViewPanel.MOD_ROTATE;
+    this._rotate = (rot % PDFViewPanel.MOD_ROTATE);
+    this.requestUpdate('rotate', old);
+  }
+
+  rotateLeft() {
+    this.rotate -= 1;
+  }
+  rotateRight() {
+    this.rotate += 1;
+  }
+
   static get MAX_ZOOM() {
     return 2;
   }
@@ -141,17 +158,32 @@ export class PDFViewPanel extends LitElement {
     return this.zoom <= PDFViewPanel.MIN_ZOOM;
   }
 
+  get zoom() {
+    return this._zoom;
+  }
+  set zoom(val) {
+    const old = this.zoom;
+    this._zoom = Math.min(Math.max(val, PDFViewPanel.MIN_ZOOM), PDFViewPanel.MAX_ZOOM);
+    this.requestUpdate('zoom', old);
+  }
+
   zoomIn() {
     this.zoom += 0.25;
   }
   zoomOut() {
     this.zoom -= 0.25;
   }
-  rotateLeft() {
-    //TODO
-  }
-  rotateRight() {
 
+  get translate() {
+    let result = {
+      x: 0,
+      y: 0
+    };
+    if (this.rotate) {
+      result.x = (this.rotate === 1)? 0 : (100 * this.zoom);
+      result.y = (this.rotate === 3)? 0 : (100 * this.zoom);
+    }
+    return result;
   }
 
   get imageTag() {
@@ -163,24 +195,13 @@ export class PDFViewPanel extends LitElement {
   }
 
   get contentTransform() {
-    let result = 'transform-origin: top left; ';
-
-    let fix = {
-      x: 0,
-      y: 0
-    }
-
-    let rot = (Math.floor(this.rotate) % PDFViewPanel.MOD_ROTATE);
-    let zoom = Math.min(Math.max(this.zoom, PDFViewPanel.MIN_ZOOM), PDFViewPanel.MAX_ZOOM);
-
-    if (rot) {
-      fix.x = (rot === 1)? 0 : (100 * zoom);
-      fix.y = (rot === 3)? 0 : (100 * zoom);
-    }
-
-    rot = rot / PDFViewPanel.MOD_ROTATE;
-    let transform = `transform: rotate(${rot}turn) translate(-${fix.x}%, -${fix.y}%) scale(${zoom})`;
-    result += transform;
+    let rot = this.rotate / PDFViewPanel.MOD_ROTATE;
+    let zoom = this.zoom;
+    let fix = this.translate;
+    let result = `
+      transform-origin: top left;
+      transform: rotate(${rot}turn) translate(-${fix.x}%, -${fix.y}%) scale(${zoom})
+      `;
 
     return result;
   }
