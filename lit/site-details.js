@@ -75,22 +75,38 @@ export class SiteDetails extends LitElement {
     `;
   }
 
-  renderTable(info) {
+  getLayout(layoutName) {
+    console.log('getLayout', layoutName);
+    return null;
+  }
+
+  renderData(info, layoutName) {
+    const layout = this.getLayout(layoutName) || this.renderTable;
+    const context = {genId: this.genId}
+    return layout(info, context);
+  }
+
+  renderTable(info, context) {
     let key = 0, value = 1;
-    return Object.entries(info).filter((el, index) => {
+    let entries = Object.entries(info).filter((el) => {
       return !ignoredKeys.includes(el[key]);
     }).map((el, index) => html`
-    <td class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-      <label for="${this.genId(index)}" >
-        ${(keyLookup[el[key]])?keyLookup[el[key]].title:el[key]}
-      </label>
-    </td>
-    <td class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-      <span id="${this.genId(index)}">
-        ${el[value]}
-      </span>
-    </td>
-  `)
+      <td class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
+        <label for="${context.genId(index)}" >
+          ${(keyLookup[el[key]])?keyLookup[el[key]].title:el[key]}
+        </label>
+      </td>
+      <td class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
+        <span id="${context.genId(index)}">
+          ${el[value]}
+        </span>
+      </td>
+    `);
+    return html`
+      <div data-element="table">
+        ${entries}
+      </div>
+    `;
   }
 
   render() {
@@ -110,19 +126,15 @@ export class SiteDetails extends LitElement {
           <h1>${this.siteinfo.Site_Name}</h1>
           <span></span>
         </div>
-        <div data-element="table">
-          ${this.renderTable({
-            Latitude, Longitude, WID
-          })}
-        </div>
+        ${this.renderData({
+          Latitude, Longitude, WID
+        })}
         <h2>Data Available:</h2>
         ${this.siteinfo.datas.map((props) => html`
           <app-collapsible open>
             <span slot="header">${props['Data_Type']}</span>
             <div slot="content">
-              <div data-element="table">
-                ${this.renderTable(props)}
-              </div>
+              ${this.renderData(props, props['Data_Type'])}
               ${(!props.Wid)?'':html`
                 <pdf-view-button
                   .panel=${this.pdfpanel}

@@ -62,7 +62,8 @@ export const ignoredKeys = [
   'SiteName',
   'Site_Name',
   'Wid',
-  'ID'
+  'ID',
+  'County'
 ];
 export const keyLookup = {
   'SiteName': {title: 'Site Name', desc: ''},
