@@ -915,6 +915,12 @@
         imgsrc: {
           type: String,
           attribute: false
+        },
+        rotate: {
+          type: Number
+        },
+        zoom: {
+          type: Number
         }
       };
     }
@@ -923,6 +929,8 @@
       super();
       this.cache = {};
       this.renderer = new PDFRenderer();
+      this.rotate = 0;
+      this.zoom = 1;
     }
 
     static get styles() {
@@ -950,13 +958,16 @@
       z-index: 10;
     }
     .control {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-size: var(--icon-size-large);
       color: var(--palette-accent);
       text-align: center;
       cursor: pointer;
-
       padding: var(--border-radius);
       background-color: var(--palette-light);
+      border: none;
       border-radius: 50%;
     }
     `;
@@ -968,14 +979,99 @@
       @import url("./css/typography.css");
     </style>
     <div class="controls">
-      <i class="material-icons control" title="Hide" @click=${this.hide}>close</i>
+      <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
+      <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
+      <button class="control" @click=${this.zoomOut} ?disabled=${this.isMinZoom}><i class="material-icons" title="Zoom Out">zoom_out</i></button>
+      <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
+      <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
     </div>
     <div class="container">
-      ${(!this.imgsrc)?'':litElement.html`
-      <img class="content" src="${this.imgsrc}" />
-      `}
+      ${this.imageTag}
     </div>
     `;
+    }
+
+    static get MOD_ROTATE() {
+      return 4;
+    }
+
+    get rotate() {
+      return this._rotate;
+    }
+    set rotate(val) {
+      const old = this.rotate;
+      let rot = Math.round(val) + PDFViewPanel.MOD_ROTATE;
+      this._rotate = (rot % PDFViewPanel.MOD_ROTATE);
+      this.requestUpdate('rotate', old);
+    }
+
+    rotateLeft() {
+      this.rotate -= 1;
+    }
+    rotateRight() {
+      this.rotate += 1;
+    }
+
+    static get MAX_ZOOM() {
+      return 2;
+    }
+    get isMaxZoom() {
+      return this.zoom >= PDFViewPanel.MAX_ZOOM;
+    }
+
+    static get MIN_ZOOM() {
+      return 0.5;
+    }
+    get isMinZoom() {
+      return this.zoom <= PDFViewPanel.MIN_ZOOM;
+    }
+
+    get zoom() {
+      return this._zoom;
+    }
+    set zoom(val) {
+      const old = this.zoom;
+      this._zoom = Math.min(Math.max(val, PDFViewPanel.MIN_ZOOM), PDFViewPanel.MAX_ZOOM);
+      this.requestUpdate('zoom', old);
+    }
+
+    zoomIn() {
+      this.zoom += 0.25;
+    }
+    zoomOut() {
+      this.zoom -= 0.25;
+    }
+
+    get translate() {
+      let result = {
+        x: 0,
+        y: 0
+      };
+      if (this.rotate) {
+        result.x = (this.rotate === 1)? 0 : (100 * this.zoom);
+        result.y = (this.rotate === 3)? 0 : (100 * this.zoom);
+      }
+      return result;
+    }
+
+    get imageTag() {
+      return (!this.imgsrc)?'':litElement.html`
+    <img class="content"
+      src="${this.imgsrc}"
+      style="${this.contentTransform}" />
+    `;
+    }
+
+    get contentTransform() {
+      let rot = this.rotate / PDFViewPanel.MOD_ROTATE;
+      let zoom = this.zoom;
+      let fix = this.translate;
+      let result = `
+      transform-origin: top left;
+      transform: rotate(${rot}turn) translate(-${fix.x}%, -${fix.y}%) scale(${zoom})
+      `;
+
+      return result;
     }
 
     show(url) {
