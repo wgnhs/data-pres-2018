@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('lit-element'), require('@uirouter/core')) :
-  typeof define === 'function' && define.amd ? define(['lit-element', '@uirouter/core'], factory) :
-  (global = global || self, factory(global.common, global.common));
-}(this, function (litElement, core) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('wgnhs-common'), require('@uirouter/core'), require('wgnhs-viz'), require('wgnhs-interact'), require('wgnhs-layout')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'lit-element', 'wgnhs-common', '@uirouter/core', 'wgnhs-viz', 'wgnhs-interact', 'wgnhs-layout'], factory) :
+  (global = global || self, factory(global.app = {}, global.common, global.common, global.common, global.lit, global.lit, global.lit));
+}(this, function (exports, litElement, wgnhsCommon, core, wgnhsViz, wgnhsInteract, wgnhsLayout) { 'use strict';
 
   const RestylingCircleMarker = L.CircleMarker.extend({
     getEvents: function() {
@@ -274,16 +274,11 @@
 
   }
 
-  // https://gist.github.com/gordonbrander/2230317
-  function genId() {
-    return '_' + Math.random().toString(36).substr(2, 9);
-  }
-
   class FilterGroup {
     constructor(config) {
       Object.assign(this, config);
       if (!this.id) {
-        this.id = genId();
+        this.id = wgnhsCommon.genId();
       }
     }
     activate(context) {
@@ -303,7 +298,7 @@
 
   class CheckboxControl {
     constructor() {
-      this.id = genId();
+      this.id = wgnhsCommon.genId();
     }
     get next() {
       return litElement.html`
@@ -334,7 +329,7 @@
 
   class GTLTControl {
     constructor(isDate) {
-      this.id = genId();
+      this.id = wgnhsCommon.genId();
       this.gtName = (isDate)?'after':'at least';
       this.ltName = (isDate)?'before':'less than';
     }
@@ -377,7 +372,7 @@
 
   class SelectControl {
     constructor() {
-      this.id = genId();
+      this.id = wgnhsCommon.genId();
     }
     get next() {
       return litElement.html`
@@ -422,7 +417,7 @@
 
   class TextControl {
     constructor() {
-      this.id = genId();
+      this.id = wgnhsCommon.genId();
     }
     get next() {
       return litElement.html`
@@ -457,7 +452,7 @@
 
   class ContainsControl {
     constructor() {
-      this.id = genId();
+      this.id = wgnhsCommon.genId();
     }
     get next() {
       return litElement.html`
@@ -538,6 +533,43 @@
       return aggrData;
     }
   }
+
+  const ignoredKeys = [
+    'Site_Code',
+    'Data_Type',
+    'SiteName',
+    'Site_Name',
+    'Wid',
+    'ID',
+    'County'
+  ];
+  const keyLookup = {
+    'SiteName': {title: 'Site Name', desc: ''},
+    'Site_Name': {title: 'Site Name', desc: ''},
+    'Wid': {title: 'WID', desc: ''},
+    'ID': {title: 'ID', desc: ''},
+    'RecentLog': {title: 'Most recent log (year)', desc: ''},
+    'MaxDepth': {title: 'Max depth (ft)', desc: ''},
+    'Norm_Res': {title: 'Normal Resistivity', desc: ''},
+    'Caliper': {title: 'Caliper', desc: ''},
+    'Gamma': {title: 'Natural Gamma', desc: ''},
+    'SP': {title: 'Spontaneous (Self) Potential', desc: ''},
+    'SPR': {title: 'Single Point Resistivity', desc: ''},
+    'Spec_Gamma': {title: 'Spectral Gamma', desc: ''},
+    'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''},
+    'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''},
+    'Fluid_Temp': {title: 'Fluid Temperature', desc: ''},
+    'Fluid_Res': {title: 'Fluid Resistivity', desc: ''},
+    'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
+    'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''},
+    'Video': {title: 'Video', desc: ''},
+    'Drill_Year': {title: 'Drill year', desc: ''},
+    'Depth_Ft': {title: 'Depth (ft)', desc: ''},
+    'Drill_Meth': {title: 'Drill Method', desc: ''},
+    'Subsamples': {title: 'Subsamples', desc: ''},
+    'Photos': {title: 'Core Photos', desc: ''},
+    'Grainsize': {title: 'Grainsize', desc: ''},
+  };
 
   const filterLookup = [
     new FilterGroup({
@@ -785,6 +817,610 @@
 
   }
 
+  class TableLayout extends litElement.LitElement {
+
+    static get layoutName() {
+      return undefined;
+    }
+
+    static include(info, context) {
+      return litElement.html`<table-layout .info=${info} .context=${context}></table-layout>`;
+    }
+
+    static get properties() {
+      return {
+        info: {
+          type: Object
+        },
+        context: {
+          type: Object
+        }
+      };
+    }
+
+    constructor() {
+      super();
+    }
+
+    static get styles() {
+      return litElement.css`
+      [data-element="table"] {
+        display: grid;
+        grid-template-columns: 40% 1fr;
+        grid-gap: var(--border-radius);
+        margin: 0 var(--border-radius);
+      }
+      .label {
+        font-weight: var(--font-weight-bold);
+      }
+    `;
+    }
+
+    render() {
+      let key = 0, value = 1;
+      let entries = Object.entries(this.info).filter((el) => {
+        return !ignoredKeys.includes(el[key]);
+      }).map((el, index) => litElement.html`
+      <td class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
+        <label for="${this.context.genId(index)}" >
+          ${(keyLookup[el[key]])?keyLookup[el[key]].title:el[key]}
+        </label>
+      </td>
+      <td class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
+        <span id="${this.context.genId(index)}">
+          ${el[value]}
+        </span>
+      </td>
+    `);
+      return litElement.html`
+      <div data-element="table">
+        ${entries}
+      </div>
+    `;
+    }
+  }
+  customElements.define('table-layout', TableLayout);
+
+  class LogLayout extends litElement.LitElement {
+    static get layoutName() {
+      return 'Geophysical Log Data';
+    }
+
+    static include(info, context) {
+      return litElement.html`<log-layout .info=${info} .context=${context}></log-layout>`;
+    }
+
+    static get properties() {
+      return {
+        info: {
+          type: Object
+        },
+        context: {
+          type: Object
+        }
+      };
+    }
+
+    constructor() {
+      super();
+    }
+
+    static get styles() {
+      return litElement.css`
+    `;
+    }
+
+    render() {
+      return litElement.html`
+    <table-layout .info=${this.info} .context=${this.context}></table-layout>
+    <pdf-view-button
+      .panel=${this.context.pdfpanel}
+      src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.pdf'}">
+    </pdf-view-button>
+    `;
+    }
+  }
+  customElements.define('log-layout', LogLayout);
+
+  class CoreLayout extends litElement.LitElement {
+    static get layoutName() {
+      return 'Quaternary Core Data';
+    }
+
+    static include(info, context) {
+      return litElement.html`<table-layout .info=${info} .context=${context}></table-layout>`;
+    }
+
+    static get properties() {
+      return {
+        info: {
+          type: Object
+        },
+        context: {
+          type: Object
+        }
+      };
+    }
+
+    constructor() {
+      super();
+    }
+
+    static get styles() {
+      return litElement.css`
+    `;
+    }
+    render() {
+      return litElement.html``;
+    }
+  }
+  customElements.define('core-layout', CoreLayout);
+
+  const defaultLayout = TableLayout;
+  const availableLayouts = [
+    defaultLayout,
+    LogLayout,
+    CoreLayout
+  ];
+
+  const layoutResolver = {
+    getLayout: function getLayout(layoutName) {
+      let layout = availableLayouts.find((el) => {
+        return el.layoutName === layoutName;
+      });
+      if (!layout) {
+        layout = defaultLayout;
+      }
+      return layout.include;
+    }
+  };
+
+  class SiteDetails extends litElement.LitElement {
+    static get properties() {
+      return {
+        siteinfo: {
+          type: Object
+        },
+        pdfpanel: {
+          type: Object
+        }
+      };
+    }
+
+    constructor() {
+      super();
+      this.genId = (function() {
+        const memo = {};
+        return function(index) {
+          if (!memo[index]) {
+            memo[index] = wgnhsCommon.genId();
+          }
+          return memo[index];
+        }
+      })();
+    }
+
+    static get styles() {
+      return litElement.css`
+      .header {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0px;
+        background-color: var(--palette-white);
+        padding: var(--font-size-extra-large) var(--border-radius);
+        z-index: 10;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+      }
+      .header h1 {
+        padding: 0;
+        max-width: 70%;
+        text-align: center;
+      }
+      .header i {
+        font-size: var(--icon-size-large);
+        color: var(--palette-accent);
+        cursor: pointer;
+      }
+      
+      [data-closed] {
+        display: none;
+      }
+    `;
+    }
+
+    renderData(info, layoutName) {
+      const layout = layoutResolver.getLayout(layoutName);
+      return layout(info, this);
+    }
+
+    render() {
+      let Latitude = (this.siteinfo)?this.siteinfo['Latitude']:null;
+      let Longitude = (this.siteinfo)?this.siteinfo['Longitude']:null;
+      let WID = (this.siteinfo)?this.siteinfo['Wid']:null;
+      return litElement.html`
+      <style>
+        @import url("./css/typography.css");
+      </style>
+
+      ${(!this.siteinfo)? '' : litElement.html`
+        <div class="header">
+          <span>
+            <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
+          </span>
+          <h1>${this.siteinfo.Site_Name}</h1>
+          <span></span>
+        </div>
+        ${this.renderData({
+          Latitude, Longitude, WID
+        })}
+        <h2>Data Available:</h2>
+        ${this.siteinfo.datas.map((props) => litElement.html`
+          <app-collapsible open>
+            <span slot="header">${props['Data_Type']}</span>
+            <div slot="content">
+              ${this.renderData(props, props['Data_Type'])}
+            </div>
+          </app-collapsible>
+        `)}
+      `}
+    `;
+    }
+
+    fireClearSelection() {
+      let event = new CustomEvent('clear-selection', {
+        bubbles: true,
+        detail: {}
+      });
+      this.dispatchEvent(event);
+    }
+  }
+  customElements.define('site-details', SiteDetails);
+
+  class FilterSummary extends litElement.LitElement {
+    static get properties() {
+      return {
+        counts: {
+          type: Array
+        }
+      };
+    }
+
+    constructor() {
+      super();
+    }
+
+    static get styles() {
+      return litElement.css`
+    `;
+    }
+
+    render() {
+      return (!this.counts)?litElement.html``:litElement.html`
+    <div>
+      <span>Showing:</span>
+      <ul>
+        <li>
+          <span>
+          ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
+          </span> of <span>
+          ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
+          </span> total sites
+        </li>
+        ${this.counts.map((el) => litElement.html`
+        <li>
+          <span>${el.current}</span> of <span>${el.total}</span> sites having <span>${el.name}</span>
+        </li>
+        `)}
+      </ul>
+    </div>
+    `;
+    }
+
+    setCounts(counts) {
+      this.counts = counts;
+    }
+  }
+  customElements.define('filter-summary', FilterSummary);
+
+  class MapFilter extends litElement.LitElement {
+    static get properties() {
+      return {
+        include: {
+          type: Array,
+          attribute: false
+        },
+        filter: {
+          type: Array,
+          attribute: false
+        },
+        matchClass: {
+          type: String,
+          attribute: false
+        },
+        sources: {
+          type: Array,
+          attribute: false
+        }
+      };
+    }
+
+    static get styles() {
+      return litElement.css`
+      .field {
+        display: grid;
+        grid-template-columns: 40% 1fr;
+        grid-gap: var(--border-radius);
+        margin: 0 var(--border-radius);
+      }
+
+      .label {
+        font-weight: var(--font-weight-bold);
+      }
+
+      .selector {
+      }
+
+      .section-title {
+        margin: var(--line-height) 0 0 0;
+        padding: var(--border-radius);
+        background-color: var(--palette-light);
+      }
+
+      in-radio {
+        display: inline-grid;
+        grid-template-columns: auto auto;
+      }
+    `;
+    }
+
+    updateMatchClass(e) {
+      this.matchClass = e.target.choice;
+    }
+
+    render() {
+      return litElement.html`
+      <style>
+        @import url("./css/typography.css");
+      </style>
+      <div>
+        <filter-summary></filter-summary>
+      </div>
+      <div>
+        Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
+      </div>
+      <div>
+        ${this.renderFilterGroups()}
+      </div>
+    `;
+    }
+
+    resolveKeyLookup(field) {
+      let result = (!keyLookup[field])?field:keyLookup[field].title;
+      return result;
+    }
+
+    renderFilterGroups() {
+      let name=0, config=1;
+      return this.filterGroups.map((group) => litElement.html`
+      <app-collapsible
+        ?open=${group.open} @open=${this._handle(group)}>
+        <i slot="header-before" class="material-icons">expand_more</i>
+        <span slot="header">${group.title}</span>
+        ${(!group.toggleable)?'':litElement.html`
+          <toggle-switch
+            name="${group.mapName}"
+            slot="header-after"
+            ?checked=${group.active}
+            @change=${this._handleGroup(group, 'include')}
+          ></toggle-switch>
+        `}
+        <div slot="content">
+          ${group.sections.map((section, index) => litElement.html`
+            ${!(section.title)?'':litElement.html`
+              <h2 class="section-title">${section.title}</h2>
+            `}
+            ${Object.entries(section.fields).map((entry, index) => litElement.html`
+              <div class="field">
+              ${(entry[config].controls.length === 0)?'':entry[config].controls.map(control => litElement.html`
+                <td class="label">
+                  <label for="${this.genId(index)}" >
+                    ${this.resolveKeyLookup(entry[name])}
+                  </label>
+                </td>
+                <td class="selector" 
+                    @change="${this._handleControl(group, control, 'filter')}">
+                  <input
+                    type="hidden"
+                    id="${control.id}"
+                    name="${entry[name]}">
+                  ${control.next}
+                </td>
+              `)}
+              </div>
+            `)}
+          `)}
+        </div>
+      </app-collapsible>
+    `);
+    }
+
+    get _eventHandlers() {
+      return {
+        'open' : (context, e) => {
+          context.open = e.detail.value;
+        }
+      }
+    }
+
+    _handle(context) {
+      return (e) => {
+        const handler = this._eventHandlers[e.type];
+        if (handler) {
+          handler(context, e);
+          this.requestUpdate('handle_'+e.type);
+        }
+      }
+    }
+
+    _handleGroup(group, type) {
+      const id = group.id;
+      const handle = group.activate.bind(group);
+      const filter = this[type];
+      const callback = this.requestUpdate.bind(this);
+      return (e) => {
+        const context = {};
+        context.id = id;
+        context.toggleable = group.toggleable;
+        context.detail = e.detail;
+        context.prop = group.prop;
+        context.value = group[group.prop];
+        removeFromFilter(filter, id);
+        let resolver = handle(context);
+        if (resolver) {
+          filter.push(resolver);
+        }
+        callback(type);
+      }
+    }
+
+    _handleControl(group, control, type) {
+      const id = control.id;
+      const handle = control.handle.bind(control);
+      const filter = this[type];
+      const callback = this.requestUpdate.bind(this);
+      return (e) => {
+        const context = {};
+        context.id = id;
+        context.group = group;
+        context.target = e.currentTarget.querySelector('#'+id);
+        context.prop = context.target.name;
+        removeFromFilter(filter, id);
+        let resolver = handle(context);
+        if (resolver) {
+          filter.push(resolver);
+        }
+        callback(type);
+      }
+    }
+
+    updated(changed) {
+      const isNeeded = (
+        changed.has('matchClass') ||
+        changed.has('include') ||
+        changed.has('filter') ||
+        changed.has('sources'));
+
+      if (this.sources && isNeeded) {
+        const activePoints = MapFilter.runFilter({
+          matchClass: this.matchClass,
+          incl: this.include,
+          filt: this.filter,
+          sources: this.sources
+        });
+        this.$summary.setCounts(MapFilter.getResultsInfo(this.sources, activePoints));
+        wgnhsCommon.dispatch(this, 'filtered', {activePoints});
+      }
+    }
+
+    firstUpdated() {
+      this.$summary = this.renderRoot.querySelector('filter-summary');
+    }
+
+    init(uniques, layers) {
+      this.filterGroups.forEach((group) => {
+        group.sections.forEach((section) => {
+          Object.entries(section.fields).forEach((field) => {
+            field[1].controls.forEach((control) => {
+              if (control.init) {
+                control.init(uniques[field[0]]);
+              }
+            });
+          });
+        });
+      });
+
+      this.sources = layers;
+    }
+
+    static runFilter({matchClass, incl, filt, sources}) {
+      const resolve = function runPointThroughFilters(props) {
+        let included = incl.length > 0 && incl.reduce((prev, curr) => {
+          return prev || curr.resolve(props);
+        }, false);
+        let spec = filt.filter((rule) => rule.resolveGroup(props));
+        let result = included && spec.length < 1;
+        if (included && !result) {
+          if ("ALL" === matchClass) {
+            result = spec.reduce((prev, curr) => {
+              return prev && curr.resolve(props);
+            }, true);
+          } else {
+            result = spec.reduce((prev, curr) => {
+              return prev || curr.resolve(props);
+            }, false);
+          }
+        }
+        return result;
+      };
+
+      const result = sources.map((layer) => {
+        const activePoints = new Set();
+        Object.entries(layer._layers).forEach((ent) => {
+          if (resolve(ent[1].feature.properties)) {
+            activePoints.add('' + ent[0]);
+          }
+        });
+        return activePoints;
+      });
+
+      return result;
+    }
+
+    static getResultsInfo(sources, activePoints) {
+      const result = sources.map((layer, i) => {
+        let stats = {};
+        stats.name = layer.options.name;
+
+        let entries = Object.entries(layer._layers);
+        stats.total = entries.length;
+        stats.current = activePoints[i].size;
+
+        return stats;
+      });
+      return result;
+    }
+
+    constructor() {
+      super();
+      this.genId = (function() {
+        const memo = {};
+        return function(index) {
+          if (!memo[index]) {
+            memo[index] = wgnhsCommon.genId();
+          }
+          return memo[index];
+        }
+      })();
+      this.include = [];
+      this.filter = [];
+      this.filterGroups = filterLookup;
+    }
+  }
+  customElements.define('map-filter', MapFilter);
+
+  const removeFromFilter = (filter, id) => {
+    for (
+      var idx = filter.findIndex(el => el.id === id); 
+      idx >= 0;
+      idx = filter.findIndex(el => el.id === id)
+    ) {
+      filter.splice(idx, 1);
+    }
+  };
+
   window.siteMap = new SiteMap();
   window.sidebar = document.querySelector('#sidebar');
   window.pdfPanel = document.querySelector('#sketch');
@@ -920,5 +1556,10 @@
   window.filter.addEventListener('filtered', function(e) {
     window.siteMap.updatePoints(e.detail.activePoints);
   });
+
+  exports.MapFilter = MapFilter;
+  exports.SiteDetails = SiteDetails;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
