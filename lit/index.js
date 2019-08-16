@@ -1271,7 +1271,7 @@
         position: sticky;
         top: 0px;
         background-color: var(--palette-white);
-        padding: var(--font-size-extra-large);
+        padding: var(--font-size-extra-large) var(--border-radius);
         z-index: 10;
         width: 100%;
         box-sizing: border-box;
