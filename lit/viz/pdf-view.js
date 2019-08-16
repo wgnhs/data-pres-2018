@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
-export { AppCollapsible } from './app-collapsible.js';
-export { ButtonLink } from './button-link.js';
+export { AppCollapsible } from '../layout/app-collapsible.js';
+export { ButtonLink } from '../interact/button-link.js';
 
 let pdfjsLib = window['pdfjs-dist/build/pdf'];
 

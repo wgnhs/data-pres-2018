@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
-import { genId } from '../js/common.js';
-import { ignoredKeys, keyLookup } from '../app/site-data.js';
-export { PDFViewButton } from './pdf-view.js';
+import { genId } from 'wgnhs-common';
+export { PDFViewButton } from 'wgnhs-viz';
+import { layoutResolver } from './layout-resolver.js';
 
 export class SiteDetails extends LitElement {
   static get properties() {
@@ -30,22 +30,6 @@ export class SiteDetails extends LitElement {
 
   static get styles() {
     return css`
-      [data-element="table"] {
-        display: grid;
-        grid-template-columns: 40% 1fr;
-        grid-gap: var(--border-radius);
-        margin: 0 var(--border-radius);
-      }
-
-      .label {
-        /* background-color: var(--palette-dark); */
-        font-weight: var(--font-weight-bold);
-      }
-
-      .detail {
-        /* background-color: var(--palette-light); */
-      }
-
       .header {
         position: -webkit-sticky;
         position: sticky;
@@ -75,22 +59,9 @@ export class SiteDetails extends LitElement {
     `;
   }
 
-  renderTable(info) {
-    let key = 0, value = 1;
-    return Object.entries(info).filter((el, index) => {
-      return !ignoredKeys.includes(el[key]);
-    }).map((el, index) => html`
-    <td class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-      <label for="${this.genId(index)}" >
-        ${(keyLookup[el[key]])?keyLookup[el[key]].title:el[key]}
-      </label>
-    </td>
-    <td class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-      <span id="${this.genId(index)}">
-        ${el[value]}
-      </span>
-    </td>
-  `)
+  renderData(info, layoutName) {
+    const layout = layoutResolver.getLayout(layoutName);
+    return layout(info, this);
   }
 
   render() {
@@ -110,25 +81,15 @@ export class SiteDetails extends LitElement {
           <h1>${this.siteinfo.Site_Name}</h1>
           <span></span>
         </div>
-        <div data-element="table">
-          ${this.renderTable({
-            Latitude, Longitude, WID
-          })}
-        </div>
+        ${this.renderData({
+          Latitude, Longitude, WID
+        })}
         <h2>Data Available:</h2>
         ${this.siteinfo.datas.map((props) => html`
           <app-collapsible open>
             <span slot="header">${props['Data_Type']}</span>
             <div slot="content">
-              <div data-element="table">
-                ${this.renderTable(props)}
-              </div>
-              ${(!props.Wid)?'':html`
-                <pdf-view-button
-                  .panel=${this.pdfpanel}
-                  src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + props.Wid + '.pdf'}"
-                  ></pdf-view-button>
-              `}
+              ${this.renderData(props, props['Data_Type'])}
             </div>
           </app-collapsible>
         `)}

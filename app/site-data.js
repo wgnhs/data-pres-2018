@@ -5,7 +5,7 @@ import {
   SelectControl,
   TextControl,
   ContainsControl
-} from '../lit/filter-controls.js';
+} from './filter/filter-controls.js';
 
 export class SiteData {
   constructor(layers) {
@@ -62,7 +62,8 @@ export const ignoredKeys = [
   'SiteName',
   'Site_Name',
   'Wid',
-  'ID'
+  'ID',
+  'County'
 ];
 export const keyLookup = {
   'SiteName': {title: 'Site Name', desc: ''},
