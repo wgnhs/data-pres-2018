@@ -30,22 +30,6 @@ export class SiteDetails extends LitElement {
 
   static get styles() {
     return css`
-      [data-element="table"] {
-        display: grid;
-        grid-template-columns: 40% 1fr;
-        grid-gap: var(--border-radius);
-        margin: 0 var(--border-radius);
-      }
-
-      .label {
-        /* background-color: var(--palette-dark); */
-        font-weight: var(--font-weight-bold);
-      }
-
-      .detail {
-        /* background-color: var(--palette-light); */
-      }
-
       .header {
         position: -webkit-sticky;
         position: sticky;

@@ -3,11 +3,11 @@ import { LogLayout } from './layout/log-layout.js';
 import { CoreLayout } from './layout/core-layout.js';
 
 
-const defaultLayout = new TableLayout();
+const defaultLayout = TableLayout;
 const availableLayouts = [
   defaultLayout,
-  new LogLayout(),
-  new CoreLayout()
+  LogLayout,
+  CoreLayout
 ];
 
 export const layoutResolver = {
@@ -18,6 +18,6 @@ export const layoutResolver = {
     if (!layout) {
       layout = defaultLayout;
     }
-    return layout.render;
+    return layout.include;
   }
 }
