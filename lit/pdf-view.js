@@ -93,13 +93,16 @@ export class PDFViewPanel extends LitElement {
       z-index: 10;
     }
     .control {
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-size: var(--icon-size-large);
       color: var(--palette-accent);
       text-align: center;
       cursor: pointer;
-
       padding: var(--border-radius);
       background-color: var(--palette-light);
+      border: none;
       border-radius: 50%;
     }
     `;
@@ -111,11 +114,11 @@ export class PDFViewPanel extends LitElement {
       @import url("./css/typography.css");
     </style>
     <div class="controls">
-      <i class="material-icons control" title="Hide" @click=${this.hide}>close</i>
-      <i class="material-icons control" title="Zoom In" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}>zoom_in</i>
-      <i class="material-icons control" title="Zoom Out" @click=${this.zoomOut} ?disabled=${this.isMinZoom}>zoom_out</i>
-      <i class="material-icons control" title="Rotate Left" @click=${this.rotateLeft}>rotate_left</i>
-      <i class="material-icons control" title="Rotate Right" @click=${this.rotateRight}>rotate_right</i>
+      <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
+      <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
+      <button class="control" @click=${this.zoomOut} ?disabled=${this.isMinZoom}><i class="material-icons" title="Zoom Out">zoom_out</i></button>
+      <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
+      <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
     </div>
     <div class="container">
       ${this.imageTag}
