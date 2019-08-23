@@ -87,63 +87,38 @@
          tileZ: 1
       })); 
 
-      /* +++++++++++ Borehole Geophysical Logs layer +++++++++++ */ 
-      let bore = this.bore = L.esri.featureLayer({
-        name: 'Geophysical Log Data',
-        url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0",
-        pointToLayer: function(geoJsonPoint, latlon) {
-          return new RestylingCircleMarker(latlon, {
-            weight: 2,
-            color: 'var(--palette-blue)',
-            radius: RestylingCircleMarker.calcRadius(map.getZoom()),
-            stroke: false,
-            fill: false
+      let boreURL = 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentsOnly=false&datumTransformation=&parameterValues=&rangeValues=&f=geojson';
+      let quatURL = 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&queryByDistance=&returnExtentsOnly=false&datumTransformation=&parameterValues=&rangeValues=&f=geojson';
+      Promise.all([
+        window.fetch(boreURL).then((res) => res.json()).then((geojson)=>({name: 'Geophysical Log Data', color: 'var(--palette-blue)', data: geojson})), 
+        window.fetch(quatURL).then((res) => res.json()).then((geojson)=>({name: 'Quaternary Core Data', color: 'var(--palette-green)', data: geojson}))
+      ]).then((responses) => {
+          this.layers = responses.map((res) => {
+            return L.geoJSON(res.data, {
+              name: res.name,
+              pointToLayer: function(geoJsonPoint, latlon) {
+                return new RestylingCircleMarker(latlon, {
+                  weight: 2,
+                  color: res.color,
+                  radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+                  stroke: false,
+                  fill: false
+                });
+              }
+            });
           });
-        }
-      }).on('click', (function(e) {
-        if (this._highlight !== e.propagatedFrom) {
-          this.fire('interaction', e.propagatedFrom.feature.properties);
-        } else {
-          this.fire('interaction');
-        }
-      }).bind(this));
-
-      /* +++++++++++ Sediment Core layer +++++++++++ */ 
-      let quat = this.quat = L.esri.featureLayer({
-        name: 'Quaternary Core Data',
-        url: "https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0",
-        pointToLayer: function(geoJsonPoint, latlon) {
-          return new RestylingCircleMarker(latlon, {
-            weight: 2,
-            color: 'var(--palette-green)',
-            radius: RestylingCircleMarker.calcRadius(map.getZoom()),
-            stroke: false,
-            fill: false
-          });
-        }
-      }).on('click', (function(e) {
-        if (this._highlight !== e.propagatedFrom) {
-          this.fire('interaction', e.propagatedFrom.feature.properties);
-        } else {
-          this.fire('interaction');
-        }
-      }).bind(this));
-
-      this.layers = [bore, quat];
-
-      Promise.all([new Promise(function(resolve, reject) {
-        bore.once('load', (function() {
-          resolve();
-        }));
-      }),new Promise(function(resolve, reject) {
-        quat.once('load', (function() {
-          resolve();
-        }));
-      })]).then(() => {
+          this.layers.forEach(l => l.on('click', (e) => {
+            if (this._highlight !== e.propagatedFrom) {
+              this.fire('interaction', e.propagatedFrom.feature.properties);
+            } else {
+              this.fire('interaction');
+            }
+          }));
+          this.layers.forEach(l => l.addTo(map));
         let lookup = {};
         this.layers.forEach(function(layer, idx, arr) {
-          layer.eachFeature(function(obj) {
-            let wid = obj.feature.properties['Wid'];
+          layer.eachLayer(function(obj) {
+            let wid = obj.feature.properties['Wid'] || obj.feature.properties['WGNHS_ID'];
             let siteCode = SiteMap.getSiteCode(obj.feature.properties);
             let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
             let latLon = obj.getLatLng();
@@ -166,13 +141,10 @@
         this._lookup = lookup;
         this.fire('init');
       });
-
-      bore.addTo(map);
-      quat.addTo(map);
     }
 
     static getSiteCode(params) {
-      let keys = ['Wid', 'ID', 'Site_Code'];
+      let keys = ['Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
       let result = keys.reduce((prev, curr) => {
         return prev || params[curr];
       }, undefined);
@@ -510,7 +482,7 @@
       };
 
       // Collect datasets and aggregates
-      layer.eachFeature(function(obj, l) {
+      layer.eachLayer(function(obj, l) {
         let result = {};
         aggrKeys.forEach(function(key) {
           result[key] = obj.feature.properties[key];
@@ -1370,7 +1342,7 @@
         const activePoints = new Set();
         Object.entries(layer._layers).forEach((ent) => {
           if (resolve(ent[1].feature.properties)) {
-            activePoints.add('' + ent[0]);
+            activePoints.add('' + SiteMap.getSiteCode(ent[1].feature.properties));
           }
         });
         return activePoints;
