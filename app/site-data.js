@@ -32,7 +32,7 @@ export class SiteData {
     };
 
     // Collect datasets and aggregates
-    layer.eachFeature(function(obj, l) {
+    layer.eachLayer(function(obj, l) {
       let result = {};
       aggrKeys.forEach(function(key) {
         result[key] = obj.feature.properties[key]

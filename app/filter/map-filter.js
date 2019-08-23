@@ -4,6 +4,7 @@ export { InRadio, ToggleSwitch } from 'wgnhs-interact';
 export { AppCollapsible } from 'wgnhs-layout';
 export { FilterSummary } from './filter-summary.js';
 import { keyLookup, filterLookup } from '../site-data.js';
+import { SiteMap } from '../map/site-map.js';
 
 export class MapFilter extends LitElement {
   static get properties() {
@@ -250,7 +251,7 @@ export class MapFilter extends LitElement {
       const activePoints = new Set();
       Object.entries(layer._layers).forEach((ent) => {
         if (resolve(ent[1].feature.properties)) {
-          activePoints.add('' + ent[0]);
+          activePoints.add('' + SiteMap.getSiteCode(ent[1].feature.properties));
         }
       });
       return activePoints;
