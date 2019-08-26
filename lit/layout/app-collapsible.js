@@ -52,7 +52,7 @@ export class AppCollapsible extends LitElement {
       cursor: pointer;
 
       border-radius: var(--border-radius);
-      transition: all 0.3s cubic-bezier(0.755, 0.05, 0.855, 0.06);
+      transition: border-radius var(--transition-duration, 0.3) cubic-bezier(0.755, 0.05, 0.855, 0.06);
     }
 
     .lbl-toggle:hover {
@@ -66,7 +66,7 @@ export class AppCollapsible extends LitElement {
     .collapsible-content {
       max-height: 0px;
       overflow: hidden;
-      transition: max-height 0.3s cubic-bezier(0.86, 0, 0.07, 1);
+      transition: max-height var(--transition-duration, 0.3) cubic-bezier(0.86, 0, 0.07, 1);
     }
 
     .wrap-collapsible:not([button]) .toggle:checked ~ .collapsible-content {
@@ -100,7 +100,7 @@ export class AppCollapsible extends LitElement {
   render() {
     return html`
     <div class="wrap-collapsible" ?button=${this.button}>
-      <input id="${this.genId}" class="toggle" type="checkbox" ?checked="${this.open}" @change=${this._handleChange}>
+      <input id="${this.genId}" class="toggle" type="checkbox" .checked="${this.open}" @change=${this._handleChange}>
       <label for="${this.genId}" class="lbl-toggle" tabindex="0">
         <div class="collapsible-header">
           <div><slot name="header-before"></slot></div>

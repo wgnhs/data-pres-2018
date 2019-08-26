@@ -76,8 +76,8 @@ export class SiteMap extends window.L.Evented {
             'Site_Code': siteCode,
             'Site_Name': siteName,
             'Wid': wid,
-            'Latitude': latLon['lat'],
-            'Longitude': latLon['lng'],
+            'Latitude': latLon['lat'].toFixed(6),
+            'Longitude': latLon['lng'].toFixed(6),
             point: obj,
             datas: new Array(arr.length)
           };

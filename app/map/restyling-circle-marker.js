@@ -52,4 +52,4 @@ export const RestylingCircleMarker = L.CircleMarker.extend({
   }
 });
 
-RestylingCircleMarker.calcRadius = (a) => Math.max(a/1.5,3);
+RestylingCircleMarker.calcRadius = (a) => Math.max(Math.floor(a/1.5),3);

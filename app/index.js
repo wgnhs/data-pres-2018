@@ -125,6 +125,10 @@ document.addEventListener('clear-selection', function(e) {
   window.router.clearRoute();
 });
 
+document.addEventListener('zoom-to-site', function(e) {
+  window.siteMap.zoomToPoint(e.detail.params);
+})
+
 document.addEventListener('toggle-print', function(e) {
   if (e.detail.on) {
     window.router.setRoute('print', e.detail.params);

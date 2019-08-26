@@ -52,4 +52,10 @@ export class SiteRouter extends window.L.Evented {
     return result;
   }
 
+  onEnterAll(options, func) {
+    this.router.transitionService.onEnter(options, func);
+  }
+  onExitAll(options, func) {
+    this.router.transitionService.onExit(options, func);
+  }
 }
