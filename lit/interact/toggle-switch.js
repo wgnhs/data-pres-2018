@@ -12,8 +12,8 @@ export class ToggleSwitch extends LitElement {
 
   constructor() {
     super();
-    if (!this.id) {
-      this.id = genId();
+    if (!this.switchId) {
+      this.switchId = genId();
     }
   }
 
@@ -72,7 +72,7 @@ export class ToggleSwitch extends LitElement {
 
   render() {
     return html`
-    <input type="checkbox" id="switch" .checked=${this.checked} @change=${this.handleChange} /><label for="switch">Toggle</label>
+    <input type="checkbox" id="${this.switchId}" .checked=${this.checked} @change=${this.handleChange} /><label for="${this.switchId}">Toggle</label>
     `;
   }
 
