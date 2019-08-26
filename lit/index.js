@@ -403,15 +403,18 @@
       :host {
         padding: 0 var(--border-radius);
       }
+      [data-closed] {
+        display: none;
+      }
     `;
     }
 
     switchTab(choice) {
       this.shadowRoot.querySelectorAll('slot').forEach((el) => {
         if ((choice === 'default' && !el.getAttribute('name')) || (el.getAttribute('name') === choice)) {
-          el.hidden = false;
+          el.removeAttribute('data-closed');
         } else {
-          el.hidden = true;
+          el.setAttribute('data-closed', true);
         }
       });
     }
@@ -425,7 +428,7 @@
       ${(!this.title)?'':litElement.html`<h1 class="header">${this.title}</h1>`}
       <slot></slot>
       ${!(this.tabs)?'':this.tabs.map((el) => litElement.html`
-      <slot name='${el}' hidden></slot>
+      <slot name='${el}' data-closed></slot>
       `)}
     `;
     }
