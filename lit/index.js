@@ -410,7 +410,7 @@
     }
 
     switchTab(choice) {
-      this.shadowRoot.querySelectorAll('slot').forEach((el) => {
+      this.shadowRoot.querySelectorAll('.slot-container').forEach((el) => {
         if ((choice === 'default' && !el.getAttribute('name')) || (el.getAttribute('name') === choice)) {
           el.removeAttribute('data-closed');
         } else {
@@ -426,9 +426,13 @@
     render() {
       return litElement.html`
       ${(!this.title)?'':litElement.html`<h1 class="header">${this.title}</h1>`}
-      <slot></slot>
+      <div class="slot-container">
+        <slot></slot>
+      </div>
       ${!(this.tabs)?'':this.tabs.map((el) => litElement.html`
-      <slot name='${el}' data-closed></slot>
+      <div name='${el}' class="slot-container" data-closed>
+        <slot name='${el}'></slot>
+      </div>
       `)}
     `;
     }
