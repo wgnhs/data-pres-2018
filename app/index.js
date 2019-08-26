@@ -48,7 +48,7 @@
     }
   });
 
-  RestylingCircleMarker.calcRadius = (a) => Math.max(a/1.5,3);
+  RestylingCircleMarker.calcRadius = (a) => Math.max(Math.floor(a/1.5),3);
 
   class SiteMap extends window.L.Evented {
     constructor() {
@@ -126,8 +126,8 @@
               'Site_Code': siteCode,
               'Site_Name': siteName,
               'Wid': wid,
-              'Latitude': latLon['lat'],
-              'Longitude': latLon['lng'],
+              'Latitude': latLon['lat'].toFixed(6),
+              'Longitude': latLon['lng'].toFixed(6),
               point: obj,
               datas: new Array(arr.length)
             };
@@ -787,6 +787,12 @@
       return result;
     }
 
+    onEnterAll(options, func) {
+      this.router.transitionService.onEnter(options, func);
+    }
+    onExitAll(options, func) {
+      this.router.transitionService.onExit(options, func);
+    }
   }
 
   class TableLayout extends litElement.LitElement {
@@ -1023,7 +1029,9 @@
             <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
           </span>
           <h1>${this.siteinfo.Site_Name}</h1>
-          <span></span>
+          <span>
+            <i class="material-icons zoom-to-site" title="Zoom to site" @click="${this.fireZoomToSite}">my_location</i>
+          </span>
         </div>
         ${this.renderData({
           Latitude, Longitude, WID
@@ -1042,11 +1050,11 @@
     }
 
     fireClearSelection() {
-      let event = new CustomEvent('clear-selection', {
-        bubbles: true,
-        detail: {}
-      });
-      this.dispatchEvent(event);
+      wgnhsCommon.dispatch(this, 'clear-selection', {}, true, true);
+    }
+
+    fireZoomToSite() {
+      wgnhsCommon.dispatch(this, 'zoom-to-site', {params: this.siteinfo}, true, true);
     }
   }
   customElements.define('site-details', SiteDetails);
@@ -1511,6 +1519,10 @@
 
   document.addEventListener('clear-selection', function(e) {
     window.router.clearRoute();
+  });
+
+  document.addEventListener('zoom-to-site', function(e) {
+    window.siteMap.zoomToPoint(e.detail.params);
   });
 
   document.addEventListener('toggle-print', function(e) {
