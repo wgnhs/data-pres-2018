@@ -28,7 +28,7 @@ export class AppSidebar extends LitElement {
   }
 
   switchTab(choice) {
-    this.shadowRoot.querySelectorAll('slot').forEach((el) => {
+    this.shadowRoot.querySelectorAll('.slot-container').forEach((el) => {
       if ((choice === 'default' && !el.getAttribute('name')) || (el.getAttribute('name') === choice)) {
         el.removeAttribute('data-closed');
       } else {
@@ -44,9 +44,13 @@ export class AppSidebar extends LitElement {
   render() {
     return html`
       ${(!this.title)?'':html`<h1 class="header">${this.title}</h1>`}
-      <slot></slot>
+      <div class="slot-container">
+        <slot></slot>
+      </div>
       ${!(this.tabs)?'':this.tabs.map((el) => html`
-      <slot name='${el}' data-closed></slot>
+      <div name='${el}' class="slot-container" data-closed>
+        <slot name='${el}'></slot>
+      </div>
       `)}
     `;
   }
