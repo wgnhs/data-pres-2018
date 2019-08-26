@@ -159,8 +159,8 @@
 
     constructor() {
       super();
-      if (!this.id) {
-        this.id = wgnhsCommon.genId();
+      if (!this.switchId) {
+        this.switchId = wgnhsCommon.genId();
       }
     }
 
@@ -219,7 +219,7 @@
 
     render() {
       return litElement.html`
-    <input type="checkbox" id="switch" .checked=${this.checked} @change=${this.handleChange} /><label for="switch">Toggle</label>
+    <input type="checkbox" id="${this.switchId}" .checked=${this.checked} @change=${this.handleChange} /><label for="${this.switchId}">Toggle</label>
     `;
     }
 
