@@ -25,13 +25,13 @@ export class ButtonLink extends LitElement {
       text-decoration: none;
       margin: var(--border-radius) 0;
     }
-    .button-link:hover {
+    .link:hover {
       color: var(--palette-900);
     }
-    .button-link:focus {
+    .link:focus {
       outline: thin dotted;
     }
-    .button-link {
+    .link {
       display: block;
 
       font-weight: var(--font-weight-bold);
@@ -59,7 +59,7 @@ export class ButtonLink extends LitElement {
 
   render() {
     return html`
-    <a class="button-link"
+    <a class="link"
       href="${this.href}"
       target="${this.target}"
       ?download=${this.download}>
