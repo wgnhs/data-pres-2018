@@ -92,10 +92,11 @@ export class MapFilter extends LitElement {
         <span slot="header">${group.title}</span>
         ${(!group.toggleable)?'':html`
           <toggle-switch
-            name="${group.mapName}"
+            name="${group.title}"
             slot="header-after"
             ?checked=${group.active}
             @change=${this._handleGroup(group, 'include')}
+            style="--palette-active: ${group.color}"
           ></toggle-switch>
         `}
         <div slot="content">

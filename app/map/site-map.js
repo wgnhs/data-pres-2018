@@ -1,3 +1,4 @@
+import { filterLookup } from '../site-data.js';
 import { RestylingCircleMarker } from './restyling-circle-marker.js';
 
 export class SiteMap extends window.L.Evented {
@@ -37,12 +38,20 @@ export class SiteMap extends window.L.Evented {
        tileZ: 1
     })); 
 
-    let boreURL = 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson';
-    let quatURL = 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson';
-    Promise.all([
-      window.fetch(boreURL).then((res) => res.json()).then((geojson)=>({name: 'Geophysical Log Data', color: 'var(--palette-blue)', data: geojson})), 
-      window.fetch(quatURL).then((res) => res.json()).then((geojson)=>({name: 'Quaternary Core Data', color: 'var(--palette-green)', data: geojson}))
-    ]).then((responses) => {
+    let sources = filterLookup.reduce((result, curr) => {
+      if (curr.source && curr.source.geojson) {
+        result.push(
+          window.fetch(curr.source.geojson)
+          .then((res) => res.json())
+          .then((geojson)=>({
+            name: curr[curr.prop],
+            color: curr.color,
+            data: geojson})))
+      }
+      return result;
+    }, []);
+
+    Promise.all(sources).then((responses) => {
         this.layers = responses.map((res) => {
           return L.geoJSON(res.data, {
             name: res.name,

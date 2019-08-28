@@ -1,13 +1,4 @@
 
-const colorRange = [
-  '#e0ecf4',
-  '#bfd3e6',
-  '#9ebcda',
-  '#8c96c6',
-  '#8c6bb1',
-  '#88419d',
-  '#810f7c'
-];
 export const RestylingCircleMarker = L.CircleMarker.extend({
   getEvents: function() {
     return {
@@ -39,7 +30,7 @@ export const RestylingCircleMarker = L.CircleMarker.extend({
       fill: this.options.fill
     };
     this.setStyle({
-      color: 'var(--palette-active)',
+      color: 'var(--map-symbol-active)',
       stroke: true,
       fill: true
     })
