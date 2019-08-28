@@ -32,7 +32,7 @@ export class FilterSummary extends LitElement {
         </li>
         ${this.counts.map((el) => html`
         <li>
-          <span>${el.current}</span> of <span>${el.total}</span> sites having <span>${el.name}</span>
+          <span>${el.current}</span> of <span>${el.total}</span> sites with <span>${el.name}</span>
         </li>
         `)}
       </ul>
