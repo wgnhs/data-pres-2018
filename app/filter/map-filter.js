@@ -67,13 +67,13 @@ export class MapFilter extends LitElement {
         @import url("./css/typography.css");
       </style>
       <div>
-        <filter-summary></filter-summary>
-      </div>
-      <div>
         Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
       <div>
         ${this.renderFilterGroups()}
+      </div>
+      <div>
+        <filter-summary></filter-summary>
       </div>
     `;
   }
