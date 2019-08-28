@@ -32,8 +32,9 @@ html {
     --palette-green: var(--row-green);
     --palette-orange: var(--row-orange);
 
-    --palette-brand: var(--row-accent);
     --palette-active: var(--palette-orange);
+    --palette-brand: var(--row-accent);
+    --brand-height: calc(3 * var(--font-size-title));
 
     --map-symbol-0: var(--palette-blue);
     --map-symbol-1: var(--palette-green);

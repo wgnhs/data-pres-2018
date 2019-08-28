@@ -47,7 +47,7 @@
     @media (min-width: 770px) {
       [data-view=app] {
         display: grid;
-        grid-template: "head head" calc(3 * var(--font-size-title)) 
+        grid-template: "head head" var(--brand-height) 
                        "left right"
                        / 1fr 1fr;
       }
@@ -69,13 +69,12 @@
         display: grid;
         grid-template: "right" 80%
                        "left" 1fr
-                       "head" calc(3 * var(--font-size-title));
+                       "head" var(--brand-height);
         overflow-y: auto;
       }
     }
     .brand-header {
       grid-area: head;
-      background-color: var(--palette-brand);
     }
     .left-panel {
       grid-area: left;
@@ -112,6 +111,13 @@
     section h2 {
       margin: 0 var(--border-radius);
     }
+    .brand-header {
+      background-color: var(--palette-brand);
+      overflow: hidden;
+    }
+    .brand-img {
+      height: var(--brand-height);
+    }
   </style>
 </head>
 <body>
@@ -119,10 +125,10 @@
     <app-spinner></app-spinner>
   </div>
   <div id="app" data-view="app">
-    <header class="brand-header"></header>
+    <header class="brand-header"><img class="brand-img" src="/css/wgnhs-long-reversed.png"></img></header>
     <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
       <div class="default-view">
-        <h1 class="title">WGNHS Data Viewer</h1>
+        <h1 class="title">Data Viewer</h1>
         <section>
           <map-filter id="filter"></map-filter>
         </section>
