@@ -47,25 +47,43 @@
     @media (min-width: 770px) {
       [data-view=app] {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template: "head head" calc(3 * var(--font-size-title)) 
+                       "left right"
+                       / 1fr 1fr;
       }
-      app-sidebar {
+      .left-panel {
         overflow-y: auto;
       }
-      .right-panel {
-        grid-column-start: 2;
+      @media (max-height: 719px) {
+        [data-view=app] {
+          grid-template: "left right"
+                        / 1fr 1fr;
+        }
+        .brand-header {
+          display: none;
+        }
       }
     }
     @media (max-width: 769px) {
       [data-view=app] {
         display: grid;
-        grid-template-rows: 80% 1fr;
+        grid-template: "right" 80%
+                       "left" 1fr
+                       "head" calc(3 * var(--font-size-title));
         overflow-y: auto;
       }
-      .right-panel {
-        grid-row-start: 1;
-      }
     }
+    .brand-header {
+      grid-area: head;
+      background-color: var(--palette-brand);
+    }
+    .left-panel {
+      grid-area: left;
+    }
+    .right-panel {
+      grid-area: right;
+    }
+
     [data-view] {
       position: fixed;
       top: 0;
@@ -83,18 +101,11 @@
     [data-closed] {
       display: none;
     }
-    .header {
+    .title {
       text-align: center;
       font-size: var(--font-size-title);
       padding: var(--font-size-title) var(--font-size);
     }
-    /* .default-view {
-      margin: 0 var(--border-radius);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-      height: 100%;
-    } */
     section p {
       margin: 0 var(--line-height);
     }
@@ -108,9 +119,10 @@
     <app-spinner></app-spinner>
   </div>
   <div id="app" data-view="app">
+    <header class="brand-header"></header>
     <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
       <div class="default-view">
-        <h1 class="header">WGNHS Data Viewer</h1>
+        <h1 class="title">WGNHS Data Viewer</h1>
         <section>
           <map-filter id="filter"></map-filter>
         </section>
