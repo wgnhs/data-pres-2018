@@ -638,6 +638,9 @@
     :host {
       overflow: auto;
     }
+    .panel {
+      position: relative;
+    }
     .container {
       min-height: 10em;
       display: grid;
@@ -679,16 +682,18 @@
     <style>
       @import url("./css/typography.css");
     </style>
-    <div class="controls">
-      <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
-      <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
-      <button class="control" @click=${this.zoomOut} ?disabled=${this.isMinZoom}><i class="material-icons" title="Zoom Out">zoom_out</i></button>
-      <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
-      <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
-    </div>
-    <div class="container">
-      ${this.imageTag}
-      <slot></slot>
+    <div class="panel">
+      <div class="controls">
+        <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
+        <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
+        <button class="control" @click=${this.zoomOut} ?disabled=${this.isMinZoom}><i class="material-icons" title="Zoom Out">zoom_out</i></button>
+        <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
+        <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
+      </div>
+      <div class="container">
+        ${this.imageTag}
+        <slot></slot>
+      </div>
     </div>
     `;
     }
