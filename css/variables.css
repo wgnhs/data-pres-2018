@@ -28,4 +28,8 @@ html {
     --transition-duration: 0.3s;
     --z-index-base: 0;
     --z-index-interrupt: 2000;
+
+    --map-symbol-0: var(--palette-blue);
+    --map-symbol-1: var(--palette-green);
+    --map-symbol-active: var(--palette-orange);
 }

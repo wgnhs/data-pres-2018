@@ -4,248 +4,6 @@
   (global = global || self, factory(global.app = {}, global.common, global.common, global.common, global.lit, global.lit, global.lit));
 }(this, function (exports, litElement, wgnhsCommon, core, wgnhsViz, wgnhsInteract, wgnhsLayout) { 'use strict';
 
-  const RestylingCircleMarker = L.CircleMarker.extend({
-    getEvents: function() {
-      return {
-        zoomend: this._restyle,
-        filterpoints: this._filter
-      }
-    }, 
-    _restyle: function(e){
-      this.setRadius(RestylingCircleMarker.calcRadius(e.target.getZoom()));
-    },
-    _filter: function(e) {
-      let isDisplayable = e.detail.resolve(this.feature.properties);
-      if (isDisplayable) {
-        this.setStyle({
-          stroke: true,
-          fill: true
-        });
-      } else {
-        this.setStyle({
-          stroke: false,
-          fill: false
-        });
-      }
-    },
-    highlight: function() {
-      this._activeBackup = {
-        color: this.options.color,
-        stroke: this.options.stroke,
-        fill: this.options.fill
-      };
-      this.setStyle({
-        color: 'var(--palette-active)',
-        stroke: true,
-        fill: true
-      });
-    },
-    removeHighlight: function() {
-      if (this._activeBackup) {
-        this.setStyle(this._activeBackup);
-        this._activeBackup = null;
-      }
-    }
-  });
-
-  RestylingCircleMarker.calcRadius = (a) => Math.max(Math.floor(a/1.5),3);
-
-  class SiteMap extends window.L.Evented {
-    constructor() {
-      super();
-      this.selected = false;
-      this._highlight = null;
-
-      /* ~~~~~~~~ Map ~~~~~~~~ */
-      //create a map, center it, and set the zoom level. 
-      //set zoomcontrol to false because we will add it in a different corner. 
-      const map = this.map = L.map('map', {zoomControl:false}).setView([45, -89.623861], 7);
-      this.el = document.querySelector('#map');
-       
-       /* ~~~~~~~~ Zoom Control ~~~~~~~~ */
-      //place a zoom control in the top right: 
-      new L.Control.Zoom({position: 'topright'}).addTo(map);
-
-       
-      /* ~~~~~~~~ Basemap Layers ~~~~~~~~ */
-       
-      // basemaps from Open Street Map
-      const osmhot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors', 
-        label: "OpenStreetMap Humanitarian"
-      }).addTo(map);
-
-      // Esri basemaps 
-      const esrisat = L.esri.basemapLayer('Imagery', {label: "Esri Satellite"});
-      
-      // add the basemap control to the map  
-      var basemaps = [osmhot, esrisat]; 
-      map.addControl(L.control.basemaps({
-         basemaps: basemaps, 
-         tileX: 0, 
-         tileY: 0, 
-         tileZ: 1
-      })); 
-
-      let boreURL = 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson';
-      let quatURL = 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson';
-      Promise.all([
-        window.fetch(boreURL).then((res) => res.json()).then((geojson)=>({name: 'Geophysical Log Data', color: 'var(--palette-blue)', data: geojson})), 
-        window.fetch(quatURL).then((res) => res.json()).then((geojson)=>({name: 'Quaternary Core Data', color: 'var(--palette-green)', data: geojson}))
-      ]).then((responses) => {
-          this.layers = responses.map((res) => {
-            return L.geoJSON(res.data, {
-              name: res.name,
-              pointToLayer: function(geoJsonPoint, latlon) {
-                return new RestylingCircleMarker(latlon, {
-                  weight: 2,
-                  color: res.color,
-                  radius: RestylingCircleMarker.calcRadius(map.getZoom()),
-                  stroke: false,
-                  fill: false
-                });
-              }
-            });
-          });
-          this.layers.forEach(l => l.on('click', (e) => {
-            if (this._highlight !== e.propagatedFrom) {
-              this.fire('interaction', e.propagatedFrom.feature.properties);
-            } else {
-              this.fire('interaction');
-            }
-          }));
-          this.layers.forEach(l => l.addTo(map));
-        let lookup = {};
-        this.layers.forEach(function(layer, idx, arr) {
-          layer.eachLayer(function(obj) {
-            let wid = obj.feature.properties['Wid'] || obj.feature.properties['WGNHS_ID'];
-            let siteCode = SiteMap.getSiteCode(obj.feature.properties);
-            let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
-            let latLon = obj.getLatLng();
-            let cache = lookup[siteCode] || {
-              'Site_Code': siteCode,
-              'Site_Name': siteName,
-              'Wid': wid,
-              'Latitude': latLon['lat'].toFixed(6),
-              'Longitude': latLon['lng'].toFixed(6),
-              point: obj,
-              datas: new Array(arr.length)
-            };
-            obj.feature.properties['Site_Code'] = siteCode;
-            obj.feature.properties['Data_Type'] = layer.options.name;
-
-            cache.datas[idx] = obj.feature.properties;
-            lookup[siteCode] = cache;
-          });
-        });
-        this._lookup = lookup;
-        this.fire('init');
-      });
-    }
-
-    static getSiteCode(params) {
-      let keys = ['Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
-      let result = keys.reduce((prev, curr) => {
-        return prev || params[curr];
-      }, undefined);
-      return result;
-    }
-
-    //TODO HACK
-    getPoint(params) {
-      let result = null;
-      let cache = this._lookup[SiteMap.getSiteCode(params)];
-      if (cache) {
-        result = cache.point;
-      }
-      return result;
-    }
-
-    getSite(params) {
-      let result = this._lookup[SiteMap.getSiteCode(params)];
-      return result;
-    }
-
-    zoomToPoint(site) {
-      let point = this.getPoint(site);
-      if (point) {
-        this.map.setZoomAround(point.getLatLng(), 15);
-      }
-    }
-
-    getHighlightPoint() {
-      // console.log('retrieve highlight point');
-      let result = this._highlight;
-      return result;
-    }
-
-    setHighlightPoint(point) {
-      if (point) {
-        // console.log('set highlight point');
-        this._highlight = point;
-        this._highlight.bringToFront();
-        this._highlight.highlight();
-      } else {
-        this.clearSelection();
-      }
-    }
-
-    selectPoint(params) {
-      let result = null;
-      // console.log('select point on map:', site);
-      let point = this.getPoint(params);
-      if (point) {
-        result = point.feature.properties;
-        let highlightPoint = this.getHighlightPoint();
-        if (point !== highlightPoint) {
-          this.clearSelection();
-          this.setHighlightPoint(point);
-        }
-      }
-      return result;
-    }
-
-    selectSite(params) {
-      let result = this.getSite(params);
-      this.selectPoint(params);
-      return result;
-    }
-
-    clearSelection() {
-      // console.log('clear highlight group');
-      if (this._highlight) {
-        this._highlight.bringToBack();
-        this._highlight.removeHighlight();
-      }
-      this._highlight = null;
-    }
-
-    updatePoints(activePoints) {
-      this.map.fire('filterpoints', {
-        detail: {
-          resolve: (props) => {
-            return activePoints.reduce((prev, activeSet) => {
-              const code = SiteMap.getSiteCode(props);
-              const has = activeSet.has('' + code);
-              const result = prev || has;
-              return result;
-            }, false);
-          }
-        }
-      });
-    }
-
-    setVisibility(isVisible) {
-      if (isVisible) {
-        this.el.removeAttribute('data-closed');
-        this.map.invalidateSize();
-      } else {
-        this.el.setAttribute('data-closed', true);
-      }
-    }
-
-  }
-
   class FilterGroup {
     constructor(config) {
       Object.assign(this, config);
@@ -578,6 +336,10 @@
       title: "Geophysical Log Data",
       prop: 'Data_Type',
       'Data_Type': 'Geophysical Log Data',
+      source: {
+        geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson'
+      },
+      color: 'var(--map-symbol-0)',
       toggleable: true,
       active: true,
       sections: [
@@ -689,6 +451,10 @@
       title: "Quaternary Core Data",
       prop: 'Data_Type',
       'Data_Type': 'Quaternary Core Data',
+      source: {
+        geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson'
+      },
+      color: 'var(--map-symbol-1)',
       toggleable: true,
       active: true,
       sections: [
@@ -734,6 +500,256 @@
       ]
     })
   ];
+
+  const RestylingCircleMarker = L.CircleMarker.extend({
+    getEvents: function() {
+      return {
+        zoomend: this._restyle,
+        filterpoints: this._filter
+      }
+    }, 
+    _restyle: function(e){
+      this.setRadius(RestylingCircleMarker.calcRadius(e.target.getZoom()));
+    },
+    _filter: function(e) {
+      let isDisplayable = e.detail.resolve(this.feature.properties);
+      if (isDisplayable) {
+        this.setStyle({
+          stroke: true,
+          fill: true
+        });
+      } else {
+        this.setStyle({
+          stroke: false,
+          fill: false
+        });
+      }
+    },
+    highlight: function() {
+      this._activeBackup = {
+        color: this.options.color,
+        stroke: this.options.stroke,
+        fill: this.options.fill
+      };
+      this.setStyle({
+        color: 'var(--map-symbol-active)',
+        stroke: true,
+        fill: true
+      });
+    },
+    removeHighlight: function() {
+      if (this._activeBackup) {
+        this.setStyle(this._activeBackup);
+        this._activeBackup = null;
+      }
+    }
+  });
+
+  RestylingCircleMarker.calcRadius = (a) => Math.max(Math.floor(a/1.5),3);
+
+  class SiteMap extends window.L.Evented {
+    constructor() {
+      super();
+      this.selected = false;
+      this._highlight = null;
+
+      /* ~~~~~~~~ Map ~~~~~~~~ */
+      //create a map, center it, and set the zoom level. 
+      //set zoomcontrol to false because we will add it in a different corner. 
+      const map = this.map = L.map('map', {zoomControl:false}).setView([45, -89.623861], 7);
+      this.el = document.querySelector('#map');
+       
+       /* ~~~~~~~~ Zoom Control ~~~~~~~~ */
+      //place a zoom control in the top right: 
+      new L.Control.Zoom({position: 'topright'}).addTo(map);
+
+       
+      /* ~~~~~~~~ Basemap Layers ~~~~~~~~ */
+       
+      // basemaps from Open Street Map
+      const osmhot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors', 
+        label: "OpenStreetMap Humanitarian"
+      }).addTo(map);
+
+      // Esri basemaps 
+      const esrisat = L.esri.basemapLayer('Imagery', {label: "Esri Satellite"});
+      
+      // add the basemap control to the map  
+      var basemaps = [osmhot, esrisat]; 
+      map.addControl(L.control.basemaps({
+         basemaps: basemaps, 
+         tileX: 0, 
+         tileY: 0, 
+         tileZ: 1
+      })); 
+
+      let sources = filterLookup.reduce((result, curr) => {
+        if (curr.source && curr.source.geojson) {
+          result.push(
+            window.fetch(curr.source.geojson)
+            .then((res) => res.json())
+            .then((geojson)=>({
+              name: curr[curr.prop],
+              color: curr.color,
+              data: geojson})));
+        }
+        return result;
+      }, []);
+
+      Promise.all(sources).then((responses) => {
+          this.layers = responses.map((res) => {
+            return L.geoJSON(res.data, {
+              name: res.name,
+              pointToLayer: function(geoJsonPoint, latlon) {
+                return new RestylingCircleMarker(latlon, {
+                  weight: 2,
+                  color: res.color,
+                  radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+                  stroke: false,
+                  fill: false
+                });
+              }
+            });
+          });
+          this.layers.forEach(l => l.on('click', (e) => {
+            if (this._highlight !== e.propagatedFrom) {
+              this.fire('interaction', e.propagatedFrom.feature.properties);
+            } else {
+              this.fire('interaction');
+            }
+          }));
+          this.layers.forEach(l => l.addTo(map));
+        let lookup = {};
+        this.layers.forEach(function(layer, idx, arr) {
+          layer.eachLayer(function(obj) {
+            let wid = obj.feature.properties['Wid'] || obj.feature.properties['WGNHS_ID'];
+            let siteCode = SiteMap.getSiteCode(obj.feature.properties);
+            let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
+            let latLon = obj.getLatLng();
+            let cache = lookup[siteCode] || {
+              'Site_Code': siteCode,
+              'Site_Name': siteName,
+              'Wid': wid,
+              'Latitude': latLon['lat'].toFixed(6),
+              'Longitude': latLon['lng'].toFixed(6),
+              point: obj,
+              datas: new Array(arr.length)
+            };
+            obj.feature.properties['Site_Code'] = siteCode;
+            obj.feature.properties['Data_Type'] = layer.options.name;
+
+            cache.datas[idx] = obj.feature.properties;
+            lookup[siteCode] = cache;
+          });
+        });
+        this._lookup = lookup;
+        this.fire('init');
+      });
+    }
+
+    static getSiteCode(params) {
+      let keys = ['Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
+      let result = keys.reduce((prev, curr) => {
+        return prev || params[curr];
+      }, undefined);
+      return result;
+    }
+
+    //TODO HACK
+    getPoint(params) {
+      let result = null;
+      let cache = this._lookup[SiteMap.getSiteCode(params)];
+      if (cache) {
+        result = cache.point;
+      }
+      return result;
+    }
+
+    getSite(params) {
+      let result = this._lookup[SiteMap.getSiteCode(params)];
+      return result;
+    }
+
+    zoomToPoint(site) {
+      let point = this.getPoint(site);
+      if (point) {
+        this.map.setZoomAround(point.getLatLng(), 15);
+      }
+    }
+
+    getHighlightPoint() {
+      // console.log('retrieve highlight point');
+      let result = this._highlight;
+      return result;
+    }
+
+    setHighlightPoint(point) {
+      if (point) {
+        // console.log('set highlight point');
+        this._highlight = point;
+        this._highlight.bringToFront();
+        this._highlight.highlight();
+      } else {
+        this.clearSelection();
+      }
+    }
+
+    selectPoint(params) {
+      let result = null;
+      // console.log('select point on map:', site);
+      let point = this.getPoint(params);
+      if (point) {
+        result = point.feature.properties;
+        let highlightPoint = this.getHighlightPoint();
+        if (point !== highlightPoint) {
+          this.clearSelection();
+          this.setHighlightPoint(point);
+        }
+      }
+      return result;
+    }
+
+    selectSite(params) {
+      let result = this.getSite(params);
+      this.selectPoint(params);
+      return result;
+    }
+
+    clearSelection() {
+      // console.log('clear highlight group');
+      if (this._highlight) {
+        this._highlight.bringToBack();
+        this._highlight.removeHighlight();
+      }
+      this._highlight = null;
+    }
+
+    updatePoints(activePoints) {
+      this.map.fire('filterpoints', {
+        detail: {
+          resolve: (props) => {
+            return activePoints.reduce((prev, activeSet) => {
+              const code = SiteMap.getSiteCode(props);
+              const has = activeSet.has('' + code);
+              const result = prev || has;
+              return result;
+            }, false);
+          }
+        }
+      });
+    }
+
+    setVisibility(isVisible) {
+      if (isVisible) {
+        this.el.removeAttribute('data-closed');
+        this.map.invalidateSize();
+      } else {
+        this.el.setAttribute('data-closed', true);
+      }
+    }
+
+  }
 
   const DEFAULT_ROUTE = 'entry';
 
@@ -1191,10 +1207,11 @@
         <span slot="header">${group.title}</span>
         ${(!group.toggleable)?'':litElement.html`
           <toggle-switch
-            name="${group.mapName}"
+            name="${group.title}"
             slot="header-after"
             ?checked=${group.active}
             @change=${this._handleGroup(group, 'include')}
+            style="--palette-active: ${group.color}"
           ></toggle-switch>
         `}
         <div slot="content">
