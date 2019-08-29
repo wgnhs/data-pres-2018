@@ -294,6 +294,7 @@
     'Spec_Gamma': {title: 'Spectral Gamma', desc: ''},
     'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''},
     'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''},
+    'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''},
     'Fluid_Temp': {title: 'Fluid Temperature', desc: ''},
     'Fluid_Res': {title: 'Fluid Resistivity', desc: ''},
     'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
@@ -338,7 +339,7 @@
       ]
     }),
     new FilterGroup({
-      title: "Geophysical log data",
+      title: "Geophysical Log data",
       prop: 'Data_Type',
       'Data_Type': 'geophysical log',
       source: {
@@ -364,6 +365,7 @@
         },
         {
           title: "Geologic",
+          bundled: true,
           fields: {
             "Norm_Res": {
               controls: [
@@ -400,6 +402,7 @@
         },
         {
           title: "Hydrogeologic",
+          bundled: true,
           fields: {
             "Fluid_Cond": {
               controls: [
@@ -431,6 +434,7 @@
         },
         {
           title: "Image",
+          bundled: true,
           fields: {
             "OBI": {
               controls: [
@@ -453,7 +457,7 @@
       ]
     }),
     new FilterGroup({
-      title: "Quaternary core data",
+      title: "Quaternary Core data",
       prop: 'Data_Type',
       'Data_Type': 'quaternary core',
       source: {
@@ -465,14 +469,14 @@
       sections: [
         {
           fields: {
-            "Project": {
-              controls: [
-                new SelectControl()
-              ]
-            },
             "Drill_Year": {
               controls: [
                 new GTLTControl(true)
+              ]
+            },
+            "Project": {
+              controls: [
+                new SelectControl()
               ]
             },
             "Depth_Ft": {
@@ -489,6 +493,7 @@
         },
         {
           title: "Analyses available",
+          bundled: true,
           fields: {
             "Subsamples": {
               controls: [
@@ -854,6 +859,15 @@
 
     constructor() {
       super();
+      this.genId = (function() {
+        const memo = {};
+        return function(index) {
+          if (!memo[index]) {
+            memo[index] = wgnhsCommon.genId();
+          }
+          return memo[index];
+        }
+      })();
     }
 
     static get styles() {
@@ -874,22 +888,24 @@
       let key = 0, value = 1;
       let entries = Object.entries(this.info).filter((el) => {
         return !ignoredKeys.includes(el[key]);
+      }).filter((el) => {
+        return !!el[value];
       }).map((el, index) => litElement.html`
-      <td class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-        <label for="${this.context.genId(index)}" >
+      <dt class="label" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
+        <label for="${this.genId(index)}" >
           ${(keyLookup[el[key]])?keyLookup[el[key]].title:el[key]}
         </label>
-      </td>
-      <td class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
-        <span id="${this.context.genId(index)}">
+      </dt>
+      <dd class="detail" title="${(keyLookup[el[key]])?keyLookup[el[key]].desc:el[key]}">
+        <span id="${this.genId(index)}">
           ${el[value]}
         </span>
-      </td>
+      </dd>
     `);
       return litElement.html`
-      <div data-element="table">
+      <dl data-element="table">
         ${entries}
-      </div>
+      </dl>
     `;
     }
   }
@@ -926,12 +942,47 @@
 
     render() {
       return litElement.html`
-    <table-layout .info=${this.info} .context=${this.context}></table-layout>
+    <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
     <pdf-view-button
       .panel=${this.context.pdfpanel}
       src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.pdf'}">
     </pdf-view-button>
     `;
+    }
+
+    prepInfo() {
+      return Object.assign(this.topFields, this.bottomFields);
+    }
+
+    get topFields() {
+      return this.getFields(el => !el.bundled);
+    }
+
+    get bottomFields() {
+      const fields = this.getFields(el => el.bundled);
+      const names = Object.entries(fields)
+        .filter(kv => !!kv[1])
+        .map(kv => (keyLookup[kv[0]])?keyLookup[kv[0]].title:kv[0]);
+      return {
+        'Data available:': names.map(val => litElement.html`${val}<br>`)
+      };
+    }
+
+    get group() {
+      return filterLookup.find(el => (el.prop && el[el.prop] === this.info[el.prop]));
+    }
+
+    getFields(fn) {
+      const result = {};
+      const sections = this.group.sections.filter(fn);
+    
+      sections.forEach(section => {
+        Object.entries(section.fields).forEach(kv => {
+          result[kv[0]] = this.info[kv[0]];
+        });
+      });
+    
+      return result;
     }
   }
   customElements.define('log-layout', LogLayout);
@@ -942,7 +993,7 @@
     }
 
     static include(info, context) {
-      return litElement.html`<table-layout .info=${info} .context=${context}></table-layout>`;
+      return litElement.html`<core-layout .info=${info} .context=${context}></core-layout>`;
     }
 
     static get properties() {
@@ -965,7 +1016,48 @@
     `;
     }
     render() {
-      return litElement.html``;
+      return litElement.html`
+    <table-layout .info=${this.prepInfo()}></table-layout>
+    `;
+    }
+
+    prepInfo() {
+      return Object.assign(this.topFields, this.bottomFields);
+    }
+
+    get topFields() {
+      return this.getFields(el => !el.bundled);
+    }
+
+    get bottomFields() {
+      const fields = this.getFields(el => el.bundled);
+      let names = Object.entries(fields)
+        .filter(kv => !!kv[1])
+        .map(kv => (keyLookup[kv[0]])?keyLookup[kv[0]].title:kv[0])
+        .map(val => litElement.html`${val}<br>`);
+      if (names.length < 1) {
+        names = null;
+      }
+      return {
+        'Analyses available:': names
+      };
+    }
+
+    get group() {
+      return filterLookup.find(el => (el.prop && el[el.prop] === this.info[el.prop]));
+    }
+
+    getFields(fn) {
+      const result = {};
+      const sections = this.group.sections.filter(fn);
+    
+      sections.forEach(section => {
+        Object.entries(section.fields).forEach(kv => {
+          result[kv[0]] = this.info[kv[0]];
+        });
+      });
+    
+      return result;
     }
   }
   customElements.define('core-layout', CoreLayout);
@@ -1003,15 +1095,7 @@
 
     constructor() {
       super();
-      this.genId = (function() {
-        const memo = {};
-        return function(index) {
-          if (!memo[index]) {
-            memo[index] = wgnhsCommon.genId();
-          }
-          return memo[index];
-        }
-      })();
+
     }
 
     static get styles() {
@@ -1038,7 +1122,11 @@
         color: var(--palette-accent);
         cursor: pointer;
       }
-      
+
+      .name {
+        text-transform: capitalize;
+      }
+
       [data-closed] {
         display: none;
       }
@@ -1072,10 +1160,9 @@
         ${this.renderData({
           Latitude, Longitude, WID
         })}
-        <h2>Data Available:</h2>
         ${this.siteinfo.datas.map((props) => litElement.html`
           <app-collapsible open>
-            <span slot="header">${props['Data_Type']}</span>
+            <span slot="header" class="name">${props['Data_Type']}</span>
             <div slot="content">
               ${this.renderData(props, props['Data_Type'])}
             </div>
@@ -1114,6 +1201,9 @@
     li[disabled] {
       color: var(--palette-dark);
     }
+    .name {
+      text-transform: capitalize;
+    }
     `;
     }
 
@@ -1129,7 +1219,7 @@
       <ul>
         ${this.counts.map((el) => litElement.html`
         <li ?disabled=${!el.included}>
-          ${el.current} of ${el.total} ${el.name} sites
+          ${el.current} of ${el.total} <span class="name">${el.name}</span> sites
           ${(el.filteredBy.length > 0)?litElement.html`
           (filtered by ${el.filteredBy.join(', ')})
           `:''}

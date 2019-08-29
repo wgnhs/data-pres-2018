@@ -853,7 +853,7 @@
     }
 
     [data-closed] {
-      display: none;
+      visibility: hidden;
     }
     `;
     }
