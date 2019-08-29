@@ -72,9 +72,6 @@ export class MapFilter extends LitElement {
       <div>
         ${this.renderFilterGroups()}
       </div>
-      <div>
-        <filter-summary></filter-summary>
-      </div>
     `;
   }
 
