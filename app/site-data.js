@@ -80,6 +80,7 @@ export const keyLookup = {
   'Spec_Gamma': {title: 'Spectral Gamma', desc: ''},
   'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''},
   'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''},
+  'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''},
   'Fluid_Temp': {title: 'Fluid Temperature', desc: ''},
   'Fluid_Res': {title: 'Fluid Resistivity', desc: ''},
   'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
@@ -124,7 +125,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Geophysical log data",
+    title: "Geophysical Log data",
     prop: 'Data_Type',
     'Data_Type': 'geophysical log',
     source: {
@@ -150,6 +151,7 @@ export const filterLookup = [
       },
       {
         title: "Geologic",
+        bundled: true,
         fields: {
           "Norm_Res": {
             controls: [
@@ -186,6 +188,7 @@ export const filterLookup = [
       },
       {
         title: "Hydrogeologic",
+        bundled: true,
         fields: {
           "Fluid_Cond": {
             controls: [
@@ -217,6 +220,7 @@ export const filterLookup = [
       },
       {
         title: "Image",
+        bundled: true,
         fields: {
           "OBI": {
             controls: [
@@ -239,7 +243,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Quaternary core data",
+    title: "Quaternary Core data",
     prop: 'Data_Type',
     'Data_Type': 'quaternary core',
     source: {
@@ -251,14 +255,14 @@ export const filterLookup = [
     sections: [
       {
         fields: {
-          "Project": {
-            controls: [
-              new SelectControl()
-            ]
-          },
           "Drill_Year": {
             controls: [
               new GTLTControl(true)
+            ]
+          },
+          "Project": {
+            controls: [
+              new SelectControl()
             ]
           },
           "Depth_Ft": {
@@ -275,6 +279,7 @@ export const filterLookup = [
       },
       {
         title: "Analyses available",
+        bundled: true,
         fields: {
           "Subsamples": {
             controls: [

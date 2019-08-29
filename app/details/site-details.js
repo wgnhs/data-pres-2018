@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-import { genId, dispatch } from 'wgnhs-common';
+import { dispatch } from 'wgnhs-common';
 export { PDFViewButton } from 'wgnhs-viz';
 import { layoutResolver } from './layout-resolver.js';
 
@@ -17,15 +17,7 @@ export class SiteDetails extends LitElement {
 
   constructor() {
     super();
-    this.genId = (function() {
-      const memo = {};
-      return function(index) {
-        if (!memo[index]) {
-          memo[index] = genId();
-        }
-        return memo[index];
-      }
-    })();
+
   }
 
   static get styles() {
@@ -52,7 +44,11 @@ export class SiteDetails extends LitElement {
         color: var(--palette-accent);
         cursor: pointer;
       }
-      
+
+      .name {
+        text-transform: capitalize;
+      }
+
       [data-closed] {
         display: none;
       }
@@ -86,10 +82,9 @@ export class SiteDetails extends LitElement {
         ${this.renderData({
           Latitude, Longitude, WID
         })}
-        <h2>Data Available:</h2>
         ${this.siteinfo.datas.map((props) => html`
           <app-collapsible open>
-            <span slot="header">${props['Data_Type']}</span>
+            <span slot="header" class="name">${props['Data_Type']}</span>
             <div slot="content">
               ${this.renderData(props, props['Data_Type'])}
             </div>

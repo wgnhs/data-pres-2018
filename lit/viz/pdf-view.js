@@ -288,7 +288,7 @@ export class PDFViewButton extends LitElement {
     }
 
     [data-closed] {
-      display: none;
+      visibility: hidden;
     }
     `;
   }
