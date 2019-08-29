@@ -17,6 +17,7 @@
       if (context.toggleable && input) {
         result = {
           id: context.id,
+          context,
           resolve: function(feature) {
             return feature[context.prop] === context.value;
           }
@@ -43,6 +44,7 @@
       if (input) {
         result = {
           id: context.id,
+          context,
           resolveGroup: function(feature) {
             return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
           },
@@ -83,6 +85,7 @@
       if (input) {
         result = {
           id: context.id,
+          context,
           resolveGroup: function(feature) {
             return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
           },
@@ -127,6 +130,7 @@
       if (input) {
         result = {
           id: context.id,
+          context,
           resolveGroup: function(feature) {
             return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
           },
@@ -162,6 +166,7 @@
       if (input) {
         result = {
           id: context.id,
+          context,
           resolveGroup: function(feature) {
             return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
           },
@@ -197,6 +202,7 @@
       if (input) {
         result = {
           id: context.id,
+          context,
           resolveGroup: function(feature) {
             return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
           },
@@ -221,7 +227,8 @@
       // Define aggregated data for visualization
       this._aggrKeys = [
         'County',
-        'Drill_Meth'
+        'Drill_Method',
+        'Project'
       ];
       this.aggrData = [];
       for (let l of layers) {
@@ -274,10 +281,9 @@
     'County'
   ];
   const keyLookup = {
-    'SiteName': {title: 'Site Name', desc: ''},
-    'Site_Name': {title: 'Site Name', desc: ''},
-    'Wid': {title: 'WID', desc: ''},
-    'ID': {title: 'ID', desc: ''},
+    'Site_Name': {title: 'Name', desc: ''},
+    'Wid': {title: 'WGNHS ID', desc: ''},
+    'WID': {title: 'WGNHS ID', desc: ''},
     'RecentLog': {title: 'Most recent log (year)', desc: ''},
     'MaxDepth': {title: 'Max depth (ft)', desc: ''},
     'Norm_Res': {title: 'Normal Resistivity', desc: ''},
@@ -293,17 +299,21 @@
     'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
     'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''},
     'Video': {title: 'Video', desc: ''},
+    'Field_ID': {title: 'Field ID', desc: ''},
+    'Project': {title: 'Project', desc: ''},
     'Drill_Year': {title: 'Drill year', desc: ''},
     'Depth_Ft': {title: 'Depth (ft)', desc: ''},
-    'Drill_Meth': {title: 'Drill Method', desc: ''},
+    'Drill_Method': {title: 'Drill Method', desc: ''},
     'Subsamples': {title: 'Subsamples', desc: ''},
     'Photos': {title: 'Core Photos', desc: ''},
     'Grainsize': {title: 'Grainsize', desc: ''},
+    'Age_Data': {title: 'Age data', desc: ''},
+    'Proxy_Data': {title: 'Proxy data', desc: ''},
   };
 
   const filterLookup = [
     new FilterGroup({
-      title: "Site Information",
+      title: "Site information",
       open: true,
       sections: [
         {
@@ -313,11 +323,6 @@
                 new SelectControl()
               ]
             },
-            // "SiteName": {
-            //   controls: [
-            //     new ContainsControl()
-            //   ]
-            // },
             "Site_Name": {
               controls: [
                 new ContainsControl()
@@ -333,9 +338,9 @@
       ]
     }),
     new FilterGroup({
-      title: "Geophysical Log Data",
+      title: "Geophysical log data",
       prop: 'Data_Type',
-      'Data_Type': 'Geophysical Log Data',
+      'Data_Type': 'geophysical log',
       source: {
         geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson'
       },
@@ -448,9 +453,9 @@
       ]
     }),
     new FilterGroup({
-      title: "Quaternary Core Data",
+      title: "Quaternary core data",
       prop: 'Data_Type',
-      'Data_Type': 'Quaternary Core Data',
+      'Data_Type': 'quaternary core',
       source: {
         geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson'
       },
@@ -460,6 +465,11 @@
       sections: [
         {
           fields: {
+            "Project": {
+              controls: [
+                new SelectControl()
+              ]
+            },
             "Drill_Year": {
               controls: [
                 new GTLTControl(true)
@@ -470,7 +480,7 @@
                 new GTLTControl()
               ]
             },
-            "Drill_Meth": {
+            "Drill_Method": {
               controls: [
                 new SelectControl()
               ]
@@ -491,6 +501,16 @@
               ]
             },
             "Grainsize": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Age_Data": {
+              controls: [
+                new CheckboxControl()
+              ]
+            },
+            "Proxy_Data": {
               controls: [
                 new CheckboxControl()
               ]
@@ -877,7 +897,7 @@
 
   class LogLayout extends litElement.LitElement {
     static get layoutName() {
-      return 'Geophysical Log Data';
+      return 'geophysical log';
     }
 
     static include(info, context) {
@@ -918,7 +938,7 @@
 
   class CoreLayout extends litElement.LitElement {
     static get layoutName() {
-      return 'Quaternary Core Data';
+      return 'quaternary core';
     }
 
     static include(info, context) {
@@ -1079,7 +1099,8 @@
     static get properties() {
       return {
         counts: {
-          type: Array
+          type: Array,
+          attribute: false
         }
       };
     }
@@ -1090,24 +1111,28 @@
 
     static get styles() {
       return litElement.css`
+    li[disabled] {
+      color: var(--palette-dark);
+    }
     `;
     }
 
     render() {
       return (!this.counts)?litElement.html``:litElement.html`
     <div>
-      <span>Showing:</span>
+      <span>Showing
+        ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
+        of
+        ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
+        total sites
+      </span>
       <ul>
-        <li>
-          <span>
-          ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
-          </span> of <span>
-          ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
-          </span> total sites
-        </li>
         ${this.counts.map((el) => litElement.html`
-        <li>
-          <span>${el.current}</span> of <span>${el.total}</span> sites with <span>${el.name}</span>
+        <li ?disabled=${!el.included}>
+          ${el.current} of ${el.total} ${el.name} sites
+          ${(el.filteredBy.length > 0)?litElement.html`
+          (filtered by ${el.filteredBy.join(', ')})
+          `:''}
         </li>
         `)}
       </ul>
@@ -1115,8 +1140,21 @@
     `;
     }
 
-    setCounts(counts) {
-      this.counts = counts;
+    handleFiltered(e) {
+      if (e.detail) {
+        this.counts = e.detail.counts;
+      }
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.__filteredHandler = this.handleFiltered.bind(this);
+      document.addEventListener('filtered', this.__filteredHandler);
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener('filtered', this.__filteredHandler);
+      super.disconnectedCallback();
     }
   }
   customElements.define('filter-summary', FilterSummary);
@@ -1317,13 +1355,15 @@
           filt: this.filter,
           sources: this.sources
         });
-        this.$summary.setCounts(MapFilter.getResultsInfo(this.sources, activePoints));
-        wgnhsCommon.dispatch(this, 'filtered', {activePoints});
+        const counts = MapFilter.getResultsInfo(
+          this.matchClass,
+          this.include,
+          this.filter,
+          this.sources,
+          activePoints
+          );
+        wgnhsCommon.dispatch(this, 'filtered', {activePoints, counts}, true, true);
       }
-    }
-
-    firstUpdated() {
-      this.$summary = this.renderRoot.querySelector('filter-summary');
     }
 
     init(uniques, layers) {
@@ -1376,10 +1416,20 @@
       return result;
     }
 
-    static getResultsInfo(sources, activePoints) {
+    static getResultsInfo(matchClass, include, filter, sources, activePoints) {
       const result = sources.map((layer, i) => {
         let stats = {};
         stats.name = layer.options.name;
+        stats.included = include.some((el) => {
+          return el.context.value === layer.options.name;
+        });
+        stats.filteredBy = filter.reduce((result, el) => {
+          if (el.context.group[el.context.group.prop] === layer.options.name) {
+            result.push((keyLookup[el.context.prop])?keyLookup[el.context.prop].title:el.context.prop);
+          }
+          return result;
+        }, []);
+        stats.matchClass = matchClass;
 
         let entries = Object.entries(layer._layers);
         stats.total = entries.length;
@@ -1554,7 +1604,7 @@
     window.siteMap.setVisibility(e.detail.closed);
   });
 
-  window.filter.addEventListener('filtered', function(e) {
+  document.addEventListener('filtered', function(e) {
     window.siteMap.updatePoints(e.detail.activePoints);
   });
 
