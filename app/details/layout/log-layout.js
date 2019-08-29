@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 
 export class LogLayout extends LitElement {
   static get layoutName() {
-    return 'Geophysical Log Data';
+    return 'geophysical log';
   }
 
   static include(info, context) {

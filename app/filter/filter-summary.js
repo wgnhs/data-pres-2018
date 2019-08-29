@@ -4,7 +4,8 @@ export class FilterSummary extends LitElement {
   static get properties() {
     return {
       counts: {
-        type: Array
+        type: Array,
+        attribute: false
       }
     };
   }
@@ -15,24 +16,28 @@ export class FilterSummary extends LitElement {
 
   static get styles() {
     return css`
+    li[disabled] {
+      color: var(--palette-dark);
+    }
     `;
   }
 
   render() {
     return (!this.counts)?html``:html`
     <div>
-      <span>Showing:</span>
+      <span>Showing
+        ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
+        of
+        ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
+        total sites
+      </span>
       <ul>
-        <li>
-          <span>
-          ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
-          </span> of <span>
-          ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
-          </span> total sites
-        </li>
         ${this.counts.map((el) => html`
-        <li>
-          <span>${el.current}</span> of <span>${el.total}</span> sites with <span>${el.name}</span>
+        <li ?disabled=${!el.included}>
+          ${el.current} of ${el.total} ${el.name} sites
+          ${(el.filteredBy.length > 0)?html`
+          (filtered by ${el.filteredBy.join(', ')})
+          `:''}
         </li>
         `)}
       </ul>
@@ -40,8 +45,21 @@ export class FilterSummary extends LitElement {
     `;
   }
 
-  setCounts(counts) {
-    this.counts = counts;
+  handleFiltered(e) {
+    if (e.detail) {
+      this.counts = e.detail.counts;
+    }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.__filteredHandler = this.handleFiltered.bind(this);
+    document.addEventListener('filtered', this.__filteredHandler);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('filtered', this.__filteredHandler);
+    super.disconnectedCallback();
   }
 }
 customElements.define('filter-summary', FilterSummary);

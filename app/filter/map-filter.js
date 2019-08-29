@@ -202,13 +202,15 @@ export class MapFilter extends LitElement {
         filt: this.filter,
         sources: this.sources
       });
-      this.$summary.setCounts(MapFilter.getResultsInfo(this.sources, activePoints));
-      dispatch(this, 'filtered', {activePoints});
+      const counts = MapFilter.getResultsInfo(
+        this.matchClass,
+        this.include,
+        this.filter,
+        this.sources,
+        activePoints
+        );
+      dispatch(this, 'filtered', {activePoints, counts}, true, true);
     }
-  }
-
-  firstUpdated() {
-    this.$summary = this.renderRoot.querySelector('filter-summary');
   }
 
   init(uniques, layers) {
@@ -261,10 +263,20 @@ export class MapFilter extends LitElement {
     return result;
   }
 
-  static getResultsInfo(sources, activePoints) {
+  static getResultsInfo(matchClass, include, filter, sources, activePoints) {
     const result = sources.map((layer, i) => {
       let stats = {};
       stats.name = layer.options.name;
+      stats.included = include.some((el) => {
+        return el.context.value === layer.options.name;
+      });
+      stats.filteredBy = filter.reduce((result, el) => {
+        if (el.context.group[el.context.group.prop] === layer.options.name) {
+          result.push((keyLookup[el.context.prop])?keyLookup[el.context.prop].title:el.context.prop);
+        }
+        return result;
+      }, []);
+      stats.matchClass = matchClass;
 
       let entries = Object.entries(layer._layers);
       stats.total = entries.length;

@@ -141,6 +141,6 @@ document.addEventListener('toggle-pdf-panel', function(e) {
   window.siteMap.setVisibility(e.detail.closed);
 });
 
-window.filter.addEventListener('filtered', function(e) {
+document.addEventListener('filtered', function(e) {
   window.siteMap.updatePoints(e.detail.activePoints);
 });

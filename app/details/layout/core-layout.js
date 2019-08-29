@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 
 export class CoreLayout extends LitElement {
   static get layoutName() {
-    return 'Quaternary Core Data';
+    return 'quaternary core';
   }
 
   static include(info, context) {

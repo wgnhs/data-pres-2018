@@ -14,6 +14,7 @@ export class FilterGroup {
     if (context.toggleable && input) {
       result = {
         id: context.id,
+        context,
         resolve: function(feature) {
           return feature[context.prop] === context.value;
         }
@@ -40,6 +41,7 @@ export class CheckboxControl {
     if (input) {
       result = {
         id: context.id,
+        context,
         resolveGroup: function(feature) {
           return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
         },
@@ -80,6 +82,7 @@ export class GTLTControl {
     if (input) {
       result = {
         id: context.id,
+        context,
         resolveGroup: function(feature) {
           return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
         },
@@ -124,6 +127,7 @@ export class SelectControl {
     if (input) {
       result = {
         id: context.id,
+        context,
         resolveGroup: function(feature) {
           return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
         },
@@ -159,6 +163,7 @@ export class TextControl {
     if (input) {
       result = {
         id: context.id,
+        context,
         resolveGroup: function(feature) {
           return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
         },
@@ -194,6 +199,7 @@ export class ContainsControl {
     if (input) {
       result = {
         id: context.id,
+        context,
         resolveGroup: function(feature) {
           return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
         },

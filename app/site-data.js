@@ -13,7 +13,8 @@ export class SiteData {
     // Define aggregated data for visualization
     this._aggrKeys = [
       'County',
-      'Drill_Meth'
+      'Drill_Method',
+      'Project'
     ];
     this.aggrData = [];
     for (let l of layers) {
@@ -66,10 +67,9 @@ export const ignoredKeys = [
   'County'
 ];
 export const keyLookup = {
-  'SiteName': {title: 'Site Name', desc: ''},
-  'Site_Name': {title: 'Site Name', desc: ''},
-  'Wid': {title: 'WID', desc: ''},
-  'ID': {title: 'ID', desc: ''},
+  'Site_Name': {title: 'Name', desc: ''},
+  'Wid': {title: 'WGNHS ID', desc: ''},
+  'WID': {title: 'WGNHS ID', desc: ''},
   'RecentLog': {title: 'Most recent log (year)', desc: ''},
   'MaxDepth': {title: 'Max depth (ft)', desc: ''},
   'Norm_Res': {title: 'Normal Resistivity', desc: ''},
@@ -85,17 +85,21 @@ export const keyLookup = {
   'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
   'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''},
   'Video': {title: 'Video', desc: ''},
+  'Field_ID': {title: 'Field ID', desc: ''},
+  'Project': {title: 'Project', desc: ''},
   'Drill_Year': {title: 'Drill year', desc: ''},
   'Depth_Ft': {title: 'Depth (ft)', desc: ''},
-  'Drill_Meth': {title: 'Drill Method', desc: ''},
+  'Drill_Method': {title: 'Drill Method', desc: ''},
   'Subsamples': {title: 'Subsamples', desc: ''},
   'Photos': {title: 'Core Photos', desc: ''},
   'Grainsize': {title: 'Grainsize', desc: ''},
+  'Age_Data': {title: 'Age data', desc: ''},
+  'Proxy_Data': {title: 'Proxy data', desc: ''},
 };
 
 export const filterLookup = [
   new FilterGroup({
-    title: "Site Information",
+    title: "Site information",
     open: true,
     sections: [
       {
@@ -105,11 +109,6 @@ export const filterLookup = [
               new SelectControl()
             ]
           },
-          // "SiteName": {
-          //   controls: [
-          //     new ContainsControl()
-          //   ]
-          // },
           "Site_Name": {
             controls: [
               new ContainsControl()
@@ -125,9 +124,9 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Geophysical Log Data",
+    title: "Geophysical log data",
     prop: 'Data_Type',
-    'Data_Type': 'Geophysical Log Data',
+    'Data_Type': 'geophysical log',
     source: {
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/borehole_geophysics/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson'
     },
@@ -240,9 +239,9 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Quaternary Core Data",
+    title: "Quaternary core data",
     prop: 'Data_Type',
-    'Data_Type': 'Quaternary Core Data',
+    'Data_Type': 'quaternary core',
     source: {
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson'
     },
@@ -252,6 +251,11 @@ export const filterLookup = [
     sections: [
       {
         fields: {
+          "Project": {
+            controls: [
+              new SelectControl()
+            ]
+          },
           "Drill_Year": {
             controls: [
               new GTLTControl(true)
@@ -262,7 +266,7 @@ export const filterLookup = [
               new GTLTControl()
             ]
           },
-          "Drill_Meth": {
+          "Drill_Method": {
             controls: [
               new SelectControl()
             ]
@@ -283,6 +287,16 @@ export const filterLookup = [
             ]
           },
           "Grainsize": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Age_Data": {
+            controls: [
+              new CheckboxControl()
+            ]
+          },
+          "Proxy_Data": {
             controls: [
               new CheckboxControl()
             ]
