@@ -19,6 +19,9 @@ export class FilterSummary extends LitElement {
     li[disabled] {
       color: var(--palette-dark);
     }
+    .name {
+      text-transform: capitalize;
+    }
     `;
   }
 
@@ -34,7 +37,7 @@ export class FilterSummary extends LitElement {
       <ul>
         ${this.counts.map((el) => html`
         <li ?disabled=${!el.included}>
-          ${el.current} of ${el.total} ${el.name} sites
+          ${el.current} of ${el.total} <span class="name">${el.name}</span> sites
           ${(el.filteredBy.length > 0)?html`
           (filtered by ${el.filteredBy.join(', ')})
           `:''}
