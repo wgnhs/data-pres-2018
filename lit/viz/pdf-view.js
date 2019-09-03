@@ -71,10 +71,14 @@ export class PDFViewPanel extends LitElement {
   static get styles() {
     return css`
     :host {
-      overflow: auto;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
     }
     .panel {
-      position: relative;
+      overflow: auto;
     }
     .container {
       min-height: 10em;
@@ -84,7 +88,7 @@ export class PDFViewPanel extends LitElement {
       justify-content: center;
     }
     .content {
-      max-width: 90%;
+      max-width: 100%;
     }
     .controls {
       display: grid;
