@@ -77,15 +77,13 @@ export class PDFViewPanel extends LitElement {
       bottom: 0;
       left: 0;
     }
-    .panel {
-      overflow: auto;
-    }
     .container {
       min-height: 10em;
       display: grid;
       grid-column-template: 1fr;
       grid-gap: var(--border-radius);
       justify-content: center;
+      overflow: auto;
     }
     .content {
       max-width: 100%;
@@ -121,18 +119,16 @@ export class PDFViewPanel extends LitElement {
     <style>
       @import url("./css/typography.css");
     </style>
-    <div class="panel">
-      <div class="controls">
-        <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
-        <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
-        <button class="control" @click=${this.zoomOut} ?disabled=${this.isMinZoom}><i class="material-icons" title="Zoom Out">zoom_out</i></button>
-        <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
-        <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
-      </div>
-      <div class="container">
-        ${this.imageTag}
-        <slot></slot>
-      </div>
+    <div class="controls">
+      <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
+      <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
+      <button class="control" @click=${this.zoomOut} ?disabled=${this.isMinZoom}><i class="material-icons" title="Zoom Out">zoom_out</i></button>
+      <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
+      <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
+    </div>
+    <div class="container">
+      ${this.imageTag}
+      <slot></slot>
     </div>
     `;
   }
