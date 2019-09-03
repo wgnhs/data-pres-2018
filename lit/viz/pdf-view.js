@@ -84,7 +84,7 @@ export class PDFViewPanel extends LitElement {
       justify-content: center;
     }
     .content {
-      max-width: 45vw;
+      max-width: 90%;
     }
     .controls {
       display: grid;
