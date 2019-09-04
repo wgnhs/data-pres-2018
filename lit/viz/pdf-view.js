@@ -1,6 +1,8 @@
 import { LitElement, html, css } from 'lit-element';
+import { styles } from '../styles/index.js';
 export { AppCollapsible } from '../layout/app-collapsible.js';
 export { ButtonLink } from '../interact/button-link.js';
+export { AppSpinner } from './app-spinner.js';
 
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 
@@ -47,7 +49,7 @@ class PDFRenderer {
 export class PDFViewPanel extends LitElement {
   static get properties() {
     return {
-      imgsrc: {
+      pdfsrc: {
         type: String,
         attribute: false
       },
@@ -69,16 +71,12 @@ export class PDFViewPanel extends LitElement {
   }
 
   static get styles() {
-    return css`
-    :host {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    }
+    return [
+      ...styles,
+      css`
     .container {
       min-height: 10em;
+      width: 100%;
       display: grid;
       grid-column-template: 1fr;
       grid-gap: var(--border-radius);
@@ -87,6 +85,7 @@ export class PDFViewPanel extends LitElement {
     }
     .content {
       max-width: 100%;
+      padding: var(--border-radius);
     }
     .controls {
       display: grid;
@@ -111,14 +110,17 @@ export class PDFViewPanel extends LitElement {
       border: none;
       border-radius: 50%;
     }
-    `;
+    .control:hover {
+      color: var(--el-color-hover, var(--palette-900));
+    }
+    [data-closed] {
+      display: none;
+    }
+    `];
   }
 
   render() {
     return html`
-    <style>
-      @import url("./css/typography.css");
-    </style>
     <div class="controls">
       <button class="control" @click=${this.hide}><i class="material-icons" title="Hide">close</i></button>
       <button class="control" @click=${this.zoomIn} ?disabled=${this.isMaxZoom}><i class="material-icons" title="Zoom In">zoom_in</i></button>
@@ -126,11 +128,16 @@ export class PDFViewPanel extends LitElement {
       <button class="control" @click=${this.rotateLeft}><i class="material-icons" title="Rotate Left">rotate_left</i></button>
       <button class="control" @click=${this.rotateRight}><i class="material-icons" title="Rotate Right">rotate_right</i></button>
     </div>
-    <div class="container">
+    <app-spinner ?data-closed=${this.imgsrc}></app-spinner>
+    <div class="container" ?data-closed=${!this.imgsrc}>
       ${this.imageTag}
       <slot></slot>
     </div>
     `;
+  }
+
+  get imgsrc() {
+    return this.cache[this.pdfsrc];
   }
 
   static get MOD_ROTATE() {
@@ -155,7 +162,7 @@ export class PDFViewPanel extends LitElement {
   }
 
   static get MAX_ZOOM() {
-    return 2;
+    return 3;
   }
   get isMaxZoom() {
     return this.zoom >= PDFViewPanel.MAX_ZOOM;
@@ -220,14 +227,12 @@ export class PDFViewPanel extends LitElement {
     // console.log('show', url);
     this.dispatchEvent(new CustomEvent(TOGGLE_EVENT,
       {bubbles: true, composed: true, detail: {url, closed: false}}));
-    this.imgsrc = this.cache[url];
-    this.removeAttribute('data-closed');
+    this.pdfsrc = url;
   }
 
   hide() {
     // console.log('hide');
-    this.imgsrc = null;
-    this.setAttribute('data-closed', true);
+    this.pdfsrc = null;
     this.dispatchEvent(new CustomEvent(TOGGLE_EVENT,
       {bubbles: true, composed: true, detail: {closed: true}}));
   }
@@ -248,6 +253,7 @@ export class PDFViewPanel extends LitElement {
     return this._getFromCache(url).catch(() => {
       return this.renderer.render(url).then((value) => {
         this.cache[url] = value;
+        this.requestUpdate('cache');
         return value;
       });
     });
@@ -280,7 +286,9 @@ export class PDFViewButton extends LitElement {
   }
 
   static get styles() {
-    return css`
+    return [
+      ...styles,
+      css`
     .container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -290,14 +298,11 @@ export class PDFViewButton extends LitElement {
     [data-closed] {
       visibility: hidden;
     }
-    `;
+    `];
   }
 
   render() {
     return html`
-    <style>
-      @import url("./css/typography.css");
-    </style>
     <div class="container" ?data-closed=${this.missing}>
       <button-link href="${this.src}" target="_blank" download>
         <i slot="content-before" class="material-icons" title="Download">save_alt</i>

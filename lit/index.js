@@ -11,3 +11,4 @@ export { AppSidebar } from './layout/app-sidebar.js';
 export { AppSpinner } from './viz/app-spinner.js';
 export { PDFViewPanel } from './viz/pdf-view.js';
 
+export { styles } from './styles/index.js';

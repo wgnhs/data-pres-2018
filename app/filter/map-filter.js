@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit-element';
 import { genId, dispatch } from 'wgnhs-common';
 export { InRadio, ToggleSwitch } from 'wgnhs-interact';
 export { AppCollapsible } from 'wgnhs-layout';
+import { styles } from 'wgnhs-styles';
 export { FilterSummary } from './filter-summary.js';
 import { keyLookup, filterLookup } from '../site-data.js';
 import { SiteMap } from '../map/site-map.js';
@@ -29,7 +30,9 @@ export class MapFilter extends LitElement {
   }
 
   static get styles() {
-    return css`
+    return [
+      ...styles,
+      css`
       .field {
         display: grid;
         grid-template-columns: 40% 1fr;
@@ -54,7 +57,7 @@ export class MapFilter extends LitElement {
         display: inline-grid;
         grid-template-columns: auto auto;
       }
-    `;
+    `];
   }
 
   updateMatchClass(e) {
@@ -63,9 +66,6 @@ export class MapFilter extends LitElement {
 
   render() {
     return html`
-      <style>
-        @import url("./css/typography.css");
-      </style>
       <div>
         Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>

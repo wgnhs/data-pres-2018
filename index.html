@@ -144,6 +144,13 @@
       height: var(--brand-height);
       line-height: var(--brand-height);
     }
+    .positioned {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
   </style>
 </head>
 <body>
@@ -174,7 +181,10 @@
         <filter-summary slot="content"></filter-summary>
       </app-collapsible>
     </div>
-    <pdf-view-panel id="sketch" class="right-panel" data-closed></pdf-view-panel>
+    <pdf-view-panel 
+      id="sketch" 
+      class="right-panel positioned"
+      data-closed></pdf-view-panel>
   </div>
   <script src="app/index.js"></script>
 </body>

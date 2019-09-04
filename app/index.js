@@ -139,6 +139,11 @@ document.addEventListener('toggle-print', function(e) {
 
 document.addEventListener('toggle-pdf-panel', function(e) {
   window.siteMap.setVisibility(e.detail.closed);
+  if (e.detail.closed) {
+    window.pdfPanel.setAttribute('data-closed', true);
+  } else {
+    window.pdfPanel.removeAttribute('data-closed');
+  }
 });
 
 document.addEventListener('filtered', function(e) {

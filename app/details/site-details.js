@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
+import { styles } from 'wgnhs-styles';
 import { dispatch } from 'wgnhs-common';
 export { PDFViewButton } from 'wgnhs-viz';
 import { layoutResolver } from './layout-resolver.js';
@@ -21,7 +22,9 @@ export class SiteDetails extends LitElement {
   }
 
   static get styles() {
-    return css`
+    return [
+      ...styles,
+      css`
       .header {
         position: -webkit-sticky;
         position: sticky;
@@ -52,7 +55,7 @@ export class SiteDetails extends LitElement {
       [data-closed] {
         display: none;
       }
-    `;
+    `];
   }
 
   renderData(info, layoutName) {
@@ -65,10 +68,6 @@ export class SiteDetails extends LitElement {
     let Longitude = (this.siteinfo)?this.siteinfo['Longitude']:null;
     let WID = (this.siteinfo)?this.siteinfo['Wid']:null;
     return html`
-      <style>
-        @import url("./css/typography.css");
-      </style>
-
       ${(!this.siteinfo)? '' : html`
         <div class="header">
           <span>
