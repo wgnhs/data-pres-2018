@@ -311,18 +311,18 @@
       transition: max-height var(--transition-duration, 0.3s) cubic-bezier(0.86, 0, 0.07, 1), visibility var(--transition-duration, 0.3s) linear;
     }
 
-    .wrap-collapsible:not([button]) .toggle:checked ~ .collapsible-content {
+    .wrap-collapsible:not([button]) > .toggle:checked ~ .collapsible-content {
       max-height: var(--el-max-height, 3000px);
       visibility: visible;
     }
 
-    .wrap-collapsible:not([button]) .toggle:checked ~ .lbl-toggle {
+    .wrap-collapsible:not([button]) > .toggle:checked ~ .lbl-toggle {
       border-bottom-right-radius: 0;
       border-bottom-left-radius: 0;
       transition: border 0s;
     }
 
-    .collapsible-content .content-inner {
+    .collapsible-content > .content-inner {
       background: var(--el-content-background, var(--palette-white));
       border-bottom: 1px solid var(--el-header-background, var(--palette-light));
       border-right: 1px solid var(--el-header-background, var(--palette-light));
