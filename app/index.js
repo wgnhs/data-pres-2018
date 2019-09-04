@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('wgnhs-common'), require('@uirouter/core'), require('wgnhs-viz'), require('wgnhs-interact'), require('wgnhs-layout')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'lit-element', 'wgnhs-common', '@uirouter/core', 'wgnhs-viz', 'wgnhs-interact', 'wgnhs-layout'], factory) :
-  (global = global || self, factory(global.app = {}, global.common, global.common, global.common, global.lit, global.lit, global.lit));
-}(this, function (exports, litElement, wgnhsCommon, core, wgnhsViz, wgnhsInteract, wgnhsLayout) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('wgnhs-common'), require('@uirouter/core'), require('wgnhs-styles'), require('wgnhs-viz'), require('wgnhs-interact'), require('wgnhs-layout')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'lit-element', 'wgnhs-common', '@uirouter/core', 'wgnhs-styles', 'wgnhs-viz', 'wgnhs-interact', 'wgnhs-layout'], factory) :
+  (global = global || self, factory(global.app = {}, global.common, global.common, global.common, global.lit, global.lit, global.lit, global.lit));
+}(this, function (exports, litElement, wgnhsCommon, core, wgnhsStyles, wgnhsViz, wgnhsInteract, wgnhsLayout) { 'use strict';
 
   class FilterGroup {
     constructor(config) {
@@ -1099,7 +1099,9 @@
     }
 
     static get styles() {
-      return litElement.css`
+      return [
+        ...wgnhsStyles.styles,
+        litElement.css`
       .header {
         position: -webkit-sticky;
         position: sticky;
@@ -1130,7 +1132,7 @@
       [data-closed] {
         display: none;
       }
-    `;
+    `];
     }
 
     renderData(info, layoutName) {
@@ -1143,10 +1145,6 @@
       let Longitude = (this.siteinfo)?this.siteinfo['Longitude']:null;
       let WID = (this.siteinfo)?this.siteinfo['Wid']:null;
       return litElement.html`
-      <style>
-        @import url("./css/typography.css");
-      </style>
-
       ${(!this.siteinfo)? '' : litElement.html`
         <div class="header">
           <span>
@@ -1272,7 +1270,9 @@
     }
 
     static get styles() {
-      return litElement.css`
+      return [
+        ...wgnhsStyles.styles,
+        litElement.css`
       .field {
         display: grid;
         grid-template-columns: 40% 1fr;
@@ -1297,7 +1297,7 @@
         display: inline-grid;
         grid-template-columns: auto auto;
       }
-    `;
+    `];
     }
 
     updateMatchClass(e) {
@@ -1306,9 +1306,6 @@
 
     render() {
       return litElement.html`
-      <style>
-        @import url("./css/typography.css");
-      </style>
       <div>
         Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
@@ -1689,6 +1686,11 @@
 
   document.addEventListener('toggle-pdf-panel', function(e) {
     window.siteMap.setVisibility(e.detail.closed);
+    if (e.detail.closed) {
+      window.pdfPanel.setAttribute('data-closed', true);
+    } else {
+      window.pdfPanel.removeAttribute('data-closed');
+    }
   });
 
   document.addEventListener('filtered', function(e) {
