@@ -22,21 +22,21 @@
   </script>
 
   <!-- Load Web Component base -->
-  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2.2.10/webcomponents-loader.js"></script>
 
   <!-- Load Leaflet from a CDN -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.css" />
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.js"></script>
 
   <!-- Load Esri Leaflet from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@^2/dist/esri-leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/esri-leaflet@2.3.0/dist/esri-leaflet.js"></script>
 
   <!-- load leaflet-basemaps from a CDN --> 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-basemaps/L.Control.Basemaps.css" />
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-basemaps"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-basemaps@0.3.4/L.Control.Basemaps.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-basemaps@0.3.4/L.Control.Basemaps-min.js"></script>
 
   <!-- Load PDF viewer -->
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@^2/build/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.2.228/build/pdf.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/common.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/router.min.js"></script>
@@ -60,6 +60,7 @@
       }
       @media (max-height: 719px) {
         [data-view=app] {
+          display: grid;
           grid-template: "left right"
                         / 1fr 1fr;
         }
