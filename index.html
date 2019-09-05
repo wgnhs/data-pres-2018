@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WGNHS Data Viewer</title>
   <base href="/data-pres-2018/">
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
   <script>
     var appBasePath = document.querySelector('base').href;
     (function(){
@@ -19,6 +20,9 @@
       }
     })();
   </script>
+
+  <!-- Load Web Component base -->
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
 
   <!-- Load Leaflet from a CDN -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@^1/dist/leaflet.css" />
@@ -34,14 +38,14 @@
   <!-- Load PDF viewer -->
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@^2/build/pdf.min.js"></script>
 
-  <!-- Load Web Component base -->
-  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
-  <script src="js/common.min.js"></script>
-  <script src="lit/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/common.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/router.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/layout.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/pdf.min.js"></script>
 
-  <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/variables.css" />
-  <link rel="stylesheet" href="css/typography.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/css/reset.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/css/typography.css" />
 
   <style>
     @media (min-width: 770px) {
@@ -186,6 +190,6 @@
       class="right-panel positioned"
       data-closed></pdf-view-panel>
   </div>
-  <script src="app/index.js"></script>
+  <script src="app/index.min.js"></script>
 </body>
 </html>

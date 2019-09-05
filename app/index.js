@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('wgnhs-common'), require('@uirouter/core'), require('wgnhs-styles'), require('wgnhs-viz'), require('wgnhs-interact'), require('wgnhs-layout')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'lit-element', 'wgnhs-common', '@uirouter/core', 'wgnhs-styles', 'wgnhs-viz', 'wgnhs-interact', 'wgnhs-layout'], factory) :
-  (global = global || self, factory(global.app = {}, global.common, global.common, global.common, global.lit, global.lit, global.lit, global.lit));
-}(this, function (exports, litElement, wgnhsCommon, core, wgnhsStyles, wgnhsViz, wgnhsInteract, wgnhsLayout) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('wgnhs-common'), require('wgnhs-router'), require('wgnhs-styles'), require('wgnhs-pdf'), require('wgnhs-layout')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'lit-element', 'wgnhs-common', 'wgnhs-router', 'wgnhs-styles', 'wgnhs-pdf', 'wgnhs-layout'], factory) :
+  (global = global || self, factory(global.app = {}, global['wgnhs-common'], global['wgnhs-common'], global['wgnhs-router'], global['wgnhs-common'], global['wgnhs-pdf'], global['wgnhs-layout']));
+}(this, function (exports, litElement, wgnhsCommon, wgnhsRouter, wgnhsStyles, wgnhsPdf, wgnhsLayout) { 'use strict';
 
   class FilterGroup {
     constructor(config) {
@@ -776,66 +776,6 @@
 
   }
 
-  const DEFAULT_ROUTE = 'entry';
-
-  class SiteRouter extends window.L.Evented {
-
-    constructor() {
-      super();
-      this.router = new core.UIRouter();
-      this.router.plugin(core.pushStateLocationPlugin);
-      this.router.plugin(core.servicesPlugin);
-      this.routes = {};
-    }
-
-    start() {
-      this.router.urlService.rules.initial({ state: DEFAULT_ROUTE });
-      this.router.urlService.rules.otherwise({ state: DEFAULT_ROUTE });
-      // this.router.trace.enable(1);
-      this.router.urlService.listen();
-      this.router.urlService.sync();
-    }
-
-    addRoute(config) {
-      if (config && config.name) {
-        this.routes[config.name] = config;
-        this.router.stateRegistry.register(config);
-      }
-    }
-
-    /**
-     * clear selection
-     */
-    clearRoute() {
-      this.setRoute();
-    }
-
-    setRoute(name, params) {
-      if (arguments.length > 0 && this.routes[name]) {
-        this.router.stateService.go(name, params);
-      } else {
-        this.router.stateService.go(DEFAULT_ROUTE);
-      }
-    }
-
-    link(name, params) {
-      let result = '';
-      if (params) {
-        result = this.router.stateService.href(name, params);
-      } else {
-        result = this.router.stateService.href(name);
-      }
-      return result;
-    }
-
-    onEnterAll(options, func) {
-      this.router.transitionService.onEnter(options, func);
-    }
-    onExitAll(options, func) {
-      this.router.transitionService.onExit(options, func);
-    }
-  }
-
   class TableLayout extends litElement.LitElement {
 
     static get layoutName() {
@@ -1579,7 +1519,7 @@
       });
       return true;
     }
-    window.router = new SiteRouter();
+    window.router = new wgnhsRouter.SiteRouter();
     window.router.addRoute({
       name: 'entry',
       url: '/',
