@@ -4,16 +4,13 @@ import resolve from 'rollup-plugin-node-resolve';
 import filesize from 'rollup-plugin-filesize';
 
 const appDir = 'app';
-const litDir = 'lit';
 
-function buildPlugins({dir=litDir, min=false}) {
+function buildPlugins({dir=appDir, min=false}) {
   let result = [];
   result.push(resolve());
 
   if (min) {
-    if (dir === litDir) {
-      result.push(minifyHTML());
-    }
+    result.push(minifyHTML());
     result.push(minify({
       output: {
         wrap_iife: true
