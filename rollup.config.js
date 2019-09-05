@@ -3,7 +3,6 @@ import minifyHTML from 'rollup-plugin-minify-html-literals';
 import resolve from 'rollup-plugin-node-resolve';
 import filesize from 'rollup-plugin-filesize';
 
-const commonDir = 'js';
 const appDir = 'app';
 const litDir = 'lit';
 
@@ -32,12 +31,11 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
     plugins: buildPlugins({dir, min}),
     external: [
       'lit-element',
-      '@uirouter/core',
       'wgnhs-common',
-      'wgnhs-interact',
+      'wgnhs-styles',
       'wgnhs-layout',
-      'wgnhs-viz',
-      'wgnhs-styles'
+      'wgnhs-pdf',
+      'wgnhs-router'
     ],
     output: {
       file: `dist/${dir}/${filename}${minifyToken}.js`,
@@ -45,40 +43,19 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
       name: dir,
       sourcemap: min,
       globals: {
-        'lit-element': 'common',
-        '@uirouter/core': 'common',
-        'wgnhs-common': 'common',
-        'wgnhs-interact': 'lit',
-        'wgnhs-layout': 'lit',
-        'wgnhs-viz': 'lit',
-        'wgnhs-styles': 'lit'
+        'lit-element': 'wgnhs-common',
+        'wgnhs-common': 'wgnhs-common',
+        'wgnhs-styles': 'wgnhs-common',
+        'wgnhs-layout': 'wgnhs-layout',
+        'wgnhs-pdf': 'wgnhs-pdf',
+        'wgnhs-router': 'wgnhs-router'
       }
     }
   }
   return result;
 }
 
-function buildCommon({dir=commonDir, filename='common', min=false, format='umd'}) {
-  let minifyToken = (min) ? '.min': '';
-  let result = {
-    input: `${dir}/${filename}.js`,
-    plugins: buildPlugins({dir, min}),
-    output: {
-      file: `dist/${dir}/${filename}${minifyToken}.js`,
-      format: format,
-      name: filename,
-      sourcemap: min
-    }
-  }
-  return result;
-}
-
-
 export default [
-  buildCommon({}),
-  buildCommon({min: true}),
   buildApp({}),
-  buildApp({min: true}),
-  buildApp({dir: litDir}),
-  buildApp({dir: litDir, min: true})
+  buildApp({min: true})
 ];

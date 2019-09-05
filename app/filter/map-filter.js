@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { genId, dispatch } from 'wgnhs-common';
-export { InRadio, ToggleSwitch } from 'wgnhs-interact';
+export { InRadio, ToggleSwitch } from 'wgnhs-layout';
 export { AppCollapsible } from 'wgnhs-layout';
 import { styles } from 'wgnhs-styles';
 export { FilterSummary } from './filter-summary.js';

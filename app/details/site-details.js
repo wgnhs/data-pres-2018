@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { styles } from 'wgnhs-styles';
 import { dispatch } from 'wgnhs-common';
-export { PDFViewButton } from 'wgnhs-viz';
+export { PDFViewButton } from 'wgnhs-pdf';
 import { layoutResolver } from './layout-resolver.js';
 
 export class SiteDetails extends LitElement {
