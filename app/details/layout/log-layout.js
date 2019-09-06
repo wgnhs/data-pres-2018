@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit-element';
 import { filterLookup, keyLookup } from '../../site-data.js';
+export { DownloadButton } from '../download-button.js';
 
 export class LogLayout extends LitElement {
   static get layoutName() {
@@ -37,6 +38,10 @@ export class LogLayout extends LitElement {
       .panel=${this.context.pdfpanel}
       src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.pdf'}">
     </pdf-view-button>
+    <download-button
+      src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.las'}">
+      Download LAS
+    </download-button>
     `;
   }
 
