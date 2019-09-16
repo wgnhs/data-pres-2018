@@ -27,8 +27,12 @@
     // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     // SOFTWARE.
     sessionStorage.redirect = location.href;
+    var appBasePath = location.pathname.substring(0, location.pathname.indexOf('/', 1) + 1);
+    var metaTag = document.createElement('meta');
+    metaTag.setAttribute('http-equiv', 'refresh');
+    metaTag.setAttribute('content', '0;URL=\'' + appBasePath + '\'');
+    document.querySelector('head').appendChild(metaTag);
   </script>
-  <meta http-equiv="refresh" content="0;URL='/data-pres-2018/'"></meta>
 </head>
 <body>
 </body>
