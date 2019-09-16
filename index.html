@@ -7,7 +7,8 @@
   <base>
 
   <script>
-    var appBasePath = location.pathname.substring(0, location.pathname.indexOf('/', 1) + 1);
+    var modPath = location.pathname + '/';
+    var appBasePath = modPath.substring(0, modPath.indexOf('/', 1) + 1);
     document.querySelector('base').setAttribute('href', appBasePath);
     (function(){
       var redirect = sessionStorage.redirect;
