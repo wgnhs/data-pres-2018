@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WGNHS Data Viewer</title>
-  <base href="/data-pres-2018/">
-  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <base>
 
   <script>
-    var appBasePath = document.querySelector('base').href;
+    var appBasePath = location.pathname.substring(0, location.pathname.indexOf('/', 1) + 1);
+    document.querySelector('base').setAttribute('href', appBasePath);
     (function(){
       var redirect = sessionStorage.redirect;
       delete sessionStorage.redirect;
@@ -43,6 +43,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/layout.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/pdf.min.js"></script>
 
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/variables.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/css/reset.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/css/typography.css" />
