@@ -36,6 +36,7 @@ export class LogLayout extends LitElement {
     <pdf-view-button
       .panel=${this.context.pdfpanel}
       src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.pdf'}">
+      <span slot="download-text">Download PDF</span>
     </pdf-view-button>
     `;
   }
