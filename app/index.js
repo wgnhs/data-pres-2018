@@ -662,6 +662,7 @@
               datas: new Array(arr.length)
             };
             obj.feature.properties['Site_Code'] = siteCode;
+            obj.feature.properties['Site_Name'] = siteName;
             obj.feature.properties['Data_Type'] = layer.options.name;
 
             cache.datas[idx] = obj.feature.properties;
