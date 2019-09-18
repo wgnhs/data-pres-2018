@@ -60,12 +60,14 @@ export class GTLTControl {
   constructor(isDate) {
     this.id = genId();
     this.gtName = (isDate)?'after':'at least';
+    this.eqName = (isDate)?'exactly':'equal to';
     this.ltName = (isDate)?'before':'less than';
   }
   get next() {
     return html`
       <select>
         <option value="gt">${this.gtName}</option>
+        <option value="eq">${this.eqName}</option>
         <option value="lt">${this.ltName}</option>
       </select>
       <input type="text">
@@ -74,6 +76,7 @@ export class GTLTControl {
   handle(context) {
     let result = null;
     context['gt'] = (a, b) => (a >= b);
+    context['eq'] = (a, b) => (a == b);
     context['lt'] = (a, b) => (a < b);
 
     const predicate = context[context.target.nextElementSibling.value];

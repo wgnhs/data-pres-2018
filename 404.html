@@ -7,8 +7,6 @@
     // Adapted from https://github.com/csuwildcat/sghpa
     // The MIT License (MIT)
 
-    // Copyright (c) 2016 Daniel Buchner
-
     // Permission is hereby granted, free of charge, to any person obtaining a copy
     // of this software and associated documentation files (the "Software"), to deal
     // in the Software without restriction, including without limitation the rights
@@ -27,8 +25,9 @@
     // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     // SOFTWARE.
     sessionStorage.redirect = location.href;
+    var appBasePath = location.pathname.substring(0, location.pathname.indexOf('/', 1) + 1);
+    location.replace(appBasePath);
   </script>
-  <meta http-equiv="refresh" content="0;URL='/data-pres-2018/'"></meta>
 </head>
 <body>
 </body>
