@@ -302,11 +302,6 @@ export const filterLookup = [
             controls: [
               new CheckboxControl()
             ]
-          },
-          "Proxy_Data": {
-            controls: [
-              new CheckboxControl()
-            ]
           }
         }
       }
