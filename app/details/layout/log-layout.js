@@ -36,11 +36,11 @@ export class LogLayout extends LitElement {
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
     <pdf-view-button
       .panel=${this.context.pdfpanel}
-      src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.pdf'}">
+      src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/' + this.info.Wid + '.pdf'}">
       <span slot="download-text">Download PDF</span>
     </pdf-view-button>
     <download-button
-      src="${'https://data.wgnhs.wisc.edu/geophysical-logs/' + this.info.Wid + '.las'}">
+      src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/las/' + this.info.Wid + '.las'}">
       Download LAS
     </download-button>
     `;

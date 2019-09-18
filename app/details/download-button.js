@@ -20,6 +20,10 @@ export class DownloadButton extends LitElement {
       src: {
         type: String
       },
+      exists: {
+        type: Boolean,
+        attribute: false
+      },
       fileSize: {
         type: String,
         attribute: false
@@ -46,7 +50,7 @@ export class DownloadButton extends LitElement {
 
   render() {
     return html`
-    <button-link href="${this.src}" target="_blank" download ?data-closed="${!this.fileSize}">
+    <button-link href="${this.src}" target="_blank" download ?data-closed="${!this.exists}">
       <i slot="content-before" class="material-icons" title="Download">save_alt</i>
       <span slot="content"><slot>Download</slot></span>
       <span slot="content-after" class="file-size">${this.fileSize}</span>
@@ -56,11 +60,13 @@ export class DownloadButton extends LitElement {
 
   updated(prev) {
     if (prev.has('src') && this.src) {
+      this.exists = false;
       fetch(
         this.src, 
         {method: 'HEAD'}
         ).then(resp => {
           if (resp.ok) {
+            this.exists = true;
             let bytes = resp.headers.get('Content-Length');
             if (bytes) {
               this.fileSize = fileSizeIEC(bytes);
