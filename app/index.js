@@ -519,11 +519,6 @@
               controls: [
                 new CheckboxControl()
               ]
-            },
-            "Proxy_Data": {
-              controls: [
-                new CheckboxControl()
-              ]
             }
           }
         }
