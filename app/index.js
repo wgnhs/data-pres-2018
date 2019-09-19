@@ -581,12 +581,12 @@
       /* ~~~~~~~~ Map ~~~~~~~~ */
       //create a map, center it, and set the zoom level. 
       //set zoomcontrol to false because we will add it in a different corner. 
-      const map = this.map = L.map('map', {zoomControl:false}).setView([44.25, -89.9], 7);
+      this.map = L.map('map', {zoomControl:false}).setView([44.25, -89.9], 7);
       this.el = document.querySelector('#map');
        
        /* ~~~~~~~~ Zoom Control ~~~~~~~~ */
       //place a zoom control in the top right: 
-      new L.Control.Zoom({position: 'topright'}).addTo(map);
+      new L.Control.Zoom({position: 'topright'}).addTo(this.map);
 
        
       /* ~~~~~~~~ Basemap Layers ~~~~~~~~ */
@@ -614,50 +614,61 @@
       
       // add the basemap control to the map  
       var basemaps = [voyager, esrisat]; 
-      basemaps[0].addTo(map);
-      map.addControl(L.control.basemaps({
+      basemaps[0].addTo(this.map);
+      this.map.addControl(L.control.basemaps({
          basemaps: basemaps, 
          tileX: 0, 
          tileY: 0, 
          tileZ: 1
       })); 
 
-      let sources = filterLookup.reduce((result, curr) => {
+      this.sources = filterLookup.reduce((result, curr) => {
         if (curr.source && curr.source.geojson) {
           result.push(
-            window.fetch(curr.source.geojson)
-            .then((res) => res.json())
+            window.fetch(curr.source.geojson,{
+              cache: 'no-store'
+            })
+            .then((res) => {
+              return res.json()
+            }, reason => {
+              console.log(reason);
+            })
             .then((geojson)=>({
               name: curr[curr.prop],
               color: curr.color,
-              data: geojson})));
+              data: geojson}), reason => {
+                console.log(reason);
+              }));
         }
         return result;
       }, []);
+    }
 
-      Promise.all(sources).then((responses) => {
-          this.layers = responses.map((res) => {
-            return L.geoJSON(res.data, {
-              name: res.name,
-              pointToLayer: function(geoJsonPoint, latlon) {
-                return new RestylingCircleMarker(latlon, {
-                  weight: 2,
-                  color: res.color,
-                  radius: RestylingCircleMarker.calcRadius(map.getZoom()),
-                  stroke: false,
-                  fill: false
-                });
-              }
-            });
-          });
-          this.layers.forEach(l => l.on('click', (e) => {
-            if (this._highlight !== e.propagatedFrom) {
-              this.fire('interaction', e.propagatedFrom.feature.properties);
-            } else {
-              this.fire('interaction');
+    init() {
+      const map = this.map;
+      return Promise.all(this.sources).then((responses) => {
+        this.layers = responses.map((res) => {
+          return L.geoJSON(res.data, {
+            name: res.name,
+            pointToLayer: function(geoJsonPoint, latlon) {
+              return new RestylingCircleMarker(latlon, {
+                weight: 2,
+                color: res.color,
+                radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+                stroke: false,
+                fill: false
+              });
             }
-          }));
-          this.layers.forEach(l => l.addTo(map));
+          });
+        });
+        this.layers.forEach(l => l.on('click', (e) => {
+          if (this._highlight !== e.propagatedFrom) {
+            this.fire('interaction', e.propagatedFrom.feature.properties);
+          } else {
+            this.fire('interaction');
+          }
+        }));
+        this.layers.forEach(l => l.addTo(this.map));
         let lookup = {};
         this.layers.forEach(function(layer, idx, arr) {
           layer.eachLayer(function(obj) {
@@ -683,8 +694,7 @@
           });
         });
         this._lookup = lookup;
-        this.fire('init');
-      });
+      }, reason => console.log(reason));
     }
 
     static getSiteCode(params) {
@@ -886,7 +896,7 @@
         },
         exists: {
           type: Boolean,
-          attribute: false
+          reflect: true
         },
         fileSize: {
           type: String,
@@ -914,10 +924,10 @@
 
     render() {
       return litElement.html`
-    <button-link href="${this.src}" target="_blank" download ?data-closed="${!this.exists}">
+    <button-link href="${this.src}" target="_blank" download>
       <i slot="content-before" class="material-icons" title="Download">save_alt</i>
-      <span slot="content"><slot>Download</slot></span>
-      <span slot="content-after" class="file-size">${this.fileSize}</span>
+      <span slot="content"><slot name="label">Download</slot></span>
+      <span slot="content-after" class="file-size"><slot name="detail">${this.fileSize}</slot></span>
     </button-link>
     `;
     }
@@ -925,22 +935,118 @@
     updated(prev) {
       if (prev.has('src') && this.src) {
         this.exists = false;
-        fetch(
-          this.src, 
-          {method: 'HEAD'}
-          ).then(resp => {
-            if (resp.ok) {
-              this.exists = true;
-              let bytes = resp.headers.get('Content-Length');
-              if (bytes) {
-                this.fileSize = fileSizeIEC(bytes);
-              }
+        window.fetch(this.src, {
+          method: 'HEAD',
+          cache: 'no-store'
+        }).then(resp => {
+          if (resp.ok) {
+            this.exists = true;
+            let bytes = resp.headers.get('Content-Length');
+            if (bytes) {
+              this.fileSize = fileSizeIEC(bytes);
             }
-          });
+          }
+        });
       }
     }
   }
   customElements.define('download-button', DownloadButton);
+
+  const TOGGLE_EVENT = 'toggle-pdf-panel';
+
+  class PDFSplitButton extends litElement.LitElement {
+    static get properties() {
+      return {
+        src: {
+          type: String
+        },
+        panel: {
+          type: Object,
+          attribute: false
+        },
+        closed: {
+          type: Boolean,
+          attribute: false
+        }
+      };
+    }
+
+    constructor() {
+      super();
+      this.closed=true;
+    }
+
+    static get styles() {
+      return [
+        ...wgnhsStyles.styles,
+        litElement.css`
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: var(--border-radius);
+      }
+
+      .dl-button:not([exists]), .dl-button:not([exists]) + .view-button {
+        visibility: hidden;
+      }
+      `
+      ];
+    }
+
+    render() {
+      return litElement.html`
+    <div class="container">
+      <download-button class="dl-button" src="${this.src}">
+        <span slot="label"><slot name="download-text">Download</slot></span>
+        <span slot="detail"></span>
+      </download-button>
+      <app-collapsible class="view-button" @open="${this.toggle}" button>
+        <span slot="header"><slot name="view-text">View</slot></span>
+        <i slot="header-after" class="material-icons" title="View">${
+          (this.alt)?'chevron_left':'chevron_right'
+        }</i>
+      </app-collapsible>
+    </div>
+    `;
+    }
+
+    updated(prev) {
+      if ((prev.has('panel') || prev.has('src'))) {
+        if (this.panel && this.src) {
+          this.panel.request(this.src);
+        }
+      }
+    }
+
+    toggle(e) {
+      if (!this.closed) {
+        this.panel.hide();
+      } else {
+        this.panel.show(this.src);
+      }
+    }
+
+    handleAlt(e) {
+      if (e.detail.url === this.src) {
+        this.closed = false;
+      } else {
+        this.closed = true;
+      }
+      this.requestUpdate();
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.__altHandler = this.handleAlt.bind(this);
+      document.addEventListener(TOGGLE_EVENT, this.__altHandler);
+    }
+
+    disconnectedCallback() {
+      document.removeEventListener(TOGGLE_EVENT, this.__altHandler);
+      super.disconnectedCallback();
+    }
+  }
+  customElements.define('pdf-split-button', PDFSplitButton);
 
   class LogLayout extends litElement.LitElement {
     static get layoutName() {
@@ -968,20 +1074,24 @@
 
     static get styles() {
       return litElement.css`
+      .dl-las:not([exists]) {
+        visibility: hidden;
+      }
     `;
     }
 
     render() {
       return litElement.html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
-    <pdf-view-button
+    <pdf-split-button
       .panel=${this.context.pdfpanel}
       src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/' + this.info.Wid + '.pdf'}">
       <span slot="download-text">Download PDF</span>
-    </pdf-view-button>
+    </pdf-split-button>
     <download-button
+      class="dl-las"
       src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/las/' + this.info.Wid + '.las'}">
-      Download LAS
+      <span slot="label">Download LAS</span>
     </download-button>
     `;
     }
@@ -1596,7 +1706,7 @@
   });
   window.filter = document.querySelector('#filter');
 
-  window.siteMap.once('init', function() {
+  window.siteMap.init().then(function() {
     window.siteData = new SiteData(window.siteMap.layers);
     window.aggrData = siteData.aggrData;
     filter.init(window.siteData.uniques, window.siteMap.layers);
