@@ -22,7 +22,7 @@ export class DownloadButton extends LitElement {
       },
       exists: {
         type: Boolean,
-        attribute: false
+        reflect: true
       },
       fileSize: {
         type: String,
@@ -50,10 +50,10 @@ export class DownloadButton extends LitElement {
 
   render() {
     return html`
-    <button-link href="${this.src}" target="_blank" download ?data-closed="${!this.exists}">
+    <button-link href="${this.src}" target="_blank" download>
       <i slot="content-before" class="material-icons" title="Download">save_alt</i>
-      <span slot="content"><slot>Download</slot></span>
-      <span slot="content-after" class="file-size">${this.fileSize}</span>
+      <span slot="content"><slot name="label">Download</slot></span>
+      <span slot="content-after" class="file-size"><slot name="detail">${this.fileSize}</slot></span>
     </button-link>
     `;
   }
@@ -61,18 +61,17 @@ export class DownloadButton extends LitElement {
   updated(prev) {
     if (prev.has('src') && this.src) {
       this.exists = false;
-      fetch(
-        this.src, 
-        {method: 'HEAD'}
-        ).then(resp => {
-          if (resp.ok) {
-            this.exists = true;
-            let bytes = resp.headers.get('Content-Length');
-            if (bytes) {
-              this.fileSize = fileSizeIEC(bytes);
-            }
+      fetch(this.src, {
+        method: 'HEAD'
+      }).then(resp => {
+        if (resp.ok) {
+          this.exists = true;
+          let bytes = resp.headers.get('Content-Length');
+          if (bytes) {
+            this.fileSize = fileSizeIEC(bytes);
           }
-        })
+        }
+      });
     }
   }
 }

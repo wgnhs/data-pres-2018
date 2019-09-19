@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { filterLookup, keyLookup } from '../../site-data.js';
 export { DownloadButton } from '../download-button.js';
+export { PDFSplitButton } from '../pdf-split-button.js';
 
 export class LogLayout extends LitElement {
   static get layoutName() {
@@ -28,20 +29,24 @@ export class LogLayout extends LitElement {
 
   static get styles() {
     return css`
+      .dl-las:not([exists]) {
+        visibility: hidden;
+      }
     `;
   }
 
   render() {
     return html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
-    <pdf-view-button
+    <pdf-split-button
       .panel=${this.context.pdfpanel}
       src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/' + this.info.Wid + '.pdf'}">
       <span slot="download-text">Download PDF</span>
-    </pdf-view-button>
+    </pdf-split-button>
     <download-button
+      class="dl-las"
       src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/las/' + this.info.Wid + '.las'}">
-      Download LAS
+      <span slot="label">Download LAS</span>
     </download-button>
     `;
   }
