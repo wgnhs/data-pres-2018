@@ -66,7 +66,7 @@ export class MapFilter extends LitElement {
         content: "expand_more"
       }
 
-      .group[open] > .collapse-icon::before {
+      [open] > .collapse-icon::before {
         content: "expand_less"
       }
     `];
@@ -260,21 +260,22 @@ export class MapFilter extends LitElement {
       return result;
     }
 
-    const result = sources.map((layer) => {
+    const result = sources.reduce((result, layer) => {
       const activePoints = new Set();
       Object.entries(layer._layers).forEach((ent) => {
         if (resolve(ent[1].feature.properties)) {
           activePoints.add('' + SiteMap.getSiteCode(ent[1].feature.properties));
         }
       });
-      return activePoints;
-    });
+      result[layer.options.name] = activePoints;
+      return result;
+    }, {});
 
     return result;
   }
 
   static getResultsInfo(matchClass, include, filter, sources, activePoints) {
-    const result = sources.map((layer, i) => {
+    const result = sources.map((layer) => {
       let stats = {};
       stats.name = layer.options.name;
       stats.included = include.some((el) => {
@@ -290,7 +291,7 @@ export class MapFilter extends LitElement {
 
       let entries = Object.entries(layer._layers);
       stats.total = entries.length;
-      stats.current = activePoints[i].size;
+      stats.current = activePoints[layer.options.name].size;
 
       return stats;
     });
