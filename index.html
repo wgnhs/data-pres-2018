@@ -180,6 +180,13 @@
       bottom: 0;
       left: 0;
     }
+
+    .collapse-icon::before {
+      content: "expand_more"
+    }
+    [open] > .collapse-icon::before {
+      content: "expand_less"
+    }
   </style>
 </head>
 <body>
@@ -197,6 +204,7 @@
         <h1 class="title">WGNHS Data Viewer</h1>
         <h2 class="subtitle">Geoscience data from the Wisconsin Geological Survey</h2>
         <app-collapsible open>
+          <i slot="header-before" class="material-icons collapse-icon"></i>
           <span slot="header">About</span>
           <div slot="content" class="inner-content">
             <p>
