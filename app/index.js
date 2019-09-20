@@ -1329,9 +1329,21 @@
         background-color: var(--palette-light);
       }
 
+      [data-closed] {
+        display: none;
+      }
+
       in-radio {
         display: inline-grid;
         grid-template-columns: auto auto;
+      }
+
+      .collapse-icon::before {
+        content: "expand_more"
+      }
+
+      .group[open] > .collapse-icon::before {
+        content: "expand_less"
       }
     `];
     }
@@ -1342,7 +1354,7 @@
 
     render() {
       return litElement.html`
-      <div>
+      <div data-closed>
         Show sites that have <in-radio choices='["ALL", "ANY"]' @choice-change="${this.updateMatchClass}"></in-radio> of the following:
       </div>
       <div>
@@ -1358,10 +1370,11 @@
 
     renderFilterGroups() {
       let name=0, config=1;
-      return this.filterGroups.map((group) => litElement.html`
-      <app-collapsible
+      return this.filterGroups.map((group, index) => litElement.html`
+      <slot name="${index}"></slot>
+      <app-collapsible class="group"
         ?open=${group.open} @open=${this._handle(group)}>
-        <i slot="header-before" class="material-icons">expand_more</i>
+        <i slot="header-before" class="material-icons collapse-icon"></i>
         <span slot="header">${group.title}</span>
         ${(!group.toggleable)?'':litElement.html`
           <toggle-switch
