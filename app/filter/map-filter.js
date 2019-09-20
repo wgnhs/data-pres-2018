@@ -41,6 +41,7 @@ export class MapFilter extends LitElement {
       }
 
       .label {
+        color: var(--palette-900);
         font-weight: var(--font-weight-bold);
       }
 
@@ -68,6 +69,14 @@ export class MapFilter extends LitElement {
 
       [open] > .collapse-icon::before {
         content: "expand_less"
+      }
+
+      .raw-source-button {
+        display: flex;
+        margin-top: var(--line-height);
+      }
+      .raw-source-button > * {
+        font-size: var(--font-size);
       }
     `];
   }
@@ -134,6 +143,12 @@ export class MapFilter extends LitElement {
               </div>
             `)}
           `)}
+          ${(group.source && group.source.user)?html`
+          <button-link href="${group.source.user}" class="raw-source-button">
+            <span slot="content">View data source</span>
+            <i slot="content-after" class="material-icons">open_in_new</i>
+          </button-link>
+          `:''}
         </div>
       </app-collapsible>
     `);
