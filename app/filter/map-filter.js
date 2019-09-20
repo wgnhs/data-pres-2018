@@ -25,6 +25,14 @@ export class MapFilter extends LitElement {
       sources: {
         type: Array,
         attribute: false
+      },
+      uniques: {
+        type: Object,
+        attribute: false
+      },
+      layers: {
+        type: Object,
+        attribute: false
       }
     };
   }
@@ -207,6 +215,10 @@ export class MapFilter extends LitElement {
         activePoints
         );
       dispatch(this, 'filtered', {activePoints, counts}, true, true);
+    }
+
+    if (!this.sources && this.uniques && this.layers) {
+      this.init(this.uniques, this.layers);
     }
   }
 

@@ -61,8 +61,9 @@ export class DownloadButton extends LitElement {
   updated(prev) {
     if (prev.has('src') && this.src) {
       this.exists = false;
-      fetch(this.src, {
-        method: 'HEAD'
+      window.fetch(this.src, {
+        method: 'HEAD',
+        cache: 'no-store'
       }).then(resp => {
         if (resp.ok) {
           this.exists = true;

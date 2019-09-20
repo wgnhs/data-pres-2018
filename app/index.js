@@ -12,10 +12,11 @@ document.querySelectorAll('site-details').forEach(function(details) {
 });
 window.filter = document.querySelector('#filter');
 
-window.siteMap.once('init', function() {
+window.siteMap.init().then(function() {
   window.siteData = new SiteData(window.siteMap.layers);
   window.aggrData = siteData.aggrData;
-  filter.init(window.siteData.uniques, window.siteMap.layers);
+  filter.uniques = window.siteData.uniques;
+  filter.layers = window.siteMap.layers;
 
   var deselectFeature = function() {
     window.pdfPanel.hide();
