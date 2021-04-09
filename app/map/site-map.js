@@ -90,7 +90,7 @@ export class SiteMap extends window.L.Evented {
       let lookup = {};
       this.layers.forEach(function(layer, idx, arr) {
         layer.eachLayer(function(obj) {
-          let wid = obj.feature.properties['Wid'] || obj.feature.properties['WGNHS_ID'];
+          let wid = obj.feature.properties['Wid'] || obj.feature.properties['WID'] || obj.feature.properties['WGNHS_ID'];
           let siteCode = SiteMap.getSiteCode(obj.feature.properties);
           let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
           let latLon = obj.getLatLng();
@@ -121,7 +121,7 @@ export class SiteMap extends window.L.Evented {
   }
 
   static getSiteCode(params) {
-    let keys = ['Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
+    let keys = ['WID','Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
     let result = keys.reduce((prev, curr) => {
       return prev || params[curr];
     }, undefined)

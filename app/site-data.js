@@ -64,6 +64,7 @@ export const ignoredKeys = [
   'Site_Name',
   'Wid',
   'ID',
+  'OBJECTID',
   'County'
 ];
 export const keyLookup = {
@@ -306,5 +307,56 @@ export const filterLookup = [
         }
       }
     ]
+  }),
+  new FilterGroup({
+    title: "Rock Core data",
+    prop: 'Data_Type',
+    'Data_Type': 'rock core',
+    source: {
+      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0'
+    },
+    color: 'var(--map-symbol-2)',
+    toggleable: true,
+    active: true,
+    sections: [{
+      fields: {
+        // "OBJECTID": {},
+        // "Shape": {},
+        // "WID": {},
+        // "Type": {},
+        // "WUWN": {},
+        // "CountyName": {},
+        // "CountyCode": {},
+        // "CountySeqID ": {},
+        // "SiteName": {},
+        // "SiteOwner": {},
+        // "SiteDate": {},
+        // "LocConf": {},
+        // "Elevation": {},
+        // "ElevAcc": {},
+        // "ElevMeth": {},
+        // "Notes": {},
+        // "Status": {},
+        // "Assessment": {},
+        // "Condition": {},
+        // "Completeness": {},
+        // "CoreTop": {},
+        // "CoreBot": {},
+        // "CoreLen": {},
+        // "BoxCount": {},
+        // "TopStratCode": {},
+        // "TopStratName": {},
+        // "BotStratCode": {},
+        // "BotStratName": {},
+        // "Skeletonized": {},
+        // "ShelfID": {},
+        // "BHGAvail": {},
+        // "GeoLogAvail ": {},
+        // "GeoLogType": {},
+        // "LonDD": {},
+        // "LatDD": {},
+      }
+    }]
   })
 ];
