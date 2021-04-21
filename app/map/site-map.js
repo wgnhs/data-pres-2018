@@ -51,7 +51,7 @@ export class SiteMap extends window.L.Evented {
        tileZ: 1
     })); 
 
-    let sources = filterLookup.reduce((result, curr) => {
+    let sources = filterLookup.reduceRight((result, curr) => {
       if (curr.source && curr.source.geojson) {
         result.push(
           window.fetch(curr.source.geojson)

@@ -68,35 +68,37 @@ export const ignoredKeys = [
   'County'
 ];
 export const keyLookup = {
-  'Site_Name': {title: 'Name', desc: ''},
-  'Wid': {title: 'WGNHS ID', desc: ''},
-  'WID': {title: 'WGNHS ID', desc: ''},
-  'RecentLog': {title: 'Most recent log (year)', desc: ''},
-  'MaxDepth': {title: 'Max depth (ft)', desc: ''},
-  'Norm_Res': {title: 'Normal Resistivity', desc: ''},
-  'Caliper': {title: 'Caliper', desc: ''},
-  'Gamma': {title: 'Natural Gamma', desc: ''},
-  'SP': {title: 'Spontaneous (Self) Potential', desc: ''},
-  'SPR': {title: 'Single Point Resistivity', desc: ''},
-  'Spec_Gamma': {title: 'Spectral Gamma', desc: ''},
-  'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''},
-  'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''},
-  'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''},
-  'Fluid_Temp': {title: 'Fluid Temperature', desc: ''},
-  'Fluid_Res': {title: 'Fluid Resistivity', desc: ''},
-  'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
-  'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''},
-  'Video': {title: 'Video', desc: ''},
-  'Field_ID': {title: 'Field ID', desc: ''},
-  'Project': {title: 'Project', desc: ''},
-  'Drill_Year': {title: 'Drill year', desc: ''},
-  'Depth_Ft': {title: 'Depth (ft)', desc: ''},
-  'Drill_Method': {title: 'Drill Method', desc: ''},
-  'Subsamples': {title: 'Subsamples', desc: ''},
-  'Photos': {title: 'Core Photos', desc: ''},
-  'Grainsize': {title: 'Grainsize', desc: ''},
-  'Age_Data': {title: 'Age data', desc: ''},
-  'Proxy_Data': {title: 'Proxy data', desc: ''},
+  'Site_Name': {title: 'Name', desc: ''}, //
+  'Wid': {title: 'WGNHS ID', desc: ''}, //
+  'WID': {title: 'WGNHS ID', desc: ''}, //Not sure how this is used yet.
+  // Log
+  'RecentLog': {title: 'Most recent log (year)', desc: ''}, //
+  'MaxDepth': {title: 'Max depth (ft)', desc: ''}, //
+  'Norm_Res': {title: 'Normal Resistivity', desc: ''}, //
+  'Caliper': {title: 'Caliper', desc: ''}, //
+  'Gamma': {title: 'Natural Gamma', desc: ''}, //
+  'SP': {title: 'Spontaneous (Self) Potential', desc: ''}, //
+  'SPR': {title: 'Single Point Resistivity', desc: ''}, //
+  'Spec_Gamma': {title: 'Spectral Gamma', desc: ''}, //
+  'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''}, //
+  'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''}, //
+  'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''}, //
+  'Fluid_Temp': {title: 'Fluid Temperature', desc: ''}, //
+  'Fluid_Res': {title: 'Fluid Resistivity', desc: ''}, //
+  'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''}, //
+  'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''}, //
+  'Video': {title: 'Video', desc: ''}, //
+  // Quat
+  'Field_ID': {title: 'Field ID', desc: ''}, //Not Displayed
+  'Project': {title: 'Project', desc: ''}, //
+  'Drill_Year': {title: 'Drill year', desc: ''}, //
+  'Depth_Ft': {title: 'Depth (ft)', desc: ''}, //
+  'Drill_Method': {title: 'Drill Method', desc: ''}, //
+  'Subsamples': {title: 'Subsamples', desc: ''}, //
+  'Photos': {title: 'Core Photos', desc: ''}, //
+  'Grainsize': {title: 'Grainsize', desc: ''}, //
+  'Age_Data': {title: 'Age data', desc: ''}, //
+  'Proxy_Data': {title: 'Proxy data', desc: ''}, //Nothing Actually Has Proxy Data
 };
 
 export const filterLookup = [
@@ -107,16 +109,19 @@ export const filterLookup = [
       {
         fields: {
           "County": {
+            title: 'County',
             controls: [
               new SelectControl()
             ]
           },
           "Site_Name": {
+            title: 'Name',
             controls: [
               new ContainsControl()
             ]
           },
           "Wid": {
+            title: 'WGNHS ID',
             controls: [
               new TextControl()
             ]
@@ -140,11 +145,13 @@ export const filterLookup = [
       {
         fields: {
           "RecentLog": {
+            title: 'Most recent log (year)',
             controls: [
               new GTLTControl(true)
             ]
           },
           "MaxDepth": {
+            title: 'Max depth (ft)',
             controls: [
               new GTLTControl()
             ]
@@ -156,31 +163,37 @@ export const filterLookup = [
         bundled: true,
         fields: {
           "Norm_Res": {
+            title: 'Normal Resistivity',
             controls: [
               new CheckboxControl()
             ]
           },
           "Caliper": {
+            title: 'Caliper',
             controls: [
               new CheckboxControl()
             ]
           },
           "Gamma": {
+            title: 'Natural Gamma',
             controls: [
               new CheckboxControl()
             ]
           },
           "SP": {
+            title: 'Spontaneous (Self) Potential',
             controls: [
               new CheckboxControl()
             ]
           },
           "SPR": {
+            title: 'Single Point Resistivity',
             controls: [
               new CheckboxControl()
             ]
           },
           "Spec_Gamma": {
+            title: 'Spectral Gamma',
             controls: [
               new CheckboxControl()
             ]
@@ -193,26 +206,31 @@ export const filterLookup = [
         bundled: true,
         fields: {
           "Fluid_Cond": {
+            title: 'Fluid Conductivity',
             controls: [
               new CheckboxControl()
             ]
           },
           "Flow_Spin": {
+            title: 'Spinner Flow Meter',
             controls: [
               new CheckboxControl()
             ]
           },
           "Fluid_Temp": {
+            title: 'Fluid Temperature',
             controls: [
               new CheckboxControl()
             ]
           },
           "Fluid_Res": {
+            title: 'Fluid Resistivity',
             controls: [
               new CheckboxControl()
             ]
           },
           "Flow_HP": {
+            title: 'HeatPulse Flow Meter',
             controls: [
               new CheckboxControl()
             ]
@@ -225,16 +243,19 @@ export const filterLookup = [
         bundled: true,
         fields: {
           "OBI": {
+            title: 'Optical Borehole Image (OBI)',
             controls: [
               new CheckboxControl()
             ]
           },
           "ABI": {
+            title: 'Acoustic Borehole Image (ABI)',
             controls: [
               new CheckboxControl()
             ]
           },
           "Video": {
+            title: 'Video',
             controls: [
               new CheckboxControl()
             ]
@@ -259,21 +280,25 @@ export const filterLookup = [
       {
         fields: {
           "Drill_Year": {
+            title: 'Drill year',
             controls: [
               new GTLTControl(true)
             ]
           },
           "Project": {
+            title: 'Project',
             controls: [
               new SelectControl()
             ]
           },
           "Depth_Ft": {
+            title: 'Depth (ft)',
             controls: [
               new GTLTControl()
             ]
           },
           "Drill_Method": {
+            title: 'Drill Method',
             controls: [
               new SelectControl()
             ]
@@ -285,24 +310,31 @@ export const filterLookup = [
         bundled: true,
         fields: {
           "Subsamples": {
+            title: 'Subsamples',
             controls: [
               new CheckboxControl()
             ]
           },
           "Photos": {
+            title: 'Core Photos',
             controls: [
               new CheckboxControl()
             ]
           },
           "Grainsize": {
+            title: 'Grainsize',
             controls: [
               new CheckboxControl()
             ]
           },
           "Age_Data": {
+            title: 'Age data',
             controls: [
               new CheckboxControl()
             ]
+          },
+          "Proxy_Data": {
+            hidden: true
           }
         }
       }

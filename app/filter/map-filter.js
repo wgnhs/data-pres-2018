@@ -123,7 +123,7 @@ export class MapFilter extends LitElement {
             ${!(section.title)?'':html`
               <h2 class="section-title">${section.title}</h2>
             `}
-            ${Object.entries(section.fields).map((entry, index) => html`
+            ${Object.entries(section.fields).map((entry, index) => (!entry[config].controls)?'':html`
               <div class="field">
               ${(entry[config].controls.length === 0)?'':entry[config].controls.map(control => html`
                 <td class="label">
@@ -242,11 +242,13 @@ export class MapFilter extends LitElement {
     this.filterGroups.forEach((group) => {
       group.sections.forEach((section) => {
         Object.entries(section.fields).forEach((field) => {
-          field[1].controls.forEach((control) => {
-            if (control.init) {
-              control.init(uniques[field[0]]);
-            }
-          })
+          if (field[1].controls) {
+            field[1].controls.forEach((control) => {
+              if (control.init) {
+                control.init(uniques[field[0]]);
+              }
+            })
+          }
         })
       })
     });
