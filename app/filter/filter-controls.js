@@ -93,7 +93,7 @@ export class GTLTControl {
           // filter out features without the property
           let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            isValid = predicate(feature[context.prop[feature['Data_Type']]], input);
+            isValid = predicate(Number(feature[context.prop[feature['Data_Type']]]), Number(input));
           }
           return isValid;
         }
