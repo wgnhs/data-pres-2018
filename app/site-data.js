@@ -9,21 +9,78 @@ import {
 
 export class SiteData {
   constructor(layers) {
+    // // Define aggregated data for visualization
+    // this._aggrKeys = [
+    //   'County',
+    //   'Drill_Method',
+    //   'Project'
+    // ];
+    // this.aggrData = [];
+    // for (let l of layers) {
+    //   this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
+    // }
+    this.datas = {}
+    filterLookup.forEach((fg) => {
+      fg.sections.forEach((section) => {
+        Object.entries(section.fields).forEach(([field, config]) => {
+          let source = (fg.prop && fg[fg.prop])?fg[fg.prop]:undefined;
+          let fieldKey = SiteData.buildFieldKey(source, field);
+          if (!this.datas[fieldKey]) {
+            this.datas[fieldKey] = {};
+          }
+          config.fieldKey = fieldKey;
+          Object.assign(this.datas[fieldKey], config);
+          this.datas[fieldKey].source = source;
+          this.datas[fieldKey].field = field;
+          let alias = this.datas[fieldKey].alias;
+          if (alias) {
+            if (!this.datas[alias]) {
+              this.datas[alias] = {};
+            }
+            if (!this.datas[alias].members) {
+              this.datas[alias].members = [];
+            }
+            this.datas[alias].members.push(this.datas[fieldKey]);
+          }
+          // this.datas[fieldKey].assist = {};
+          // if (config.controls) {
+          //   for (let control of config.controls) {
+          //     Object.assign(this.datas[fieldKey], SiteData.splitFieldKey(fieldKey))
+          //     if (control.createAssist) {
+          //       Object.assign(this.datas[fieldKey].assist, control.createAssist(layers,fieldKey))
+          //     }
+          //   }
+          // }
+        })
+      })
+    })
 
-    // Define aggregated data for visualization
-    this._aggrKeys = [
-      'County',
-      'Drill_Method',
-      'Project'
-    ];
-    this.aggrData = [];
-    for (let l of layers) {
-      this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
-    }
-
-    this.datas = this.aggrData.map((el)=>el.data).reduce((prev, curr)=>prev.concat(curr),[]);
+    // this.datas = this.aggrData.values().map((el)=>el.data).reduce((prev, curr)=>prev.concat(curr),[]);
     this.uniques = {};
-    this._aggrKeys.forEach((key) => this.uniques[key] = new Set(this.datas.map((el)=>el[key]).filter((el)=>!!el)));
+    // this._aggrKeys.forEach((key) => this.uniques[key] = new Set(this.datas.map((el)=>el[key]).filter((el)=>!!el)));
+  }
+
+  static buildFieldKey(source, field) {
+    let result = [];
+    if (field) {
+      if (source) {
+        result.push(source);
+      }
+      result.push(field);
+    }
+    return result.join('.');
+  }
+
+  static splitFieldKey(fieldKey) {
+    let result = {};
+    if (fieldKey) {
+      let split = fieldKey.split('.');
+      if (split.length > 1) {
+        result.source = split.shift();
+      }
+      result.field = split.shift();
+    }
+    return result;
   }
 
   static _gatherAggrData(layer, aggrKeys) {
@@ -54,6 +111,45 @@ export class SiteData {
     });
 
     return aggrData;
+  }
+
+  static get propLookup() {
+    let result = {}
+    filterLookup.forEach((fg) => {
+      fg.sections.forEach((section) => {
+        Object.entries(section.fields).forEach(([field, config]) => {
+          let source = (fg.prop && fg[fg.prop])?fg[fg.prop]:undefined;
+          let fieldKey = SiteData.buildFieldKey(source, field);
+          if (!result[fieldKey]) {
+            result[fieldKey] = {};
+          }
+          config.fieldKey = fieldKey;
+          Object.assign(result[fieldKey], config);
+          result[fieldKey].source = source;
+          result[fieldKey].field = field;
+          let alias = result[fieldKey].alias;
+          if (alias) {
+            if (!result[alias]) {
+              result[alias] = {};
+            }
+            if (!result[alias].members) {
+              result[alias].members = [];
+            }
+            result[alias].members.push(result[fieldKey]);
+          }
+          // result[fieldKey].assist = {};
+          // if (config.controls) {
+          //   for (let control of config.controls) {
+          //     Object.assign(result[fieldKey], SiteData.splitFieldKey(fieldKey))
+          //     if (control.createAssist) {
+          //       Object.assign(result[fieldKey].assist, control.createAssist(layers,fieldKey))
+          //     }
+          //   }
+          // }
+        })
+      })
+    })
+    return result;
   }
 }
 
@@ -120,18 +216,21 @@ export const filterLookup = [
               new ContainsControl()
             ]
           },
-          "Wid": {
+          "WID": {
             title: 'WGNHS ID',
             controls: [
               new TextControl()
             ]
           },
+          "Lat_Lon": {
+            //TODO!
+          }
         }
       }
     ]
   }),
   new FilterGroup({
-    title: "Geophysical Log data",
+    title: "Geophysical Log",
     prop: 'Data_Type',
     'Data_Type': 'geophysical log',
     source: {
@@ -144,6 +243,12 @@ export const filterLookup = [
     sections: [
       {
         fields: {
+          "Wid": {
+            alias: 'WID'
+          },
+          "SiteName": {
+            alias: 'Site_Name'
+          },
           "RecentLog": {
             title: 'Most recent log (year)',
             controls: [
@@ -266,7 +371,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Quaternary Core data",
+    title: "Quaternary Core",
     prop: 'Data_Type',
     'Data_Type': 'quaternary core',
     source: {
@@ -279,6 +384,12 @@ export const filterLookup = [
     sections: [
       {
         fields: {
+          "WGNHS_ID": {
+            alias: 'WID'
+          },
+          "Site_Name": {
+            alias: 'Site_Name'
+          },
           "Drill_Year": {
             title: 'Drill year',
             controls: [
@@ -341,7 +452,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Rock Core data",
+    title: "Rock Core",
     prop: 'Data_Type',
     'Data_Type': 'rock core',
     source: {
@@ -355,13 +466,17 @@ export const filterLookup = [
       fields: {
         // "OBJECTID": {},
         // "Shape": {},
-        // "WID": {},
+        "WID": {
+          alias: 'WID'
+        },
         // "Type": {},
         // "WUWN": {},
         // "CountyName": {},
         // "CountyCode": {},
         // "CountySeqID ": {},
-        // "SiteName": {},
+        "SiteName": {
+          alias: 'Site_Name'
+        },
         // "SiteOwner": {},
         // "SiteDate": {},
         // "LocConf": {},

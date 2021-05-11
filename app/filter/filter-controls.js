@@ -47,7 +47,7 @@ export class CheckboxControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop]
+          let isValid = !!feature[context.prop[feature['Data_Type']]]
           return isValid;
         }
       };
@@ -91,9 +91,9 @@ export class GTLTControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            isValid = predicate(feature[context.prop], input);
+            isValid = predicate(feature[context.prop[feature['Data_Type']]], input);
           }
           return isValid;
         }
@@ -118,14 +118,14 @@ export class SelectControl {
     `;
   }
   init(uniques) {
-    if (!this.options) {
+    if (!this.options && uniques) {
       this.options = Array.from(uniques).sort();
     }
   }
   handle(context) {
     let result = null;
 
-    const input = context.target.nextElementSibling.value;
+    const input = ('' + context.target.nextElementSibling.value).trim().toUpperCase();
     // blank selects all, apply filter if non-blank
     if (input) {
       result = {
@@ -136,9 +136,9 @@ export class SelectControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            const value = feature[context.prop]
+            const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
             isValid = value === input;
           }
           return isValid;
@@ -172,9 +172,9 @@ export class TextControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            const value = ('' + feature[context.prop]).trim().toUpperCase();
+            const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
             isValid = value === input;
           }
           return isValid;
@@ -208,9 +208,9 @@ export class ContainsControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            const value = ('' + feature[context.prop]).trim().toUpperCase();
+            const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
             isValid = value.includes(input);
           }
           return isValid;
