@@ -450,7 +450,12 @@ export const filterLookup = [
         "SiteName": {
           alias: 'Site_Name'
         },
-        // "SiteOwner": {},
+        "SiteOwner": {
+          title: 'SiteOwner',
+          controls: [
+            new ContainsControl()
+          ]
+        },
         // "SiteDate": {},
         // "LocConf": {},
         "Elevation": {
