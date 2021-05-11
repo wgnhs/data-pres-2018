@@ -453,25 +453,75 @@ export const filterLookup = [
         // "SiteOwner": {},
         // "SiteDate": {},
         // "LocConf": {},
-        // "Elevation": {},
+        "Elevation": {
+          title: 'Elevation',
+          controls: [
+            new GTLTControl(false)
+          ]
+        },
         // "ElevAcc": {},
         // "ElevMeth": {},
         // "Notes": {},
-        // "Status": {},
+        "Status": {
+          title: 'Status',
+          controls: [
+            new SelectControl()
+          ]
+        },
         // "Assessment": {},
         // "Condition": {},
         // "Completeness": {},
-        // "CoreTop": {},
-        // "CoreBot": {},
-        // "CoreLen": {},
-        // "BoxCount": {},
+        "CoreTop": {
+          title: 'CoreTop',
+          controls: [
+            new GTLTControl(false)
+          ]
+        },
+        "CoreBot": {
+          title: 'CoreBot',
+          controls: [
+            new GTLTControl(false)
+          ]
+        },
+        "CoreLen": {
+          title: 'CoreLen',
+          controls: [
+            new GTLTControl(false)
+          ]
+        },
+        "BoxCount": {
+          title: 'BoxCount',
+          controls: [
+            new GTLTControl(false)
+          ]
+        },
         // "TopStratCode": {},
-        // "TopStratName": {},
+        "TopStratName": {
+          title: 'TopStratName',
+          controls: [
+            new SelectControl()
+          ]
+        },
         // "BotStratCode": {},
-        // "BotStratName": {},
-        // "Skeletonized": {},
+        "BotStratName": {
+          title: 'BotStratName',
+          controls: [
+            new SelectControl()
+          ]
+        },
+        "Skeletonized": {
+          title: 'Skeletonized',
+          controls: [
+            new SelectControl()
+          ]
+        },
         // "ShelfID": {},
-        // "BHGAvail": {},
+        "BHGAvail": {
+          title: 'BHGAvail',
+          controls: [
+            new SelectControl()
+          ]
+        },
         // "GeoLogAvail ": {},
         // "GeoLogType": {},
         // "LonDD": {},
