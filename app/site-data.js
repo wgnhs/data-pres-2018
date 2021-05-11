@@ -19,41 +19,6 @@ export class SiteData {
     // for (let l of layers) {
     //   this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
     // }
-    this.datas = {}
-    filterLookup.forEach((fg) => {
-      fg.sections.forEach((section) => {
-        Object.entries(section.fields).forEach(([field, config]) => {
-          let source = (fg.prop && fg[fg.prop])?fg[fg.prop]:undefined;
-          let fieldKey = SiteData.buildFieldKey(source, field);
-          if (!this.datas[fieldKey]) {
-            this.datas[fieldKey] = {};
-          }
-          config.fieldKey = fieldKey;
-          Object.assign(this.datas[fieldKey], config);
-          this.datas[fieldKey].source = source;
-          this.datas[fieldKey].field = field;
-          let alias = this.datas[fieldKey].alias;
-          if (alias) {
-            if (!this.datas[alias]) {
-              this.datas[alias] = {};
-            }
-            if (!this.datas[alias].members) {
-              this.datas[alias].members = [];
-            }
-            this.datas[alias].members.push(this.datas[fieldKey]);
-          }
-          // this.datas[fieldKey].assist = {};
-          // if (config.controls) {
-          //   for (let control of config.controls) {
-          //     Object.assign(this.datas[fieldKey], SiteData.splitFieldKey(fieldKey))
-          //     if (control.createAssist) {
-          //       Object.assign(this.datas[fieldKey].assist, control.createAssist(layers,fieldKey))
-          //     }
-          //   }
-          // }
-        })
-      })
-    })
 
     // this.datas = this.aggrData.values().map((el)=>el.data).reduce((prev, curr)=>prev.concat(curr),[]);
     this.uniques = {};
@@ -249,6 +214,9 @@ export const filterLookup = [
           "SiteName": {
             alias: 'Site_Name'
           },
+          "County": {
+            alias: 'County'
+          },
           "RecentLog": {
             title: 'Most recent log (year)',
             controls: [
@@ -390,6 +358,9 @@ export const filterLookup = [
           "Site_Name": {
             alias: 'Site_Name'
           },
+          "County": {
+            alias: 'County'
+          },
           "Drill_Year": {
             title: 'Drill year',
             controls: [
@@ -471,7 +442,9 @@ export const filterLookup = [
         },
         // "Type": {},
         // "WUWN": {},
-        // "CountyName": {},
+        "CountyName": {
+          alias: 'County'
+        },
         // "CountyCode": {},
         // "CountySeqID ": {},
         "SiteName": {

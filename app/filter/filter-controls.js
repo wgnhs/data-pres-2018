@@ -117,9 +117,31 @@ export class SelectControl {
       </select>
     `;
   }
-  init(uniques) {
+  init(lookup) {
+    const uniques = new Map();
+    const mappings = {};
+    if (lookup.source) {
+      mappings[lookup.source] = lookup.field;
+    }
+    if (lookup.members) {
+      lookup.members.forEach(({source, field}) => {
+        mappings[source] = field;
+      })
+    }
+    lookup.layers.forEach(({options, _layers}) => {
+      let key = mappings[options.name];
+      Object.values(_layers).forEach((point) => {
+        const val = point.feature.properties[key]
+        if (!!val) {
+          const top = val.trim().toUpperCase();
+          if (!uniques.has(top) || uniques.get(top) < val) {
+            uniques.set(top, val);
+          }
+        }
+      })
+    })
     if (!this.options && uniques) {
-      this.options = Array.from(uniques).sort();
+      this.options = Array.from(uniques.values()).sort();
     }
   }
   handle(context) {

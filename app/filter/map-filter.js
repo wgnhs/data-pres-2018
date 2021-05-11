@@ -247,14 +247,17 @@ export class MapFilter extends LitElement {
     }
   }
 
-  init(uniques, layers) {
+  init(lookups, layers) {
     this.filterGroups.forEach((group) => {
+      let source = (group.prop && group[group.prop])?group[group.prop]:undefined;
       group.sections.forEach((section) => {
         Object.entries(section.fields).forEach(([key, field]) => {
           if (field.controls) {
             field.controls.forEach((control) => {
               if (control.init) {
-                control.init(uniques[key]);
+                const context = Object.assign({}, lookups[SiteData.buildFieldKey(source, key)]);
+                context.layers = layers;
+                control.init(context);
               }
             })
           }
