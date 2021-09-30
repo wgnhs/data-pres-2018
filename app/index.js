@@ -50,7 +50,7 @@
           },
           resolve: function(feature) {
             // filter out features without the property
-            let isValid = !!feature[context.prop];
+            let isValid = !!feature[context.prop[feature['Data_Type']]];
             return isValid;
           }
         };
@@ -94,9 +94,9 @@
           },
           resolve: function(feature) {
             // filter out features without the property
-            let isValid = !!feature[context.prop];
+            let isValid = !!feature[context.prop[feature['Data_Type']]];
             if (isValid) {
-              isValid = predicate(feature[context.prop], input);
+              isValid = predicate(Number(feature[context.prop[feature['Data_Type']]]), Number(input));
             }
             return isValid;
           }
@@ -120,15 +120,37 @@
       </select>
     `;
     }
-    init(uniques) {
-      if (!this.options) {
-        this.options = Array.from(uniques).sort();
+    init(lookup) {
+      const uniques = new Map();
+      const mappings = {};
+      if (lookup.source) {
+        mappings[lookup.source] = lookup.field;
+      }
+      if (lookup.members) {
+        lookup.members.forEach(({source, field}) => {
+          mappings[source] = field;
+        });
+      }
+      lookup.layers.forEach(({options, _layers}) => {
+        let key = mappings[options.name];
+        Object.values(_layers).forEach((point) => {
+          const val = point.feature.properties[key];
+          if (!!val) {
+            const top = val.trim().toUpperCase();
+            if (!uniques.has(top) || uniques.get(top) < val) {
+              uniques.set(top, val);
+            }
+          }
+        });
+      });
+      if (!this.options && uniques) {
+        this.options = Array.from(uniques.values()).sort();
       }
     }
     handle(context) {
       let result = null;
 
-      const input = context.target.nextElementSibling.value;
+      const input = ('' + context.target.nextElementSibling.value).trim().toUpperCase();
       // blank selects all, apply filter if non-blank
       if (input) {
         result = {
@@ -139,9 +161,9 @@
           },
           resolve: function(feature) {
             // filter out features without the property
-            let isValid = !!feature[context.prop];
+            let isValid = !!feature[context.prop[feature['Data_Type']]];
             if (isValid) {
-              const value = feature[context.prop];
+              const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
               isValid = value === input;
             }
             return isValid;
@@ -175,9 +197,9 @@
           },
           resolve: function(feature) {
             // filter out features without the property
-            let isValid = !!feature[context.prop];
+            let isValid = !!feature[context.prop[feature['Data_Type']]];
             if (isValid) {
-              const value = ('' + feature[context.prop]).trim().toUpperCase();
+              const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
               isValid = value === input;
             }
             return isValid;
@@ -211,9 +233,9 @@
           },
           resolve: function(feature) {
             // filter out features without the property
-            let isValid = !!feature[context.prop];
+            let isValid = !!feature[context.prop[feature['Data_Type']]];
             if (isValid) {
-              const value = ('' + feature[context.prop]).trim().toUpperCase();
+              const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
               isValid = value.includes(input);
             }
             return isValid;
@@ -226,21 +248,43 @@
 
   class SiteData {
     constructor(layers) {
+      // // Define aggregated data for visualization
+      // this._aggrKeys = [
+      //   'County',
+      //   'Drill_Method',
+      //   'Project'
+      // ];
+      // this.aggrData = [];
+      // for (let l of layers) {
+      //   this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
+      // }
 
-      // Define aggregated data for visualization
-      this._aggrKeys = [
-        'County',
-        'Drill_Method',
-        'Project'
-      ];
-      this.aggrData = [];
-      for (let l of layers) {
-        this.aggrData.push(SiteData._gatherAggrData(l, this._aggrKeys));
-      }
-
-      this.datas = this.aggrData.map((el)=>el.data).reduce((prev, curr)=>prev.concat(curr),[]);
+      // this.datas = this.aggrData.values().map((el)=>el.data).reduce((prev, curr)=>prev.concat(curr),[]);
       this.uniques = {};
-      this._aggrKeys.forEach((key) => this.uniques[key] = new Set(this.datas.map((el)=>el[key]).filter((el)=>!!el)));
+      // this._aggrKeys.forEach((key) => this.uniques[key] = new Set(this.datas.map((el)=>el[key]).filter((el)=>!!el)));
+    }
+
+    static buildFieldKey(source, field) {
+      let result = [];
+      if (field) {
+        if (source) {
+          result.push(source);
+        }
+        result.push(field);
+      }
+      return result.join('.');
+    }
+
+    static splitFieldKey(fieldKey) {
+      let result = {};
+      if (fieldKey) {
+        let split = fieldKey.split('.');
+        if (split.length > 1) {
+          result.source = split.shift();
+        }
+        result.field = split.shift();
+      }
+      return result;
     }
 
     static _gatherAggrData(layer, aggrKeys) {
@@ -272,47 +316,83 @@
 
       return aggrData;
     }
+
+    static get propLookup() {
+      let result = {};
+      filterLookup.forEach((fg) => {
+        fg.sections.forEach((section) => {
+          Object.entries(section.fields).forEach(([field, config]) => {
+            let source = (fg.prop && fg[fg.prop])?fg[fg.prop]:undefined;
+            let fieldKey = SiteData.buildFieldKey(source, field);
+            if (!result[fieldKey]) {
+              result[fieldKey] = {};
+            }
+            config.fieldKey = fieldKey;
+            Object.assign(result[fieldKey], config);
+            result[fieldKey].source = source;
+            result[fieldKey].field = field;
+            let alias = result[fieldKey].alias;
+            if (alias) {
+              if (!result[alias]) {
+                result[alias] = {};
+              }
+              if (!result[alias].members) {
+                result[alias].members = [];
+              }
+              result[alias].members.push(result[fieldKey]);
+            }
+            // result[fieldKey].assist = {};
+            // if (config.controls) {
+            //   for (let control of config.controls) {
+            //     Object.assign(result[fieldKey], SiteData.splitFieldKey(fieldKey))
+            //     if (control.createAssist) {
+            //       Object.assign(result[fieldKey].assist, control.createAssist(layers,fieldKey))
+            //     }
+            //   }
+            // }
+          });
+        });
+      });
+      return result;
+    }
   }
 
   const ignoredKeys = [
     'Site_Code',
     'Data_Type',
-    'SiteName',
-    'Site_Name',
-    'Wid',
-    'ID',
-    'County'
+    'Site_Name'
   ];
   const keyLookup = {
-    'Site_Name': {title: 'Name', desc: ''},
-    'Wid': {title: 'WGNHS ID', desc: ''},
-    'WID': {title: 'WGNHS ID', desc: ''},
-    'RecentLog': {title: 'Most recent log (year)', desc: ''},
-    'MaxDepth': {title: 'Max depth (ft)', desc: ''},
-    'Norm_Res': {title: 'Normal Resistivity', desc: ''},
-    'Caliper': {title: 'Caliper', desc: ''},
-    'Gamma': {title: 'Natural Gamma', desc: ''},
-    'SP': {title: 'Spontaneous (Self) Potential', desc: ''},
-    'SPR': {title: 'Single Point Resistivity', desc: ''},
-    'Spec_Gamma': {title: 'Spectral Gamma', desc: ''},
-    'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''},
-    'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''},
-    'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''},
-    'Fluid_Temp': {title: 'Fluid Temperature', desc: ''},
-    'Fluid_Res': {title: 'Fluid Resistivity', desc: ''},
-    'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''},
-    'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''},
-    'Video': {title: 'Video', desc: ''},
-    'Field_ID': {title: 'Field ID', desc: ''},
-    'Project': {title: 'Project', desc: ''},
-    'Drill_Year': {title: 'Drill year', desc: ''},
-    'Depth_Ft': {title: 'Depth (ft)', desc: ''},
-    'Drill_Method': {title: 'Drill Method', desc: ''},
-    'Subsamples': {title: 'Subsamples', desc: ''},
-    'Photos': {title: 'Core Photos', desc: ''},
-    'Grainsize': {title: 'Grainsize', desc: ''},
-    'Age_Data': {title: 'Age data', desc: ''},
-    'Proxy_Data': {title: 'Proxy data', desc: ''},
+    'Site_Name': {title: 'Name', desc: ''}, //
+    'WID': {title: 'WGNHS ID', desc: ''}, //
+    // Log
+    'RecentLog': {title: 'Most recent log (year)', desc: ''}, //
+    'MaxDepth': {title: 'Max depth (ft)', desc: ''}, //
+    'Norm_Res': {title: 'Normal Resistivity', desc: ''}, //
+    'Caliper': {title: 'Caliper', desc: ''}, //
+    'Gamma': {title: 'Natural Gamma', desc: ''}, //
+    'SP': {title: 'Spontaneous (Self) Potential', desc: ''}, //
+    'SPR': {title: 'Single Point Resistivity', desc: ''}, //
+    'Spec_Gamma': {title: 'Spectral Gamma', desc: ''}, //
+    'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''}, //
+    'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''}, //
+    'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''}, //
+    'Fluid_Temp': {title: 'Fluid Temperature', desc: ''}, //
+    'Fluid_Res': {title: 'Fluid Resistivity', desc: ''}, //
+    'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''}, //
+    'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''}, //
+    'Video': {title: 'Video', desc: ''}, //
+    // Quat
+    'Field_ID': {title: 'Field ID', desc: ''}, //Not Displayed
+    'Project': {title: 'Project', desc: ''}, //
+    'Drill_Year': {title: 'Drill year', desc: ''}, //
+    'Depth_Ft': {title: 'Depth (ft)', desc: ''}, //
+    'Drill_Method': {title: 'Drill Method', desc: ''}, //
+    'Subsamples': {title: 'Subsamples', desc: ''}, //
+    'Photos': {title: 'Core Photos', desc: ''}, //
+    'Grainsize': {title: 'Grainsize', desc: ''}, //
+    'Age_Data': {title: 'Age data', desc: ''}, //
+    'Proxy_Data': {title: 'Proxy data', desc: ''}, //Nothing Actually Has Proxy Data
   };
 
   const filterLookup = [
@@ -323,26 +403,32 @@
         {
           fields: {
             "County": {
+              title: 'County',
               controls: [
                 new SelectControl()
               ]
             },
             "Site_Name": {
+              title: 'Name',
               controls: [
                 new ContainsControl()
               ]
             },
-            "Wid": {
+            "WID": {
+              title: 'WGNHS ID',
               controls: [
                 new TextControl()
               ]
             },
+            "Lat_Lon": {
+              //TODO!
+            }
           }
         }
       ]
     }),
     new FilterGroup({
-      title: "Geophysical Log data",
+      title: "Geophysical Log",
       prop: 'Data_Type',
       'Data_Type': 'geophysical log',
       source: {
@@ -355,12 +441,26 @@
       sections: [
         {
           fields: {
+            "WID": {
+              alias: 'WID',
+              hidden: true
+            },
+            "SiteName": {
+              alias: 'Site_Name',
+              hidden: true
+            },
+            "County": {
+              alias: 'County',
+              hidden: true
+            },
             "RecentLog": {
+              title: 'Most recent log (year)',
               controls: [
                 new GTLTControl(true)
               ]
             },
             "MaxDepth": {
+              title: 'Max depth (ft)',
               controls: [
                 new GTLTControl()
               ]
@@ -372,31 +472,37 @@
           bundled: true,
           fields: {
             "Norm_Res": {
+              title: 'Normal Resistivity',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Caliper": {
+              title: 'Caliper',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Gamma": {
+              title: 'Natural Gamma',
               controls: [
                 new CheckboxControl()
               ]
             },
             "SP": {
+              title: 'Spontaneous (Self) Potential',
               controls: [
                 new CheckboxControl()
               ]
             },
             "SPR": {
+              title: 'Single Point Resistivity',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Spec_Gamma": {
+              title: 'Spectral Gamma',
               controls: [
                 new CheckboxControl()
               ]
@@ -409,26 +515,31 @@
           bundled: true,
           fields: {
             "Fluid_Cond": {
+              title: 'Fluid Conductivity',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Flow_Spin": {
+              title: 'Spinner Flow Meter',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Fluid_Temp": {
+              title: 'Fluid Temperature',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Fluid_Res": {
+              title: 'Fluid Resistivity',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Flow_HP": {
+              title: 'HeatPulse Flow Meter',
               controls: [
                 new CheckboxControl()
               ]
@@ -441,16 +552,19 @@
           bundled: true,
           fields: {
             "OBI": {
+              title: 'Optical Borehole Image (OBI)',
               controls: [
                 new CheckboxControl()
               ]
             },
             "ABI": {
+              title: 'Acoustic Borehole Image (ABI)',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Video": {
+              title: 'Video',
               controls: [
                 new CheckboxControl()
               ]
@@ -461,7 +575,7 @@
       ]
     }),
     new FilterGroup({
-      title: "Quaternary Core data",
+      title: "Quaternary Core",
       prop: 'Data_Type',
       'Data_Type': 'quaternary core',
       source: {
@@ -474,22 +588,35 @@
       sections: [
         {
           fields: {
+            "WGNHS_ID": {
+              alias: 'WID'
+            },
+            "Site_Name": {
+              alias: 'Site_Name'
+            },
+            "County": {
+              alias: 'County'
+            },
             "Drill_Year": {
+              title: 'Drill year',
               controls: [
                 new GTLTControl(true)
               ]
             },
             "Project": {
+              title: 'Project',
               controls: [
                 new SelectControl()
               ]
             },
             "Depth_Ft": {
+              title: 'Depth (ft)',
               controls: [
                 new GTLTControl()
               ]
             },
             "Drill_Method": {
+              title: 'Drill Method',
               controls: [
                 new SelectControl()
               ]
@@ -501,29 +628,153 @@
           bundled: true,
           fields: {
             "Subsamples": {
+              title: 'Subsamples',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Photos": {
+              title: 'Core Photos',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Grainsize": {
+              title: 'Grainsize',
               controls: [
                 new CheckboxControl()
               ]
             },
             "Age_Data": {
+              title: 'Age data',
               controls: [
                 new CheckboxControl()
               ]
+            },
+            "Proxy_Data": {
+              hidden: true
             }
           }
         }
       ]
-    })
+    }),
+    // new FilterGroup({
+    //   title: "Rock Core",
+    //   prop: 'Data_Type',
+    //   'Data_Type': 'rock core',
+    //   source: {
+    //     geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+    //     user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0'
+    //   },
+    //   color: 'var(--map-symbol-2)',
+    //   toggleable: true,
+    //   active: true,
+    //   sections: [{
+    //     fields: {
+    //       // "OBJECTID": {},
+    //       // "Shape": {},
+    //       "WID": {
+    //         alias: 'WID'
+    //       },
+    //       // "Type": {},
+    //       // "WUWN": {},
+    //       "CountyName": {
+    //         alias: 'County'
+    //       },
+    //       // "CountyCode": {},
+    //       // "CountySeqID ": {},
+    //       "SiteName": {
+    //         alias: 'Site_Name'
+    //       },
+    //       "SiteOwner": {
+    //         title: 'SiteOwner',
+    //         controls: [
+    //           new ContainsControl()
+    //         ]
+    //       },
+    //       // "SiteDate": {},
+    //       // "LocConf": {},
+    //       "Elevation": {
+    //         title: 'Elevation',
+    //         controls: [
+    //           new GTLTControl(false)
+    //         ]
+    //       },
+    //       // "ElevAcc": {},
+    //       // "ElevMeth": {},
+    //       // "Notes": {},
+    //       "Status": {
+    //         title: 'Status',
+    //         controls: [
+    //           new SelectControl()
+    //         ]
+    //       },
+    //       // "Assessment": {},
+    //       // "Condition": {},
+    //       // "Completeness": {},
+    //       "CoreTop": {
+    //         title: 'CoreTop',
+    //         controls: [
+    //           new GTLTControl(false)
+    //         ]
+    //       },
+    //       "CoreBot": {
+    //         title: 'CoreBot',
+    //         controls: [
+    //           new GTLTControl(false)
+    //         ]
+    //       },
+    //       "CoreLen": {
+    //         title: 'CoreLen',
+    //         controls: [
+    //           new GTLTControl(false)
+    //         ]
+    //       },
+    //       "BoxCount": {
+    //         title: 'BoxCount',
+    //         controls: [
+    //           new GTLTControl(false)
+    //         ]
+    //       },
+    //       // "TopStratCode": {},
+    //       "TopStratName": {
+    //         title: 'TopStratName',
+    //         controls: [
+    //           new SelectControl()
+    //         ]
+    //       },
+    //       // "BotStratCode": {},
+    //       "BotStratName": {
+    //         title: 'BotStratName',
+    //         controls: [
+    //           new SelectControl()
+    //         ]
+    //       },
+    //       "Skeletonized": {
+    //         title: 'Skeletonized',
+    //         controls: [
+    //           new SelectControl()
+    //         ]
+    //       },
+    //       "ShelfID": {
+    //         title: 'Shelf',
+    //         controls: [
+    //           new ContainsControl()
+    //         ]
+    //       },
+    //       "BHGAvail": {
+    //         title: 'BHGAvail',
+    //         controls: [
+    //           new SelectControl()
+    //         ]
+    //       },
+    //       // "GeoLogAvail ": {},
+    //       // "GeoLogType": {},
+    //       // "LonDD": {},
+    //       // "LatDD": {},
+    //     }
+    //   }]
+    // })
   ];
 
   const RestylingCircleMarker = L.CircleMarker.extend({
@@ -622,7 +873,7 @@
          tileZ: 1
       })); 
 
-      let sources = filterLookup.reduce((result, curr) => {
+      let sources = filterLookup.reduceRight((result, curr) => {
         if (curr.source && curr.source.geojson) {
           result.push(
             window.fetch(curr.source.geojson)
@@ -661,14 +912,14 @@
         let lookup = {};
         this.layers.forEach(function(layer, idx, arr) {
           layer.eachLayer(function(obj) {
-            let wid = obj.feature.properties['Wid'] || obj.feature.properties['WGNHS_ID'];
+            let wid = obj.feature.properties['Wid'] || obj.feature.properties['WID'] || obj.feature.properties['WGNHS_ID'];
             let siteCode = SiteMap.getSiteCode(obj.feature.properties);
             let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
             let latLon = obj.getLatLng();
             let cache = lookup[siteCode] || {
               'Site_Code': siteCode,
               'Site_Name': siteName,
-              'Wid': wid,
+              'WID': wid,
               'Latitude': latLon['lat'].toFixed(6),
               'Longitude': latLon['lng'].toFixed(6),
               point: obj,
@@ -692,7 +943,7 @@
     }
 
     static getSiteCode(params) {
-      let keys = ['Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
+      let keys = ['WID','Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
       let result = keys.reduce((prev, curr) => {
         return prev || params[curr];
       }, undefined);
@@ -875,8 +1126,8 @@
    * @param {*} e 
    */
   const fileSizeIEC = function(a,b,c,d,e){
-    return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)
-    +' '+(e?'KMGTPEZY'[--e]+'iB':'Bytes')
+    return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(0)
+    +' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')
    };
 
   class DownloadButton extends litElement.LitElement {
@@ -977,11 +1228,11 @@
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
     <pdf-view-button
       .panel=${this.context.pdfpanel}
-      src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/' + this.info.Wid + '.pdf'}">
+      src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/' + this.info.WID + '.pdf'}">
       <span slot="download-text">Download PDF</span>
     </pdf-view-button>
     <download-button
-      src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/las/' + this.info.Wid + '.las'}">
+      src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/las/' + this.info.WID + '.las'}">
       Download LAS
     </download-button>
     `;
@@ -1024,13 +1275,13 @@
   }
   customElements.define('log-layout', LogLayout);
 
-  class CoreLayout extends litElement.LitElement {
+  class QuatCoreLayout extends litElement.LitElement {
     static get layoutName() {
       return 'quaternary core';
     }
 
     static include(info, context) {
-      return litElement.html`<core-layout .info=${info} .context=${context}></core-layout>`;
+      return litElement.html`<quat-core-layout .info=${info} .context=${context}></quat-core-layout>`;
     }
 
     static get properties() {
@@ -1097,13 +1348,13 @@
       return result;
     }
   }
-  customElements.define('core-layout', CoreLayout);
+  customElements.define('quat-core-layout', QuatCoreLayout);
 
   const defaultLayout = TableLayout;
   const availableLayouts = [
     defaultLayout,
     LogLayout,
-    CoreLayout
+    QuatCoreLayout
   ];
 
   const layoutResolver = {
@@ -1180,7 +1431,7 @@
     render() {
       let Latitude = (this.siteinfo)?this.siteinfo['Latitude']:null;
       let Longitude = (this.siteinfo)?this.siteinfo['Longitude']:null;
-      let WID = (this.siteinfo)?this.siteinfo['Wid']:null;
+      let WID = (this.siteinfo)?this.siteinfo['WID']:null;
       return litElement.html`
       ${(!this.siteinfo)? '' : litElement.html`
         <div class="header">
@@ -1252,14 +1503,14 @@
         total sites
       </span>
       <ul>
-        ${this.counts.map((el) => litElement.html`
+        ${this.counts.reduceRight((prev, el) => prev.concat(litElement.html`
         <li ?disabled=${!el.included}>
           ${el.current} of ${el.total} <span class="name">${el.name}</span> sites
           ${(el.filteredBy.length > 0)?litElement.html`
           (filtered by ${el.filteredBy.join(', ')})
           `:''}
         </li>
-        `)}
+        `),[])}
       </ul>
     </div>
     `;
@@ -1373,19 +1624,18 @@
     `;
     }
 
-    resolveKeyLookup(field) {
-      let result = (!keyLookup[field])?field:keyLookup[field].title;
-      return result;
-    }
+    // resolveKeyLookup(field) {
+    //   let result = (!keyLookup[field])?field:keyLookup[field].title;
+    //   return result;
+    // }
 
     renderFilterGroups() {
-      let name=0, config=1;
       return this.filterGroups.map((group, index) => litElement.html`
       <slot name="${index}"></slot>
       <app-collapsible class="group"
         ?open=${group.open} @open=${this._handle(group)}>
         <i slot="header-before" class="material-icons collapse-icon"></i>
-        <span slot="header">${group.title}</span>
+        <span slot="header">${group.title} data</span>
         ${(!group.toggleable)?'':litElement.html`
           <toggle-switch
             name="${group.title}"
@@ -1400,12 +1650,12 @@
             ${!(section.title)?'':litElement.html`
               <h2 class="section-title">${section.title}</h2>
             `}
-            ${Object.entries(section.fields).map((entry, index) => litElement.html`
+            ${Object.entries(section.fields).map(([name, config], index) => (!config.controls)?'':litElement.html`
               <div class="field">
-              ${(entry[config].controls.length === 0)?'':entry[config].controls.map(control => litElement.html`
+              ${(config.controls.length === 0)?'':config.controls.map(control => litElement.html`
                 <td class="label">
                   <label for="${this.genId(index)}" >
-                    ${this.resolveKeyLookup(entry[name])}
+                    ${config.title}
                   </label>
                 </td>
                 <td class="selector" 
@@ -1413,7 +1663,7 @@
                   <input
                     type="hidden"
                     id="${control.id}"
-                    name="${entry[name]}">
+                    name="${config.fieldKey}">
                   ${control.next}
                 </td>
               `)}
@@ -1480,7 +1730,17 @@
         context.id = id;
         context.group = group;
         context.target = e.currentTarget.querySelector('#'+id);
-        context.prop = context.target.name;
+        const lookup = SiteData.propLookup[context.target.name];
+        const mappings = {};
+        if (group.prop && group[group.prop]) {
+          mappings[group[group.prop]] = lookup.field;
+        }
+        if (lookup.members) {
+          lookup.members.forEach(({source, field}) => {
+            mappings[source] = field;
+          });
+        }
+        context.prop = mappings;
         removeFromFilter(filter, id);
         let resolver = handle(context);
         if (resolver) {
@@ -1515,15 +1775,20 @@
       }
     }
 
-    init(uniques, layers) {
+    init(lookups, layers) {
       this.filterGroups.forEach((group) => {
+        let source = (group.prop && group[group.prop])?group[group.prop]:undefined;
         group.sections.forEach((section) => {
-          Object.entries(section.fields).forEach((field) => {
-            field[1].controls.forEach((control) => {
-              if (control.init) {
-                control.init(uniques[field[0]]);
-              }
-            });
+          Object.entries(section.fields).forEach(([key, field]) => {
+            if (field.controls) {
+              field.controls.forEach((control) => {
+                if (control.init) {
+                  const context = Object.assign({}, lookups[SiteData.buildFieldKey(source, key)]);
+                  context.layers = layers;
+                  control.init(context);
+                }
+              });
+            }
           });
         });
       });
@@ -1554,9 +1819,9 @@
 
       const result = sources.reduce((result, layer) => {
         const activePoints = new Set();
-        Object.entries(layer._layers).forEach((ent) => {
-          if (resolve(ent[1].feature.properties)) {
-            activePoints.add('' + SiteMap.getSiteCode(ent[1].feature.properties));
+        Object.entries(layer._layers).forEach(([key, point]) => {
+          if (resolve(point.feature.properties)) {
+            activePoints.add('' + SiteMap.getSiteCode(point.feature.properties));
           }
         });
         result[layer.options.name] = activePoints;
@@ -1628,8 +1893,7 @@
 
   window.siteMap.once('init', function() {
     window.siteData = new SiteData(window.siteMap.layers);
-    window.aggrData = siteData.aggrData;
-    filter.init(window.siteData.uniques, window.siteMap.layers);
+    window.filter.init(SiteData.propLookup, window.siteMap.layers);
 
     var deselectFeature = function() {
       window.pdfPanel.hide();
