@@ -47,7 +47,7 @@ export class CheckboxControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop]
+          let isValid = !!feature[context.prop[feature['Data_Type']]]
           return isValid;
         }
       };
@@ -91,9 +91,9 @@ export class GTLTControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            isValid = predicate(feature[context.prop], input);
+            isValid = predicate(Number(feature[context.prop[feature['Data_Type']]]), Number(input));
           }
           return isValid;
         }
@@ -117,15 +117,37 @@ export class SelectControl {
       </select>
     `;
   }
-  init(uniques) {
-    if (!this.options) {
-      this.options = Array.from(uniques).sort();
+  init(lookup) {
+    const uniques = new Map();
+    const mappings = {};
+    if (lookup.source) {
+      mappings[lookup.source] = lookup.field;
+    }
+    if (lookup.members) {
+      lookup.members.forEach(({source, field}) => {
+        mappings[source] = field;
+      })
+    }
+    lookup.layers.forEach(({options, _layers}) => {
+      let key = mappings[options.name];
+      Object.values(_layers).forEach((point) => {
+        const val = point.feature.properties[key]
+        if (!!val) {
+          const top = val.trim().toUpperCase();
+          if (!uniques.has(top) || uniques.get(top) < val) {
+            uniques.set(top, val);
+          }
+        }
+      })
+    })
+    if (!this.options && uniques) {
+      this.options = Array.from(uniques.values()).sort();
     }
   }
   handle(context) {
     let result = null;
 
-    const input = context.target.nextElementSibling.value;
+    const input = ('' + context.target.nextElementSibling.value).trim().toUpperCase();
     // blank selects all, apply filter if non-blank
     if (input) {
       result = {
@@ -136,9 +158,9 @@ export class SelectControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            const value = feature[context.prop]
+            const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
             isValid = value === input;
           }
           return isValid;
@@ -172,9 +194,9 @@ export class TextControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            const value = ('' + feature[context.prop]).trim().toUpperCase();
+            const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
             isValid = value === input;
           }
           return isValid;
@@ -208,9 +230,9 @@ export class ContainsControl {
         },
         resolve: function(feature) {
           // filter out features without the property
-          let isValid = !!feature[context.prop];
+          let isValid = !!feature[context.prop[feature['Data_Type']]];
           if (isValid) {
-            const value = ('' + feature[context.prop]).trim().toUpperCase();
+            const value = ('' + feature[context.prop[feature['Data_Type']]]).trim().toUpperCase();
             isValid = value.includes(input);
           }
           return isValid;

@@ -66,7 +66,7 @@ export class SiteDetails extends LitElement {
   render() {
     let Latitude = (this.siteinfo)?this.siteinfo['Latitude']:null;
     let Longitude = (this.siteinfo)?this.siteinfo['Longitude']:null;
-    let WID = (this.siteinfo)?this.siteinfo['Wid']:null;
+    let WID = (this.siteinfo)?this.siteinfo['WID']:null;
     return html`
       ${(!this.siteinfo)? '' : html`
         <div class="header">

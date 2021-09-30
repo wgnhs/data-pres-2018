@@ -51,7 +51,7 @@ export class SiteMap extends window.L.Evented {
        tileZ: 1
     })); 
 
-    let sources = filterLookup.reduce((result, curr) => {
+    let sources = filterLookup.reduceRight((result, curr) => {
       if (curr.source && curr.source.geojson) {
         result.push(
           window.fetch(curr.source.geojson)
@@ -90,14 +90,14 @@ export class SiteMap extends window.L.Evented {
       let lookup = {};
       this.layers.forEach(function(layer, idx, arr) {
         layer.eachLayer(function(obj) {
-          let wid = obj.feature.properties['Wid'] || obj.feature.properties['WGNHS_ID'];
+          let wid = obj.feature.properties['Wid'] || obj.feature.properties['WID'] || obj.feature.properties['WGNHS_ID'];
           let siteCode = SiteMap.getSiteCode(obj.feature.properties);
           let siteName = obj.feature.properties['Site_Name'] || obj.feature.properties['SiteName'];
           let latLon = obj.getLatLng();
           let cache = lookup[siteCode] || {
             'Site_Code': siteCode,
             'Site_Name': siteName,
-            'Wid': wid,
+            'WID': wid,
             'Latitude': latLon['lat'].toFixed(6),
             'Longitude': latLon['lng'].toFixed(6),
             point: obj,
@@ -121,7 +121,7 @@ export class SiteMap extends window.L.Evented {
   }
 
   static getSiteCode(params) {
-    let keys = ['Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
+    let keys = ['WID','Wid', 'WGNHS_ID', 'ID', 'Site_Code'];
     let result = keys.reduce((prev, curr) => {
       return prev || params[curr];
     }, undefined)

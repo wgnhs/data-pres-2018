@@ -1,13 +1,13 @@
 import { LitElement, html, css } from 'lit-element';
 import { filterLookup, keyLookup } from '../../site-data.js';
 
-export class CoreLayout extends LitElement {
+export class QuatCoreLayout extends LitElement {
   static get layoutName() {
     return 'quaternary core';
   }
 
   static include(info, context) {
-    return html`<core-layout .info=${info} .context=${context}></core-layout>`;
+    return html`<quat-core-layout .info=${info} .context=${context}></quat-core-layout>`;
   }
 
   static get properties() {
@@ -74,4 +74,4 @@ export class CoreLayout extends LitElement {
     return result;
   }
 }
-customElements.define('core-layout', CoreLayout);
+customElements.define('quat-core-layout', QuatCoreLayout);

@@ -35,14 +35,14 @@ export class FilterSummary extends LitElement {
         total sites
       </span>
       <ul>
-        ${this.counts.map((el) => html`
+        ${this.counts.reduceRight((prev, el) => prev.concat(html`
         <li ?disabled=${!el.included}>
           ${el.current} of ${el.total} <span class="name">${el.name}</span> sites
           ${(el.filteredBy.length > 0)?html`
           (filtered by ${el.filteredBy.join(', ')})
           `:''}
         </li>
-        `)}
+        `),[])}
       </ul>
     </div>
     `;

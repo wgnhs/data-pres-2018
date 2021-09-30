@@ -4,7 +4,7 @@ export { InRadio, ToggleSwitch } from 'wgnhs-layout';
 export { AppCollapsible } from 'wgnhs-layout';
 import { styles } from 'wgnhs-styles';
 export { FilterSummary } from './filter-summary.js';
-import { keyLookup, filterLookup } from '../site-data.js';
+import { SiteData, keyLookup, filterLookup } from '../site-data.js';
 import { SiteMap } from '../map/site-map.js';
 
 export class MapFilter extends LitElement {
@@ -96,19 +96,18 @@ export class MapFilter extends LitElement {
     `;
   }
 
-  resolveKeyLookup(field) {
-    let result = (!keyLookup[field])?field:keyLookup[field].title;
-    return result;
-  }
+  // resolveKeyLookup(field) {
+  //   let result = (!keyLookup[field])?field:keyLookup[field].title;
+  //   return result;
+  // }
 
   renderFilterGroups() {
-    let name=0, config=1;
     return this.filterGroups.map((group, index) => html`
       <slot name="${index}"></slot>
       <app-collapsible class="group"
         ?open=${group.open} @open=${this._handle(group)}>
         <i slot="header-before" class="material-icons collapse-icon"></i>
-        <span slot="header">${group.title}</span>
+        <span slot="header">${group.title} data</span>
         ${(!group.toggleable)?'':html`
           <toggle-switch
             name="${group.title}"
@@ -123,12 +122,12 @@ export class MapFilter extends LitElement {
             ${!(section.title)?'':html`
               <h2 class="section-title">${section.title}</h2>
             `}
-            ${Object.entries(section.fields).map((entry, index) => html`
+            ${Object.entries(section.fields).map(([name, config], index) => (!config.controls)?'':html`
               <div class="field">
-              ${(entry[config].controls.length === 0)?'':entry[config].controls.map(control => html`
+              ${(config.controls.length === 0)?'':config.controls.map(control => html`
                 <td class="label">
                   <label for="${this.genId(index)}" >
-                    ${this.resolveKeyLookup(entry[name])}
+                    ${config.title}
                   </label>
                 </td>
                 <td class="selector" 
@@ -136,7 +135,7 @@ export class MapFilter extends LitElement {
                   <input
                     type="hidden"
                     id="${control.id}"
-                    name="${entry[name]}">
+                    name="${config.fieldKey}">
                   ${control.next}
                 </td>
               `)}
@@ -203,7 +202,17 @@ export class MapFilter extends LitElement {
       context.id = id;
       context.group = group;
       context.target = e.currentTarget.querySelector('#'+id);
-      context.prop = context.target.name;
+      const lookup = SiteData.propLookup[context.target.name];
+      const mappings = {};
+      if (group.prop && group[group.prop]) {
+        mappings[group[group.prop]] = lookup.field;
+      }
+      if (lookup.members) {
+        lookup.members.forEach(({source, field}) => {
+          mappings[source] = field;
+        })
+      }
+      context.prop = mappings;
       removeFromFilter(filter, id);
       let resolver = handle(context);
       if (resolver) {
@@ -238,15 +247,20 @@ export class MapFilter extends LitElement {
     }
   }
 
-  init(uniques, layers) {
+  init(lookups, layers) {
     this.filterGroups.forEach((group) => {
+      let source = (group.prop && group[group.prop])?group[group.prop]:undefined;
       group.sections.forEach((section) => {
-        Object.entries(section.fields).forEach((field) => {
-          field[1].controls.forEach((control) => {
-            if (control.init) {
-              control.init(uniques[field[0]]);
-            }
-          })
+        Object.entries(section.fields).forEach(([key, field]) => {
+          if (field.controls) {
+            field.controls.forEach((control) => {
+              if (control.init) {
+                const context = Object.assign({}, lookups[SiteData.buildFieldKey(source, key)]);
+                context.layers = layers;
+                control.init(context);
+              }
+            })
+          }
         })
       })
     });
@@ -277,9 +291,9 @@ export class MapFilter extends LitElement {
 
     const result = sources.reduce((result, layer) => {
       const activePoints = new Set();
-      Object.entries(layer._layers).forEach((ent) => {
-        if (resolve(ent[1].feature.properties)) {
-          activePoints.add('' + SiteMap.getSiteCode(ent[1].feature.properties));
+      Object.entries(layer._layers).forEach(([key, point]) => {
+        if (resolve(point.feature.properties)) {
+          activePoints.add('' + SiteMap.getSiteCode(point.feature.properties));
         }
       });
       result[layer.options.name] = activePoints;

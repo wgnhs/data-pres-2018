@@ -14,8 +14,7 @@ window.filter = document.querySelector('#filter');
 
 window.siteMap.once('init', function() {
   window.siteData = new SiteData(window.siteMap.layers);
-  window.aggrData = siteData.aggrData;
-  filter.init(window.siteData.uniques, window.siteMap.layers);
+  window.filter.init(SiteData.propLookup, window.siteMap.layers);
 
   var deselectFeature = function() {
     window.pdfPanel.hide();
