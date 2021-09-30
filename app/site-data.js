@@ -419,121 +419,121 @@ export const filterLookup = [
       }
     ]
   }),
-  new FilterGroup({
-    title: "Rock Core",
-    prop: 'Data_Type',
-    'Data_Type': 'rock core',
-    source: {
-      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
-      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0'
-    },
-    color: 'var(--map-symbol-2)',
-    toggleable: true,
-    active: true,
-    sections: [{
-      fields: {
-        // "OBJECTID": {},
-        // "Shape": {},
-        "WID": {
-          alias: 'WID'
-        },
-        // "Type": {},
-        // "WUWN": {},
-        "CountyName": {
-          alias: 'County'
-        },
-        // "CountyCode": {},
-        // "CountySeqID ": {},
-        "SiteName": {
-          alias: 'Site_Name'
-        },
-        "SiteOwner": {
-          title: 'SiteOwner',
-          controls: [
-            new ContainsControl()
-          ]
-        },
-        // "SiteDate": {},
-        // "LocConf": {},
-        "Elevation": {
-          title: 'Elevation',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        // "ElevAcc": {},
-        // "ElevMeth": {},
-        // "Notes": {},
-        "Status": {
-          title: 'Status',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        // "Assessment": {},
-        // "Condition": {},
-        // "Completeness": {},
-        "CoreTop": {
-          title: 'CoreTop',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        "CoreBot": {
-          title: 'CoreBot',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        "CoreLen": {
-          title: 'CoreLen',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        "BoxCount": {
-          title: 'BoxCount',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        // "TopStratCode": {},
-        "TopStratName": {
-          title: 'TopStratName',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        // "BotStratCode": {},
-        "BotStratName": {
-          title: 'BotStratName',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        "Skeletonized": {
-          title: 'Skeletonized',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        "ShelfID": {
-          title: 'Shelf',
-          controls: [
-            new ContainsControl()
-          ]
-        },
-        "BHGAvail": {
-          title: 'BHGAvail',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        // "GeoLogAvail ": {},
-        // "GeoLogType": {},
-        // "LonDD": {},
-        // "LatDD": {},
-      }
-    }]
-  })
+  // new FilterGroup({
+  //   title: "Rock Core",
+  //   prop: 'Data_Type',
+  //   'Data_Type': 'rock core',
+  //   source: {
+  //     geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+  //     user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0'
+  //   },
+  //   color: 'var(--map-symbol-2)',
+  //   toggleable: true,
+  //   active: true,
+  //   sections: [{
+  //     fields: {
+  //       // "OBJECTID": {},
+  //       // "Shape": {},
+  //       "WID": {
+  //         alias: 'WID'
+  //       },
+  //       // "Type": {},
+  //       // "WUWN": {},
+  //       "CountyName": {
+  //         alias: 'County'
+  //       },
+  //       // "CountyCode": {},
+  //       // "CountySeqID ": {},
+  //       "SiteName": {
+  //         alias: 'Site_Name'
+  //       },
+  //       "SiteOwner": {
+  //         title: 'SiteOwner',
+  //         controls: [
+  //           new ContainsControl()
+  //         ]
+  //       },
+  //       // "SiteDate": {},
+  //       // "LocConf": {},
+  //       "Elevation": {
+  //         title: 'Elevation',
+  //         controls: [
+  //           new GTLTControl(false)
+  //         ]
+  //       },
+  //       // "ElevAcc": {},
+  //       // "ElevMeth": {},
+  //       // "Notes": {},
+  //       "Status": {
+  //         title: 'Status',
+  //         controls: [
+  //           new SelectControl()
+  //         ]
+  //       },
+  //       // "Assessment": {},
+  //       // "Condition": {},
+  //       // "Completeness": {},
+  //       "CoreTop": {
+  //         title: 'CoreTop',
+  //         controls: [
+  //           new GTLTControl(false)
+  //         ]
+  //       },
+  //       "CoreBot": {
+  //         title: 'CoreBot',
+  //         controls: [
+  //           new GTLTControl(false)
+  //         ]
+  //       },
+  //       "CoreLen": {
+  //         title: 'CoreLen',
+  //         controls: [
+  //           new GTLTControl(false)
+  //         ]
+  //       },
+  //       "BoxCount": {
+  //         title: 'BoxCount',
+  //         controls: [
+  //           new GTLTControl(false)
+  //         ]
+  //       },
+  //       // "TopStratCode": {},
+  //       "TopStratName": {
+  //         title: 'TopStratName',
+  //         controls: [
+  //           new SelectControl()
+  //         ]
+  //       },
+  //       // "BotStratCode": {},
+  //       "BotStratName": {
+  //         title: 'BotStratName',
+  //         controls: [
+  //           new SelectControl()
+  //         ]
+  //       },
+  //       "Skeletonized": {
+  //         title: 'Skeletonized',
+  //         controls: [
+  //           new SelectControl()
+  //         ]
+  //       },
+  //       "ShelfID": {
+  //         title: 'Shelf',
+  //         controls: [
+  //           new ContainsControl()
+  //         ]
+  //       },
+  //       "BHGAvail": {
+  //         title: 'BHGAvail',
+  //         controls: [
+  //           new SelectControl()
+  //         ]
+  //       },
+  //       // "GeoLogAvail ": {},
+  //       // "GeoLogType": {},
+  //       // "LonDD": {},
+  //       // "LatDD": {},
+  //     }
+  //   }]
+  // })
 ];
