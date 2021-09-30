@@ -121,17 +121,11 @@ export class SiteData {
 export const ignoredKeys = [
   'Site_Code',
   'Data_Type',
-  'SiteName',
-  'Site_Name',
-  'Wid',
-  'ID',
-  'OBJECTID',
-  'County'
+  'Site_Name'
 ];
 export const keyLookup = {
   'Site_Name': {title: 'Name', desc: ''}, //
-  'Wid': {title: 'WGNHS ID', desc: ''}, //
-  'WID': {title: 'WGNHS ID', desc: ''}, //Not sure how this is used yet.
+  'WID': {title: 'WGNHS ID', desc: ''}, //
   // Log
   'RecentLog': {title: 'Most recent log (year)', desc: ''}, //
   'MaxDepth': {title: 'Max depth (ft)', desc: ''}, //
@@ -208,14 +202,17 @@ export const filterLookup = [
     sections: [
       {
         fields: {
-          "Wid": {
-            alias: 'WID'
+          "WID": {
+            alias: 'WID',
+            hidden: true
           },
           "SiteName": {
-            alias: 'Site_Name'
+            alias: 'Site_Name',
+            hidden: true
           },
           "County": {
-            alias: 'County'
+            alias: 'County',
+            hidden: true
           },
           "RecentLog": {
             title: 'Most recent log (year)',

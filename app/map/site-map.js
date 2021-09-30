@@ -97,7 +97,7 @@ export class SiteMap extends window.L.Evented {
           let cache = lookup[siteCode] || {
             'Site_Code': siteCode,
             'Site_Name': siteName,
-            'Wid': wid,
+            'WID': wid,
             'Latitude': latLon['lat'].toFixed(6),
             'Longitude': latLon['lng'].toFixed(6),
             point: obj,
