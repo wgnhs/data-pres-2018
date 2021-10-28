@@ -60,7 +60,7 @@ export class SiteDetails extends LitElement {
 
   renderData(info, layoutName) {
     const layout = layoutResolver.getLayout(layoutName);
-    return layout(info, this);
+    return layout(info, {layoutName});
   }
 
   render() {
@@ -81,7 +81,7 @@ export class SiteDetails extends LitElement {
         ${this.renderData({
           Latitude, Longitude, WID
         })}
-        ${this.siteinfo.datas.map((props) => html`
+        ${this.siteinfo.datas.slice().reverse().map((props) => html`
           <app-collapsible open>
             <span slot="header" class="name">${props['Data_Type']}</span>
             <div slot="content">

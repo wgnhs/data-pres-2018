@@ -243,7 +243,7 @@ export class MapFilter extends LitElement {
         this.sources,
         activePoints
         );
-      dispatch(this, 'filtered', {activePoints, counts}, true, true);
+      dispatch(this, 'filtered', {activePoints, counts, getTitle: SiteData.getFieldTitle}, true, true);
     }
   }
 

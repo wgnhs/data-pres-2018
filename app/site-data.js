@@ -116,6 +116,38 @@ export class SiteData {
     })
     return result;
   }
+
+  static getFieldConfiguration(key, layoutName) {
+    let fieldKey = SiteData.buildFieldKey(layoutName, key);
+    return SiteData.propLookup[fieldKey];
+  }
+
+  static getFieldTitle(key, layoutName) {
+    let result = key + '*';
+    let config = SiteData.getFieldConfiguration(key, layoutName);
+    if (config && config.title) {
+      result = config.title;
+    }
+    return result;
+  }
+
+  static getFieldDescription(key, layoutName) {
+    let result = ''
+    let config = SiteData.getFieldConfiguration(key, layoutName);
+    if (config && config.desc) {
+      result = config.desc
+    }
+    return result;
+  }
+
+  static getFieldHidden(key, layoutName) {
+    let result = false;
+    let config = SiteData.getFieldConfiguration(key, layoutName);
+    if (config && config.hidden) {
+      result = true;
+    }
+    return result;
+  }
 }
 
 export const ignoredKeys = [
@@ -350,13 +382,16 @@ export const filterLookup = [
       {
         fields: {
           "WGNHS_ID": {
-            alias: 'WID'
+            alias: 'WID',
+            hidden: true
           },
           "Site_Name": {
-            alias: 'Site_Name'
+            alias: 'Site_Name',
+            hidden: true
           },
           "County": {
-            alias: 'County'
+            alias: 'County',
+            hidden: true
           },
           "Drill_Year": {
             title: 'Drill year',
@@ -435,17 +470,20 @@ export const filterLookup = [
         // "OBJECTID": {},
         // "Shape": {},
         "WID": {
-          alias: 'WID'
+          alias: 'WID',
+          hidden: true
         },
         // "Type": {},
         // "WUWN": {},
         "CountyName": {
-          alias: 'County'
+          alias: 'County',
+          hidden: true
         },
         // "CountyCode": {},
         // "CountySeqID ": {},
         "SiteName": {
-          alias: 'Site_Name'
+          alias: 'Site_Name',
+          hidden: true
         },
         "SiteOwner": {
           title: 'SiteOwner',

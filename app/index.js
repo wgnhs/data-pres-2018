@@ -9,6 +9,7 @@ window.sidebar = document.querySelector('#sidebar');
 window.pdfPanel = document.querySelector('#sketch');
 document.querySelectorAll('site-details').forEach(function(details) {
   details['pdfpanel'] = window.pdfPanel;
+  details['proplookup'] = SiteData.propLookup;
 });
 window.filter = document.querySelector('#filter');
 

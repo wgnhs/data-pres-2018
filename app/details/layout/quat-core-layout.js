@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-import { filterLookup, keyLookup } from '../../site-data.js';
+import { filterLookup, SiteData } from '../../site-data.js';
 
 export class QuatCoreLayout extends LitElement {
   static get layoutName() {
@@ -31,7 +31,7 @@ export class QuatCoreLayout extends LitElement {
   }
   render() {
     return html`
-    <table-layout .info=${this.prepInfo()}></table-layout>
+    <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
     `;
   }
 
@@ -47,7 +47,7 @@ export class QuatCoreLayout extends LitElement {
     const fields = this.getFields(el => el.bundled);
     let names = Object.entries(fields)
       .filter(kv => !!kv[1])
-      .map(kv => (keyLookup[kv[0]])?keyLookup[kv[0]].title:kv[0])
+      .map(kv => SiteData.getFieldTitle(kv[0], this.context.layoutName))
       .map(val => html`${val}<br>`);
     if (names.length < 1) {
       names = null;
