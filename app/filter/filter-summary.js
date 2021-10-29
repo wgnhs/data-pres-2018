@@ -6,10 +6,6 @@ export class FilterSummary extends LitElement {
       counts: {
         type: Array,
         attribute: false
-      },
-      getTitle: {
-        type: Function,
-        attribute: false
       }
     };
   }
@@ -43,7 +39,7 @@ export class FilterSummary extends LitElement {
         <li ?disabled=${!el.included}>
           ${el.current} of ${el.total} <span class="name">${el.name}</span> sites
           ${(el.filteredBy.length > 0)?html`
-          (filtered by ${el.filteredBy.map((filter) => this.getTitle(filter[el.name], el.name)).join(', ')})
+          (filtered by ${el.filteredBy.join(', ')})
           `:''}
         </li>
         `),[])}
@@ -55,7 +51,6 @@ export class FilterSummary extends LitElement {
   handleFiltered(e) {
     if (e.detail) {
       this.counts = e.detail.counts;
-      this.getTitle = e.detail.getTitle;
     }
   }
 

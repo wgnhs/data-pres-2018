@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-import { filterLookup, keyLookup } from '../../site-data.js';
+import { SiteData, filterLookup } from '../../site-data.js';
 export { DownloadButton } from '../download-button.js';
 
 export class LogLayout extends LitElement {
@@ -58,7 +58,7 @@ export class LogLayout extends LitElement {
     const fields = this.getFields(el => el.bundled);
     const names = Object.entries(fields)
       .filter(kv => !!kv[1])
-      .map(kv => (keyLookup[kv[0]])?keyLookup[kv[0]].title:kv[0]);
+      .map(kv => SiteData.getFieldTitle(kv[0], this.context.layoutName));
     return {
       'Data available:': names.map(val => html`${val}<br>`)
     };

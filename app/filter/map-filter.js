@@ -4,7 +4,7 @@ export { InRadio, ToggleSwitch } from 'wgnhs-layout';
 export { AppCollapsible } from 'wgnhs-layout';
 import { styles } from 'wgnhs-styles';
 export { FilterSummary } from './filter-summary.js';
-import { SiteData, keyLookup, filterLookup } from '../site-data.js';
+import { SiteData, filterLookup } from '../site-data.js';
 import { SiteMap } from '../map/site-map.js';
 
 export class MapFilter extends LitElement {
@@ -95,11 +95,6 @@ export class MapFilter extends LitElement {
       </div>
     `;
   }
-
-  // resolveKeyLookup(field) {
-  //   let result = (!keyLookup[field])?field:keyLookup[field].title;
-  //   return result;
-  // }
 
   renderFilterGroups() {
     return this.filterGroups.map((group, index) => html`
@@ -243,7 +238,7 @@ export class MapFilter extends LitElement {
         this.sources,
         activePoints
         );
-      dispatch(this, 'filtered', {activePoints, counts, getTitle: SiteData.getFieldTitle}, true, true);
+      dispatch(this, 'filtered', {activePoints, counts}, true, true);
     }
   }
 
@@ -312,7 +307,7 @@ export class MapFilter extends LitElement {
       });
       stats.filteredBy = filter.reduce((result, el) => {
         if (el.context.group[el.context.group.prop] === layer.options.name) {
-          result.push((keyLookup[el.context.prop])?keyLookup[el.context.prop].title:el.context.prop);
+          result.push(SiteData.getFieldTitle(el.context.prop[layer.options.name], layer.options.name));
         }
         return result;
       }, []);

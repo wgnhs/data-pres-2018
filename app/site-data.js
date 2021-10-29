@@ -123,9 +123,11 @@ export class SiteData {
   }
 
   static getFieldTitle(key, layoutName) {
-    let result = key + '*';
+    let result = key;
     let config = SiteData.getFieldConfiguration(key, layoutName);
-    if (config && config.title) {
+    if (!config) {
+      result += '*';
+    } else if (config.title) {
       result = config.title;
     }
     return result;
@@ -213,9 +215,8 @@ export const filterLookup = [
               new TextControl()
             ]
           },
-          "Lat_Lon": {
-            //TODO!
-          }
+          "Latitude": {},
+          "Longitude": {}
         }
       }
     ]
