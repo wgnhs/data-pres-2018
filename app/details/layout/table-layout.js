@@ -58,7 +58,9 @@ export class TableLayout extends LitElement {
       return !SiteData.getFieldHidden(el[key], this.context.layoutName);
     }).filter((el) => {
       return !!el[value];
-    }).map((el, index) => html`
+    });
+    entries.sort((a, b) => SiteData.getFieldConfiguration(a[key], this.context.layoutName).sortOrder - SiteData.getFieldConfiguration(b[key], this.context.layoutName).sortOrder);
+    entries = entries.map((el, index) => html`
       <dt class="label" title="${SiteData.getFieldDescription(el[key], this.context.layoutName)}">
         <label for="${this.genId(index)}" >
           ${SiteData.getFieldTitle(el[key], this.context.layoutName)}

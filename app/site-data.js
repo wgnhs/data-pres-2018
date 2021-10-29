@@ -80,9 +80,9 @@ export class SiteData {
 
   static get propLookup() {
     let result = {}
-    filterLookup.forEach((fg) => {
-      fg.sections.forEach((section) => {
-        Object.entries(section.fields).forEach(([field, config]) => {
+    filterLookup.forEach((fg, fgIndex) => {
+      fg.sections.forEach((section, sectionIndex) => {
+        Object.entries(section.fields).forEach(([field, config], fieldIndex) => {
           let source = (fg.prop && fg[fg.prop])?fg[fg.prop]:undefined;
           let fieldKey = SiteData.buildFieldKey(source, field);
           if (!result[fieldKey]) {
@@ -102,6 +102,7 @@ export class SiteData {
             }
             result[alias].members.push(result[fieldKey]);
           }
+          result[fieldKey].sortOrder = (fgIndex * 100000) + (sectionIndex * 1000) + (fieldIndex * 1);
           // result[fieldKey].assist = {};
           // if (config.controls) {
           //   for (let control of config.controls) {
@@ -145,7 +146,7 @@ export class SiteData {
   static getFieldHidden(key, layoutName) {
     let result = false;
     let config = SiteData.getFieldConfiguration(key, layoutName);
-    if (config && config.hidden) {
+    if (!config || config.hidden) {
       result = true;
     }
     return result;
@@ -157,38 +158,6 @@ export const ignoredKeys = [
   'Data_Type',
   'Site_Name'
 ];
-export const keyLookup = {
-  'Site_Name': {title: 'Name', desc: ''}, //
-  'WID': {title: 'WGNHS ID', desc: ''}, //
-  // Log
-  'RecentLog': {title: 'Most recent log (year)', desc: ''}, //
-  'MaxDepth': {title: 'Max depth (ft)', desc: ''}, //
-  'Norm_Res': {title: 'Normal Resistivity', desc: ''}, //
-  'Caliper': {title: 'Caliper', desc: ''}, //
-  'Gamma': {title: 'Natural Gamma', desc: ''}, //
-  'SP': {title: 'Spontaneous (Self) Potential', desc: ''}, //
-  'SPR': {title: 'Single Point Resistivity', desc: ''}, //
-  'Spec_Gamma': {title: 'Spectral Gamma', desc: ''}, //
-  'Fluid_Cond': {title: 'Fluid Conductivity', desc: ''}, //
-  'Flow_Spin': {title: 'Spinner Flow Meter', desc: ''}, //
-  'Flow_HP': {title: 'HeatPulse Flow Meter', desc: ''}, //
-  'Fluid_Temp': {title: 'Fluid Temperature', desc: ''}, //
-  'Fluid_Res': {title: 'Fluid Resistivity', desc: ''}, //
-  'OBI': {title: 'Optical Borehole Image (OBI)', desc: ''}, //
-  'ABI': {title: 'Acoustic Borehole Image (ABI)', desc: ''}, //
-  'Video': {title: 'Video', desc: ''}, //
-  // Quat
-  'Field_ID': {title: 'Field ID', desc: ''}, //Not Displayed
-  'Project': {title: 'Project', desc: ''}, //
-  'Drill_Year': {title: 'Drill year', desc: ''}, //
-  'Depth_Ft': {title: 'Depth (ft)', desc: ''}, //
-  'Drill_Method': {title: 'Drill Method', desc: ''}, //
-  'Subsamples': {title: 'Subsamples', desc: ''}, //
-  'Photos': {title: 'Core Photos', desc: ''}, //
-  'Grainsize': {title: 'Grainsize', desc: ''}, //
-  'Age_Data': {title: 'Age data', desc: ''}, //
-  'Proxy_Data': {title: 'Proxy data', desc: ''}, //Nothing Actually Has Proxy Data
-};
 
 export const filterLookup = [
   new FilterGroup({
@@ -215,8 +184,18 @@ export const filterLookup = [
               new TextControl()
             ]
           },
-          "Latitude": {},
-          "Longitude": {}
+          "Latitude": {
+            title: 'Latitude',
+            // controls: [
+            //   new ContainsControl()
+            // ]
+          },
+          "Longitude": {
+            title: 'Longitude',
+            // controls: [
+            //   new ContainsControl()
+            // ]
+          }
         }
       }
     ]
@@ -365,6 +344,11 @@ export const filterLookup = [
           },
 
         }
+      },
+      {
+        fields: {
+          "Data available:": {}
+        }
       }
     ]
   }),
@@ -452,6 +436,11 @@ export const filterLookup = [
             hidden: true
           }
         }
+      },
+      {
+        fields: {
+          "Analyses available:": {}
+        }
       }
     ]
   }),
@@ -487,89 +476,67 @@ export const filterLookup = [
           hidden: true
         },
         "SiteOwner": {
-          title: 'SiteOwner',
+          title: 'Site Owner',
           controls: [
             new ContainsControl()
           ]
         },
-        // "SiteDate": {},
-        // "LocConf": {},
         "Elevation": {
-          title: 'Elevation',
-          controls: [
-            new GTLTControl(false)
-          ]
+          title: 'Elevation'
         },
         // "ElevAcc": {},
         // "ElevMeth": {},
-        // "Notes": {},
-        "Status": {
-          title: 'Status',
+        // "SiteDate": {},
+        // "LocConf": {},
+        "CoreTop": {
+          title: 'Top of Core Depth'
+        },
+        // "TopStratCode": {},
+        "TopStratName": {
+          title: 'Top Stratigraphic Name',
           controls: [
             new SelectControl()
           ]
+        },
+        "CoreBot": {
+          title: 'Bottom of Core Depth'
+        },
+        // "BotStratCode": {},
+        "BotStratName": {
+          title: 'Bottom Stratigraphic Name',
+          controls: [
+            new SelectControl()
+          ]
+        },
+        
+        "CoreLen": {
+          title: 'Length of Core'
+        },
+        "BoxCount": {
+          title: 'Box Count'
+        },
+        "ShelfID": {
+          title: 'Shelf'
+        },
+        "Skeletonized": {
+          title: 'Skeletonized'
+        },
+        "BHGAvail": {
+          title: 'Borehole Geophysical Log Available',
+          hidden: true,
+          // controls: [
+          //   new CheckboxControl()
+          // ]
+        },
+        // "GeoLogAvail ": {},
+        // "GeoLogType": {},
+        // "Notes": {},
+        "Status": {
+          title: 'Status'
         },
         // "Assessment": {},
         // "Condition": {},
         // "Completeness": {},
-        "CoreTop": {
-          title: 'CoreTop',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        "CoreBot": {
-          title: 'CoreBot',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        "CoreLen": {
-          title: 'CoreLen',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        "BoxCount": {
-          title: 'BoxCount',
-          controls: [
-            new GTLTControl(false)
-          ]
-        },
-        // "TopStratCode": {},
-        "TopStratName": {
-          title: 'TopStratName',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        // "BotStratCode": {},
-        "BotStratName": {
-          title: 'BotStratName',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        "Skeletonized": {
-          title: 'Skeletonized',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        "ShelfID": {
-          title: 'Shelf',
-          controls: [
-            new ContainsControl()
-          ]
-        },
-        "BHGAvail": {
-          title: 'BHGAvail',
-          controls: [
-            new SelectControl()
-          ]
-        },
-        // "GeoLogAvail ": {},
-        // "GeoLogType": {},
         // "LonDD": {},
         // "LatDD": {},
       }

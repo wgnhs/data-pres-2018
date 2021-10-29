@@ -197,7 +197,7 @@ export class MapFilter extends LitElement {
       context.id = id;
       context.group = group;
       context.target = e.currentTarget.querySelector('#'+id);
-      const lookup = SiteData.propLookup[context.target.name];
+      const lookup = SiteData.getFieldConfiguration(context.target.name);
       const mappings = {};
       if (group.prop && group[group.prop]) {
         mappings[group[group.prop]] = lookup.field;
@@ -242,7 +242,7 @@ export class MapFilter extends LitElement {
     }
   }
 
-  init(lookups, layers) {
+  init(layers) {
     this.filterGroups.forEach((group) => {
       let source = (group.prop && group[group.prop])?group[group.prop]:undefined;
       group.sections.forEach((section) => {
@@ -250,7 +250,7 @@ export class MapFilter extends LitElement {
           if (field.controls) {
             field.controls.forEach((control) => {
               if (control.init) {
-                const context = Object.assign({}, lookups[SiteData.buildFieldKey(source, key)]);
+                const context = Object.assign({}, SiteData.getFieldConfiguration(key, source));
                 context.layers = layers;
                 control.init(context);
               }
