@@ -524,9 +524,9 @@ export const filterLookup = [
         "BHGAvail": {
           title: 'Borehole Geophysical Log Available',
           hidden: true,
-          // controls: [
-          //   new CheckboxControl()
-          // ]
+          controls: [
+            new CheckboxControl()
+          ]
         },
         // "GeoLogAvail ": {},
         // "GeoLogType": {},

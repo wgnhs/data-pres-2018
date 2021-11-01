@@ -46,8 +46,9 @@ export class CheckboxControl {
           return !context.group.prop || context.group[context.group.prop] === feature[context.group.prop]
         },
         resolve: function(feature) {
+          let prop = feature[context.prop[feature['Data_Type']]];
           // filter out features without the property
-          let isValid = !!feature[context.prop[feature['Data_Type']]]
+          let isValid = !!prop && String(prop).toUpperCase() !== 'FALSE' && String(prop).toUpperCase() !== 'NO';
           return isValid;
         }
       };
