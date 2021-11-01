@@ -102,7 +102,7 @@ export class MapFilter extends LitElement {
       <app-collapsible class="group"
         ?open=${group.open} @open=${this._handle(group)}>
         <i slot="header-before" class="material-icons collapse-icon"></i>
-        <span slot="header">${group.title} data</span>
+        <span slot="header">${group.title}</span>
         ${(!group.toggleable)?'':html`
           <toggle-switch
             name="${group.title}"

@@ -161,7 +161,7 @@ export const ignoredKeys = [
 
 export const filterLookup = [
   new FilterGroup({
-    title: "Site information",
+    title: "Site Information",
     open: true,
     sections: [
       {
@@ -201,7 +201,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Geophysical Log",
+    title: "Geophysical Log data",
     prop: 'Data_Type',
     'Data_Type': 'geophysical log',
     source: {
@@ -353,7 +353,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Quaternary Core",
+    title: "Quaternary Core data",
     prop: 'Data_Type',
     'Data_Type': 'quaternary core',
     source: {
@@ -445,7 +445,7 @@ export const filterLookup = [
     ]
   }),
   new FilterGroup({
-    title: "Rock Core",
+    title: "Rock Core data",
     prop: 'Data_Type',
     'Data_Type': 'rock core',
     source: {
