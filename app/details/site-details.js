@@ -60,7 +60,7 @@ export class SiteDetails extends LitElement {
 
   renderData(info, layoutName) {
     const layout = layoutResolver.getLayout(layoutName);
-    return layout(info, {layoutName});
+    return layout(info, {layoutName, pdfpanel: this.pdfpanel});
   }
 
   render() {
