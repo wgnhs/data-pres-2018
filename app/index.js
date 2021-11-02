@@ -1,6 +1,7 @@
 import { SiteMap } from './map/site-map.js';
 import { SiteData } from './site-data.js';
 import { SiteRouter } from 'wgnhs-router';
+import { Visualizer } from '@uirouter/visualizer';
 export { SiteDetails } from './details/site-details.js';
 export { MapFilter } from './filter/map-filter.js';
 
@@ -32,11 +33,26 @@ window.siteMap.once('init', function() {
   };
 
   window.router = new SiteRouter();
+  window.router.router.plugin(Visualizer);
   window.router.addRoute({
     name: 'entry',
+    url: '?source',
+    params: {
+      'source': {
+        type: 'query',
+        array: true,
+        value: []
+      }
+    },
+    redirectTo: 'filter'
+  });
+  window.router.addRoute({
+    parent: 'entry',
+    name: 'filter',
     url: '/',
     onEnter: function(trans, state) {
-      // console.log('route-entry');
+      let params = trans.params();
+      console.log('route-entry', params);
       window.siteMap.clearSelection();
       deselectFeature();
       document.querySelector('#app').setAttribute('data-view', 'app');
@@ -48,11 +64,11 @@ window.siteMap.once('init', function() {
     },
   });
   window.router.addRoute({
+    parent: 'entry',
     name: 'view',
     url: '/view/:Site_Code',
     // params: {
     //   'Site_Code': {
-    //     array: true
     //   }
     // },
     onEnter: function(trans, state) {
@@ -76,40 +92,15 @@ window.siteMap.once('init', function() {
 
     },
   });
-  window.router.addRoute({
-    name: 'print',
-    url: '/print/:Site_Code',
-    // params: {
-    //   'Site_Code': {
-    //     array: true
-    //   }
-    // },
-    onEnter: function(trans, state) {
-      // console.log('route-print');
-      let params = trans.params();
-      let attr = window.siteMap.selectSite(params);
-      if (attr) {
-        document.querySelectorAll('site-details').forEach(function(details) {
-          details['printLayout'] = true;
-        });
-        selectFeature(attr).then(() => {
-          document.querySelector('#app').removeAttribute('data-view');
-          window.sidebar.switchTab('details');
-          window.siteMap.setVisibility(false);
-        })
-      } else {
-        window.router.clearRoute();
-      }
-    },
-    onExit: function(trans, state) {
 
-    },
-  });
   window.router.router.transitionService.onEnter({}, ()=>{
     document.querySelector('#spinner').setAttribute('data-closed', true);
   });
   // Start the router
-  window.router.start();
+  window.router.router.trace.enable(1);
+  // window.router.start();
+  window.router.router.urlService.listen();
+  window.router.router.urlService.sync();
 
   window.siteMap.on('interaction', (params) => {
     if (params['Site_Code']) {
@@ -126,14 +117,6 @@ document.addEventListener('clear-selection', function(e) {
 
 document.addEventListener('zoom-to-site', function(e) {
   window.siteMap.zoomToPoint(e.detail.params);
-})
-
-document.addEventListener('toggle-print', function(e) {
-  if (e.detail.on) {
-    window.router.setRoute('print', e.detail.params);
-  } else {
-    window.router.setRoute('view', e.detail.params);
-  }
 });
 
 document.addEventListener('toggle-pdf-panel', function(e) {

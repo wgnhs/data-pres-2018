@@ -32,7 +32,8 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
       'wgnhs-styles',
       'wgnhs-layout',
       'wgnhs-pdf',
-      'wgnhs-router'
+      'wgnhs-router',
+      '@uirouter/visualizer',
     ],
     output: {
       file: `dist/${dir}/${filename}${minifyToken}.js`,
@@ -45,7 +46,8 @@ function buildApp({dir=appDir, filename='index', min=false, format='umd'}) {
         'wgnhs-styles': 'wgnhs-common',
         'wgnhs-layout': 'wgnhs-layout',
         'wgnhs-pdf': 'wgnhs-pdf',
-        'wgnhs-router': 'wgnhs-router'
+        'wgnhs-router': 'wgnhs-router',
+        '@uirouter/visualizer' : 'ui-router-visualizer',
       }
     }
   }

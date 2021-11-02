@@ -210,7 +210,7 @@ export const filterLookup = [
     },
     color: 'var(--map-symbol-0)',
     toggleable: true,
-    active: true,
+    active: false,
     sections: [
       {
         fields: {
@@ -362,7 +362,7 @@ export const filterLookup = [
     },
     color: 'var(--map-symbol-1)',
     toggleable: true,
-    active: true,
+    active: false,
     sections: [
       {
         fields: {
@@ -454,7 +454,7 @@ export const filterLookup = [
     },
     color: 'var(--map-symbol-2)',
     toggleable: true,
-    active: true,
+    active: false,
     sections: [{
       fields: {
         // "OBJECTID": {},
