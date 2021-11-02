@@ -100,7 +100,7 @@ export class MapFilter extends LitElement {
     return this.filterGroups.map((group, index) => html`
       <slot name="${index}"></slot>
       <app-collapsible class="group"
-        ?open=${group.open} @open=${this._handle(group)}>
+        ?open=${group.open}>
         <i slot="header-before" class="material-icons collapse-icon"></i>
         <span slot="header">${group.title}</span>
         ${(!group.toggleable)?'':html`
@@ -149,11 +149,7 @@ export class MapFilter extends LitElement {
   }
 
   get _eventHandlers() {
-    return {
-      'open' : (context, e) => {
-        context.open = e.detail.value;
-      }
-    }
+    return {}
   }
 
   _handle(context) {
