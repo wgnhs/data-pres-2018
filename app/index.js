@@ -137,11 +137,11 @@ document.addEventListener('toggle-pdf-panel', function(e) {
   }
 });
 
-document.addEventListener('filter-change', function(e) {
-  if (window.router.router.globals.current.name) {
-    window.router.router.stateService.go(window.router.router.globals.current.name, {source: e.detail.incl.map((el) => el.context.value)});
-  }
-});
+// document.addEventListener('filter-change', function(e) {
+//   if (window.router.router.globals.current.name) {
+//     window.router.router.stateService.go(window.router.router.globals.current.name, {source: e.detail.incl.map((el) => el.context.value)});
+//   }
+// });
 
 document.addEventListener('filtered', function(e) {
   window.siteMap.updatePoints(e.detail.activePoints);
