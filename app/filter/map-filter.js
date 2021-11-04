@@ -148,20 +148,6 @@ export class MapFilter extends LitElement {
     `);
   }
 
-  get _eventHandlers() {
-    return {}
-  }
-
-  _handle(context) {
-    return (e) => {
-      const handler = this._eventHandlers[e.type];
-      if (handler) {
-        handler(context, e);
-        this.requestUpdate('handle_'+e.type);
-      }
-    }
-  }
-
   _handleGroup(group, type) {
     const id = group.id;
     const handle = group.activate.bind(group);
@@ -213,6 +199,23 @@ export class MapFilter extends LitElement {
     }
   }
 
+  handleRouteChange() {
+    const activePoints = MapFilter.runFilter({
+      matchClass: this.matchClass,
+      incl: this.include,
+      filt: this.filter,
+      sources: this.sources
+    });
+    const counts = MapFilter.getResultsInfo(
+      this.matchClass,
+      this.include,
+      this.filter,
+      this.sources,
+      activePoints
+      );
+    dispatch(this, 'filtered', {activePoints, counts}, true, true);
+  }
+
   updated(changed) {
     const isNeeded = (
       changed.has('matchClass') ||
@@ -221,20 +224,13 @@ export class MapFilter extends LitElement {
       changed.has('sources'));
 
     if (this.sources && isNeeded) {
-      const activePoints = MapFilter.runFilter({
+      dispatch(this, 'filter-change', {
         matchClass: this.matchClass,
         incl: this.include,
         filt: this.filter,
         sources: this.sources
-      });
-      const counts = MapFilter.getResultsInfo(
-        this.matchClass,
-        this.include,
-        this.filter,
-        this.sources,
-        activePoints
-        );
-      dispatch(this, 'filtered', {activePoints, counts}, true, true);
+      }, true, true);
+      this.handleRouteChange();
     }
   }
 

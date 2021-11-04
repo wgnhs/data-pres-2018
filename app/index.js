@@ -1,7 +1,7 @@
 import { SiteMap } from './map/site-map.js';
 import { SiteData } from './site-data.js';
 import { SiteRouter } from 'wgnhs-router';
-import { Visualizer } from '@uirouter/visualizer';
+// import { Visualizer } from '@uirouter/visualizer';
 export { SiteDetails } from './details/site-details.js';
 export { MapFilter } from './filter/map-filter.js';
 
@@ -33,38 +33,47 @@ window.siteMap.once('init', function() {
   };
 
   window.router = new SiteRouter();
-  window.router.router.plugin(Visualizer);
+  // window.router.router.plugin(Visualizer);
   window.router.addRoute({
-    name: 'entry',
+    name: 'app',
     url: '?source',
     params: {
       'source': {
-        type: 'query',
         array: true,
         value: []
       }
     },
-    redirectTo: 'filter'
+    redirectTo: 'entry',
+    abstract: true,
+    // onEnter: function(trans, state) {
+    //   console.log('enter app')
+    // },
+    // onExit: function(trans, state) {
+    //   console.log('exit app')
+    // },
+    // onRetain: function(trans, state) {
+    //   console.log('retain app')
+    // },
   });
   window.router.addRoute({
-    parent: 'entry',
-    name: 'filter',
+    parent: 'app',
+    name: 'entry',
     url: '/',
     onEnter: function(trans, state) {
       let params = trans.params();
-      console.log('route-entry', params);
+      // console.log('route-entry', params);
       window.siteMap.clearSelection();
       deselectFeature();
       document.querySelector('#app').setAttribute('data-view', 'app');
       window.sidebar.switchTab('default');
       window.siteMap.setVisibility(true);
     },
-    onExit: function(trans, state) {
-
-    },
+    // onExit: function(trans, state) {
+    //   console.log('exit entry')
+    // },
   });
   window.router.addRoute({
-    parent: 'entry',
+    parent: 'app',
     name: 'view',
     url: '/view/:Site_Code',
     // params: {
@@ -88,16 +97,16 @@ window.siteMap.once('init', function() {
         window.router.clearRoute();
       }
     },
-    onExit: function(trans, state) {
-
-    },
+    // onExit: function(trans, state) {
+    //   console.log('exit view')
+    // },
   });
 
   window.router.router.transitionService.onEnter({}, ()=>{
     document.querySelector('#spinner').setAttribute('data-closed', true);
   });
   // Start the router
-  window.router.router.trace.enable(1);
+  // window.router.router.trace.enable(1);
   // window.router.start();
   window.router.router.urlService.listen();
   window.router.router.urlService.sync();
@@ -125,6 +134,12 @@ document.addEventListener('toggle-pdf-panel', function(e) {
     window.pdfPanel.setAttribute('data-closed', true);
   } else {
     window.pdfPanel.removeAttribute('data-closed');
+  }
+});
+
+document.addEventListener('filter-change', function(e) {
+  if (window.router.router.globals.current.name) {
+    window.router.router.stateService.go(window.router.router.globals.current.name, {source: e.detail.incl.map((el) => el.context.value)});
   }
 });
 
