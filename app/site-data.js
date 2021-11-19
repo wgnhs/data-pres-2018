@@ -195,7 +195,19 @@ export const filterLookup = [
             // controls: [
             //   new ContainsControl()
             // ]
-          }
+          },
+          // "LocConf": {
+          //   title: 'Location Confidence'
+          // },
+          // "Elevation": {
+          //   title: 'Elevation'
+          // },
+          // "ElevAcc": {
+          //   title: 'Elevation Accuracy'
+          // },
+          // "ElevMeth": {
+          //   title: 'Elevation Method'
+          // }
         }
       }
     ]
@@ -482,14 +494,18 @@ export const filterLookup = [
           ]
         },
         "Elevation": {
-          title: 'Elevation'
+          title: 'Elevation (ft)',
         },
-        // "ElevAcc": {},
-        // "ElevMeth": {},
+        "ElevMeth": {
+          title: 'Elevation Method'
+        },
+        "ElevAcc": {
+          title: 'Elevation Accuracy (ft)'
+        },
         // "SiteDate": {},
         // "LocConf": {},
         "CoreTop": {
-          title: 'Top of Core Depth'
+          title: 'Top of Core Depth (ft)'
         },
         // "TopStratCode": {},
         "TopStratName": {
@@ -499,7 +515,7 @@ export const filterLookup = [
           ]
         },
         "CoreBot": {
-          title: 'Bottom of Core Depth'
+          title: 'Bottom of Core Depth (ft)'
         },
         // "BotStratCode": {},
         "BotStratName": {
@@ -510,7 +526,7 @@ export const filterLookup = [
         },
         
         "CoreLen": {
-          title: 'Length of Core'
+          title: 'Length of Core (ft)'
         },
         "BoxCount": {
           title: 'Box Count'
