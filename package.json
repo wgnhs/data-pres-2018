@@ -16,10 +16,14 @@
     "develop:watch-copy": "onchange \"*.html\" \"css/*\" \".nojekyll\" \"404.html\" -- npx cpy {{changed}} dist/ --parents",
     "develop:serve": "live-server --no-css-inject --mount=/data-pres-2018/:dist/ --open=/data-pres-2018/ --middleware=\"../../dev/sghpa.js\" --wait=1000 dist/",
     "start": "run-s develop",
-    "pages": "run-s build pages:ghpages",
-    "pages:ghpages": "gh-pages -d dist",
-    "postversion": "run-s postversion:push-tags pages",
-    "postversion:push-tags": "git push && git push --tags"
+    "pages": "run-s build pages:origin",
+    "pages:origin": "gh-pages -d dist",
+    "pages:upstream": "gh-pages -d dist --remote upstream",
+    "postversion": "run-s postversion:push-tags build pages:upstream",
+    "postversion:push-tags": "git push && git push --tags",
+    "release": "run-s release:install build release:version",
+    "release:install": "npm ci",
+    "release:version": "npm version patch"
   },
   "author": "",
   "license": "MIT",
