@@ -48,5 +48,5 @@ The command will:
 * install dependencies
 * run a fresh build
 * version to the next `patch` version
-* push the newly created commit and tag
+* push the newly created commit and tag to remote `upstream`
 * push ghpages content to remote `upstream`

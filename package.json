@@ -20,7 +20,7 @@
     "pages:origin": "gh-pages -d dist",
     "pages:upstream": "gh-pages -d dist --remote upstream",
     "postversion": "run-s postversion:push-tags build pages:upstream",
-    "postversion:push-tags": "git push && git push --tags",
+    "postversion:push-tags": "git push upstream && git push --tags upstream",
     "release": "run-s release:install build release:version",
     "release:install": "npm ci",
     "release:version": "npm version patch"
