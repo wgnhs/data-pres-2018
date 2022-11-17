@@ -555,6 +555,13 @@ export const filterLookup = [
         // "Completeness": {},
         // "LonDD": {},
         // "LatDD": {},
+        "HasCoreImage": {
+          title: 'Core Image Available',
+          hidden: true,
+          controls: [
+            new CheckboxControl()
+          ]
+        }
       }
     }]
   })
