@@ -162,7 +162,12 @@ export const ignoredKeys = [
 export const filterLookup = [
   new FilterGroup({
     title: "Site Information",
+    prop: 'Data_Type',
+    'Data_Type': 'site information',
     open: true,
+    color: 'var(--palette-brand)',
+    toggleable: true,
+    active: true,
     sections: [
       {
         fields: {

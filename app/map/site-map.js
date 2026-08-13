@@ -52,6 +52,8 @@ export class SiteMap extends window.L.Evented {
     })); 
 
     let sources = filterLookup.reduceRight((result, curr) => {
+      //console.log("sources filterLookup");
+      //console.log(curr.source);
       if (curr.source && curr.source.geojson) {
         result.push(
           window.fetch(curr.source.geojson)
@@ -64,8 +66,32 @@ export class SiteMap extends window.L.Evented {
       return result;
     }, []);
 
+    // data retrieved from arc map server here
     Promise.all(sources).then((responses) => {
-        this.layers = responses.map((res) => {
+      console.log(responses);
+      var combinedData = this.filterCombineResponses(responses);
+      this.layers = [];
+      this.layers.push(L.geoJSON(combinedData, {
+            name: 'site information',
+            pointToLayer: function(geoJsonPoint, latlon) {
+              return new RestylingCircleMarker(latlon, {
+                weight: 2,
+                color: 'var(--palette-brand)',
+                radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+                stroke: false,
+                fill: false
+              });
+            }
+          }));
+        this.layers.push(...responses.map((res) => {
+          //console.log("Getting data");
+          console.log(res.name);
+          console.log(res.data);
+
+          // create 1 geoJson dataset with coords, county, WID, name
+
+          // create map layer from that dataset
+
           return L.geoJSON(res.data, {
             name: res.name,
             pointToLayer: function(geoJsonPoint, latlon) {
@@ -78,7 +104,9 @@ export class SiteMap extends window.L.Evented {
               });
             }
           });
-        });
+        }));
+        console.log(this.layers);
+
         this.layers.forEach(l => l.on('click', (e) => {
           if (this._highlight !== e.propagatedFrom) {
             this.fire('interaction', e.propagatedFrom.feature.properties);
@@ -88,6 +116,7 @@ export class SiteMap extends window.L.Evented {
         }))
         this.layers.forEach(l => l.addTo(map));
       let lookup = {};
+      console.log(this.layers.length);
       this.layers.forEach(function(layer, idx, arr) {
         layer.eachLayer(function(obj) {
           let wid = obj.feature.properties['Wid'] || obj.feature.properties['WID'] || obj.feature.properties['WGNHS_ID'];
@@ -128,10 +157,56 @@ export class SiteMap extends window.L.Evented {
     return result;
   }
 
+   filterCombineResponses (responses) {
+      var combinedData = {
+        type: "FeatureCollection",
+        features: []
+      }
+      var uniqueWids = []
+      var missingCounty = []
+
+      responses.map((res) => {
+        res.data.features.forEach(f => {
+          let wid = f.properties['Wid'] || f.properties['WID'] || f.properties['WGNHS_ID'];
+          let county = f.properties['County'] || f.properties['CountyName'];
+          if (!county) {
+            missingCounty.push(f)
+          }
+          let siteName = f.properties['Site_name'] || f.properties['SiteName'];
+          if (!uniqueWids.includes(wid)){
+            uniqueWids.push(wid);
+            let newFeature = {
+              geometry: structuredClone(f.geometry),
+              id: wid,
+              properties: {
+                WID: wid,
+                County: county ? county.toLowerCase() : null,
+                SiteName: siteName
+
+              },
+              type: "Feature"
+            }
+            combinedData.features.push(newFeature);
+          }
+        });
+      });
+      console.log("Unique WIDs");
+      console.log(uniqueWids);
+      console.log(uniqueWids.length);
+      console.log("Combined data");
+      console.log(combinedData);
+      console.log(combinedData.features.length);
+      console.log("Missing county");
+      console.log(missingCounty);
+      console.log(missingCounty.length);
+      return combinedData;
+    }
+
   //TODO HACK
   getPoint(params) {
     let result = null;
     let cache = this._lookup[SiteMap.getSiteCode(params)];
+    console.log(cache)
     if (cache) {
       result = cache.point;
     }
