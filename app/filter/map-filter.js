@@ -97,6 +97,9 @@ export class MapFilter extends LitElement {
   }
 
   renderFilterGroups() {
+    console.log("Render filter group");
+    console.log(this.filterGroups);
+
     return this.filterGroups.map((group, index) => html`
       <slot name="${index}"></slot>
       <app-collapsible class="group"
@@ -145,10 +148,13 @@ export class MapFilter extends LitElement {
           `:''}
         </div>
       </app-collapsible>
-    `);
+    `
+    );   
   }
 
   _handleGroup(group, type) {
+    console.log("This");
+    console.log(this);
     const id = group.id;
     const handle = group.activate.bind(group);
     const filter = this[type];
@@ -165,11 +171,15 @@ export class MapFilter extends LitElement {
       if (resolver) {
         filter.push(resolver);
       }
+      console.log("Filter");
+      console.log(filter)
       callback(type);
     }
   }
 
   _handleControl(group, control, type) {
+    console.log("Control");
+    console.log(control);
     const id = control.id;
     const handle = control.handle.bind(control);
     const filter = this[type];
@@ -217,11 +227,15 @@ export class MapFilter extends LitElement {
   }
 
   updated(changed) {
+    console.log("Updated");
+    console.log(changed);
     const isNeeded = (
       changed.has('matchClass') ||
       changed.has('include') ||
       changed.has('filter') ||
       changed.has('sources'));
+    
+    console.log(isNeeded);
 
     if (this.sources && isNeeded) {
       dispatch(this, 'filter-change', {
@@ -287,7 +301,28 @@ export class MapFilter extends LitElement {
       return result;
     }, {});
 
-    return result;
+    let resultArray = []
+    Object.entries(result).forEach(([k, v]) => {
+      if (k.toLowerCase() !== "site information") {
+        resultArray.push(v);
+      }
+    })
+    console.log(resultArray);
+    const common = resultArray.reduce((acc, currentSet) => acc.union(currentSet), new Set());
+    console.log(common);
+
+    console.log(result);
+    
+    console.log("Common");
+    console.log(common); 
+    const filteredSiteInfo = result['site information'].intersection(common);
+    let filteredResult = {'site information': filteredSiteInfo};
+    Object.entries(result).forEach(([k, v]) => {
+      if (k.toLowerCase() !== "site information") {
+        filteredResult[k] = result['site information'].intersection(v);
+      }
+    })
+    return filteredResult;
   }
 
   static getResultsInfo(matchClass, include, filter, sources, activePoints) {

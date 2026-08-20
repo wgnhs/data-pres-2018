@@ -144,5 +144,7 @@ document.addEventListener('toggle-pdf-panel', function(e) {
 // });
 
 document.addEventListener('filtered', function(e) {
+  console.log("filtered event");
+  console.log(e.detail.activePoints)
   window.siteMap.updatePoints(e.detail.activePoints);
 });

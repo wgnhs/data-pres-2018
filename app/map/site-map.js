@@ -68,8 +68,9 @@ export class SiteMap extends window.L.Evented {
 
     // data retrieved from arc map server here
     Promise.all(sources).then((responses) => {
+      console.log("Responses");
       console.log(responses);
-      var combinedData = this.filterCombineResponses(responses);
+      var combinedData = SiteMap.filterCombineResponses(responses);
       this.layers = [];
       this.layers.push(L.geoJSON(combinedData, {
             name: 'site information',
@@ -114,7 +115,7 @@ export class SiteMap extends window.L.Evented {
             this.fire('interaction');
           }
         }))
-        this.layers.forEach(l => l.addTo(map));
+        this.layers[0].addTo(map);
       let lookup = {};
       console.log(this.layers.length);
       this.layers.forEach(function(layer, idx, arr) {
@@ -157,7 +158,7 @@ export class SiteMap extends window.L.Evented {
     return result;
   }
 
-   filterCombineResponses (responses) {
+  static filterCombineResponses (responses) {
       var combinedData = {
         type: "FeatureCollection",
         features: []
@@ -273,6 +274,8 @@ export class SiteMap extends window.L.Evented {
   }
 
   updatePoints(activePoints) {
+    console.log("Update points");
+    console.log(activePoints);
     this.map.fire('filterpoints', {
       detail: {
         resolve: (props) => {

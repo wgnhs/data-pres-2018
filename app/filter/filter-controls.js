@@ -9,6 +9,8 @@ export class FilterGroup {
     }
   }
   activate(context) {
+    console.log("Activate");
+    console.log(context);
     let result = null;
     const input = context.detail.checked;
     if (context.toggleable && input) {
