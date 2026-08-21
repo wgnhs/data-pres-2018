@@ -153,8 +153,8 @@ export class MapFilter extends LitElement {
   }
 
   _handleGroup(group, type) {
-    console.log("This");
-    console.log(this);
+    //console.log("This");
+    //console.log(this);
     const id = group.id;
     const handle = group.activate.bind(group);
     const filter = this[type];
@@ -171,15 +171,17 @@ export class MapFilter extends LitElement {
       if (resolver) {
         filter.push(resolver);
       }
-      console.log("Filter");
-      console.log(filter)
+      
+      
+      //console.log("Filter");
+      //console.log(filter)
       callback(type);
     }
   }
 
   _handleControl(group, control, type) {
-    console.log("Control");
-    console.log(control);
+    //console.log("Control");
+    //console.log(control);
     const id = control.id;
     const handle = control.handle.bind(control);
     const filter = this[type];

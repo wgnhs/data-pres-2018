@@ -131,16 +131,25 @@ export class SiteMap extends window.L.Evented {
             'Latitude': latLon['lat'].toFixed(6),
             'Longitude': latLon['lng'].toFixed(6),
             point: obj,
-            datas: new Array(arr.length)
+            datas: []
           };
           obj.feature.properties['Site_Code'] = siteCode;
           obj.feature.properties['Site_Name'] = siteName;
           obj.feature.properties['Data_Type'] = layer.options.name;
-
-          cache.datas[idx] = obj.feature.properties;
+          // some WIDs have multiple records per layer
+          // this code only gets the last one in each layer
+          cache.datas.push(obj.feature.properties);
           lookup[siteCode] = cache;
+          
         });
       });
+      for (const [k, v] of Object.entries(lookup)) {
+        if (v['datas'].length > 2) {
+            console.log("Cache")
+            console.log(v['datas'].length);
+            console.log(v['datas']);
+          }
+      }
       this._lookup = lookup;
       this.fire('init');
     });
@@ -164,32 +173,55 @@ export class SiteMap extends window.L.Evented {
         features: []
       }
       var uniqueWids = []
-      var missingCounty = []
+      var missingCounty = {}
+      var missingWid = {}
 
       responses.map((res) => {
-        res.data.features.forEach(f => {
-          let wid = f.properties['Wid'] || f.properties['WID'] || f.properties['WGNHS_ID'];
-          let county = f.properties['County'] || f.properties['CountyName'];
-          if (!county) {
-            missingCounty.push(f)
-          }
-          let siteName = f.properties['Site_name'] || f.properties['SiteName'];
-          if (!uniqueWids.includes(wid)){
-            uniqueWids.push(wid);
-            let newFeature = {
-              geometry: structuredClone(f.geometry),
-              id: wid,
-              properties: {
-                WID: wid,
-                County: county ? county.toLowerCase() : null,
-                SiteName: siteName
-
-              },
-              type: "Feature"
+          let allWidsInLayer = [];
+          let uniqueWidsInLayer = [];
+          let dupWidsInLayer = {};
+          missingCounty[res.name] = [];
+          missingWid[res.name] = [];
+          res.data.features.forEach(f => {
+            let wid = f.properties['Wid'] ?? f.properties['WID'] ?? f.properties['WGNHS_ID'] ?? undefined;
+            if (!wid) {
+              missingWid[res.name].push(f);
             }
-            combinedData.features.push(newFeature);
-          }
+            let county = f.properties['County'] || f.properties['CountyName'];
+            if (!county) {
+              missingCounty[res.name].push(f);
+            }
+            let siteName = f.properties['Site_name'] || f.properties['SiteName'];
+            if (!uniqueWids.includes(wid)){
+              uniqueWids.push(wid);
+              let newFeature = {
+                geometry: structuredClone(f.geometry),
+                id: wid,
+                properties: {
+                  WID: wid,
+                  County: county ? county.toLowerCase() : null,
+                  SiteName: siteName
+
+                },
+                type: "Feature"
+              }
+              combinedData.features.push(newFeature);
+            }
+            allWidsInLayer.push(wid);
+            if (!uniqueWidsInLayer.includes(wid)){
+                uniqueWidsInLayer.push(wid);
+            } else {
+              dupWidsInLayer[wid] = allWidsInLayer.filter(w => w ===  wid).length;
+            }
         });
+        console.log(res.name);
+        console.log(res.data.features.length);
+        console.log("All WIDs in layer");
+        console.log(allWidsInLayer);
+        console.log("Unique WIDs in layer");
+        console.log(uniqueWidsInLayer);
+        console.log("Duplicate WIDs in layer");
+        console.log(dupWidsInLayer);
       });
       console.log("Unique WIDs");
       console.log(uniqueWids);
@@ -199,7 +231,10 @@ export class SiteMap extends window.L.Evented {
       console.log(combinedData.features.length);
       console.log("Missing county");
       console.log(missingCounty);
-      console.log(missingCounty.length);
+      console.log("Missing WID");
+      console.log(missingWid);
+      //console.log("Dup WIDS");
+      //console.log(dupWids);
       return combinedData;
     }
 

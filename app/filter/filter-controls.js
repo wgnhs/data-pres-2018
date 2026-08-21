@@ -8,9 +8,10 @@ export class FilterGroup {
       this.id = genId();
     }
   }
+  //Fires on show/hide group toggle
   activate(context) {
-    console.log("Activate");
-    console.log(context);
+    //console.log("Activate");
+    //console.log(context);
     let result = null;
     const input = context.detail.checked;
     if (context.toggleable && input) {
