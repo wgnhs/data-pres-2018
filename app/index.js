@@ -125,6 +125,8 @@ document.addEventListener('clear-selection', function(e) {
 });
 
 document.addEventListener('zoom-to-site', function(e) {
+  console.log("zoom to site");
+  console.log(e.detail.params)
   window.siteMap.zoomToPoint(e.detail.params);
 });
 

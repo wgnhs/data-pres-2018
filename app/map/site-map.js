@@ -145,9 +145,6 @@ export class SiteMap extends window.L.Evented {
       });
       for (const [k, v] of Object.entries(lookup)) {
         if (v['datas'].length > 2) {
-            console.log("Cache")
-            console.log(v['datas'].length);
-            console.log(v['datas']);
           }
       }
       this._lookup = lookup;
@@ -242,7 +239,7 @@ export class SiteMap extends window.L.Evented {
   getPoint(params) {
     let result = null;
     let cache = this._lookup[SiteMap.getSiteCode(params)];
-    console.log(cache)
+    //console.log(cache)
     if (cache) {
       result = cache.point;
     }

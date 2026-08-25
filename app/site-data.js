@@ -126,9 +126,7 @@ export class SiteData {
   static getFieldTitle(key, layoutName) {
     let result = key;
     let config = SiteData.getFieldConfiguration(key, layoutName);
-    if (!config) {
-      result += '*';
-    } else if (config.title) {
+    if (config && config.title) {
       result = config.title;
     }
     return result;
@@ -149,6 +147,9 @@ export class SiteData {
     if (!config || config.hidden) {
       result = true;
     }
+    console.log("Get field hidden");
+    console.log(key);
+    console.log(result);
     return result;
   }
 }
