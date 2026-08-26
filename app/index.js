@@ -1,8 +1,8 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('lit-element'), require('wgnhs-common'), require('wgnhs-router'), require('wgnhs-styles'), require('wgnhs-pdf'), require('wgnhs-layout')) :
   typeof define === 'function' && define.amd ? define(['exports', 'lit-element', 'wgnhs-common', 'wgnhs-router', 'wgnhs-styles', 'wgnhs-pdf', 'wgnhs-layout'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.app = {}, global['wgnhs-common'], global['wgnhs-common'], global['wgnhs-router'], global['wgnhs-common']));
-}(this, (function (exports, litElement, wgnhsCommon, wgnhsRouter, wgnhsStyles) { 'use strict';
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.app = {}, global["wgnhs-common"], global["wgnhs-common"], global["wgnhs-router"], global["wgnhs-common"]));
+})(this, (function (exports, litElement, wgnhsCommon, wgnhsRouter, wgnhsStyles) { 'use strict';
 
   class FilterGroup {
     constructor(config) {
@@ -885,7 +885,7 @@
       // });
 
       // CARTO Voyager
-      const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+      const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_284f_1_da1246c5eee298ee0185c526', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
         label: 'CARTO Voyager'
       });
@@ -2128,4 +2128,4 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
