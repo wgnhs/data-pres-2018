@@ -67,7 +67,7 @@ export class TableLayout extends LitElement {
       </dt>
       <dd class="detail" title="${SiteData.getFieldDescription(el[key], this.context.layoutName)}">
         <span id="${this.genId(index)}">
-          ${el[value]}
+          ${toTitleCase(el[value])}
         </span>
       </dd>
     `);
@@ -78,4 +78,16 @@ export class TableLayout extends LitElement {
     `;
   }
 }
+
+function toTitleCase(val) {
+  if (typeof val === 'string') {
+    return val.replace(
+      /\w\S*/g,
+      text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+    );
+  } else {
+    return val;
+  }
+}
+
 customElements.define('table-layout', TableLayout);
