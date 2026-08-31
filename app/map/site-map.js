@@ -32,17 +32,12 @@ export class SiteMap extends window.L.Evented {
     //   label: 'CARTO Positron'
     // });
 
-    // CARTO Voyager
-    const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      label: 'CARTO Voyager'
-    })
-
     // Esri basemaps 
+    const esristreets = L.esri.basemapLayer('Streets', {label: "Esri Streets"});
     const esrisat = L.esri.basemapLayer('Imagery', {label: "Esri Satellite"});
     
     // add the basemap control to the map  
-    var basemaps = [voyager, esrisat]; 
+    var basemaps = [esristreets, esrisat]; 
     basemaps[0].addTo(map);
     map.addControl(L.control.basemaps({
        basemaps: basemaps, 
