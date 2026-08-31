@@ -32,6 +32,8 @@ export class SiteMap extends window.L.Evented {
     //   label: 'CARTO Positron'
     // });
 
+    //AAPTa-EOHNZi39GdL6MxFWRr78w..0s1wiKhEOA3b5rNVgkP8jMLehM9J-f4QVVAgp1p-xuoxkqzjjZ0gsRgpxDDLNU9Cqsat6uN6Rsz4RKmXh_kJXIneN9RgRhoTV6N9dJGiXuP4NThWjF49AOZBDRu3t97IiZbwfKdgCRHB0M_eI0JKyNNLG5-md6b38SHkQOCZOedI6scobacowoZnz4lqUucVLmQLgp5FrA45WpuCeh-khTLzVJz_UWRA5gZIg6IBj6kymQ..AT1_cYN0QnG4
+
     // CARTO Voyager
     const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_284f_1_da1246c5eee298ee0185c526', {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -39,17 +41,24 @@ export class SiteMap extends window.L.Evented {
     })
 
     // Esri basemaps 
-    const esrisat = L.esri.basemapLayer('Imagery', {label: "Esri Satellite"});
+    //const esristreets = L.esri.basemapLayer('Streets', {label: "Esri Streets"});
+    //const esrisat = L.esri.basemapLayer('Imagery', {label: "Esri Satellite"});
+
+    const accessToken = encodeURI("AAPTafv2pzFw0A5c3IPLLdagYew..BxCuR6l0wL6UBxKgmjs7pxTQdCSCU_kMP0QT3zJ9ON1Y_ZEV1kfxI9VYg-WGNvrFF6XoYnGMVyyYoaJBb-I2cQuHBChYVfOkFxxXmOHIQNIZUxe5TISbwlQnJkxvJ4r4YTd6dljwu-haBTKnVynjx-gjBm0KVREg3Ol8XxCt5qkUb5GwcAlfGKKnukyGVQs5UoSLnRYjM3DGq6_61tuUhq4ScO_aQGJFjc0gN1WYvf-vnA..AT1_cYN0QnG4");
+    const esristreets = L.esri.Vector.vectorBasemapLayer("arcgis/streets", {
+      token: accessToken
+    });
+    const esrisat = L.esri.Vector.vectorBasemapLayer("arcgis/imagery", {
+      token: accessToken
+    });
     
     // add the basemap control to the map  
-    var basemaps = [voyager, esrisat]; 
-    basemaps[0].addTo(map);
-    map.addControl(L.control.basemaps({
-       basemaps: basemaps, 
-       tileX: 0, 
-       tileY: 0, 
-       tileZ: 1
-    })); 
+    var basemaps = {
+      "Esri Streets": esristreets,
+      "Esri Satellite": esrisat
+    };
+    basemaps["Esri Streets"].addTo(map);
+    L.control.layers(basemaps).addTo(map);
 
     let sources = filterLookup.reduceRight((result, curr) => {
       //console.log("sources filterLookup");
