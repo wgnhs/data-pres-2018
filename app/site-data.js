@@ -461,8 +461,8 @@ export const filterLookup = [
     prop: 'Data_Type',
     'Data_Type': 'rock core',
     source: {
-      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/3/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
-      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/3'
+      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/0'
     },
     color: 'var(--map-symbol-2)',
     toggleable: true,
