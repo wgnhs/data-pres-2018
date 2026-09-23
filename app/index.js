@@ -701,8 +701,8 @@
       prop: 'Data_Type',
       'Data_Type': 'rock core',
       source: {
-        geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/3/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
-        user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/dev/rock_core/MapServer/3'
+        geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+        user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/rock_core/MapServer/0'
       },
       color: 'var(--map-symbol-2)',
       toggleable: true,
@@ -1332,9 +1332,15 @@
       return litElement.css`
     `;
     }
-    render() {
+
+     render() {
       return litElement.html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
+    <pdf-view-button
+      .panel=${this.context.pdfpanel}
+      src="${'https://data.wgnhs.wisc.edu/quat-core-photos/' + this.info.WGNHS_ID + '.pdf'}">
+      <span slot="download-text">Download Photos</span>
+    </pdf-view-button>
     `;
     }
 
