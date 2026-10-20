@@ -34,14 +34,15 @@ export class LogLayout extends LitElement {
   render() {
     return html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
-    <pdf-view-button
+    <pdf-view-button-multipage
       .panel=${this.context.pdfpanel}
+      preview="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/preview/' + this.info.WID + '.jpg'}"
       src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/pdf/' + this.info.WID + '.pdf'}">
-      <span slot="download-text">Download PDF</span>
-    </pdf-view-button>
+      <span slot="download-text">View/download images</span>
+    </pdf-view-button-multipage>
     <download-button
       src="${'https://data.wgnhs.wisc.edu/borehole-geophysics/las/' + this.info.WID + '.las'}">
-      Download LAS
+      Download LAS file
     </download-button>
     `;
   }

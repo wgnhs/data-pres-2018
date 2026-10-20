@@ -30,14 +30,15 @@ export class QuatCoreLayout extends LitElement {
     `;
   }
 
-   render() {
+  render() {
     return html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
-    <pdf-view-button
+    <pdf-view-button-multipage
       .panel=${this.context.pdfpanel}
+      preview="${'https://data.wgnhs.wisc.edu/quat-core-photos/preview/' + this.info.WGNHS_ID + '.jpg'}"
       src="${'https://data.wgnhs.wisc.edu/quat-core-photos/' + this.info.WGNHS_ID + '.pdf'}">
-      <span slot="download-text">Download Photos</span>
-    </pdf-view-button>
+      <span slot="download-text">View/download quaternary core images</span>
+    </pdf-view-button-multipage>
     `;
   }
 

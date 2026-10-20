@@ -34,11 +34,12 @@ export class RockCoreLayout extends LitElement {
   render() {
     return html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
-    <pdf-view-button
+    <pdf-view-button-multipage
       .panel=${this.context.pdfpanel}
+      preview="${'https://data.wgnhs.wisc.edu/core-photos/preview/' + this.info.WID + '.jpg'}"
       src="${'https://data.wgnhs.wisc.edu/core-photos/' + this.info.WID + '.pdf'}">
-      <span slot="download-text">Download Photos</span>
-    </pdf-view-button>
+      <span slot="download-text">View/download rock core images</span>
+    </pdf-view-button-multipage>
     `;
   }
 

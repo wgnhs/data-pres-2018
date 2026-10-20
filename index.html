@@ -42,7 +42,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/common.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/router.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/layout.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/pdf.min.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/pdfjs-viewer-element/dist/pdfjs-viewer-element.js"></script>
+  <!--<script src="https://cdn.jsdelivr.net/npm/@wgnhs/elements@^0/dist/pdf.min.js"></script>-->
+  <script src="http://127.0.0.1:8081/pdf.min.js"></script>
+
 
   <!-- <script src="http://127.0.0.1:8081/wgnhs-elements/common.min.js"></script>
   <script src="http://127.0.0.1:8081/wgnhs-elements/router.min.js"></script>
@@ -285,10 +288,10 @@
         <filter-summary slot="content"></filter-summary>
       </app-collapsible>
     </div>
-    <pdf-view-panel 
+    <pdf-view-panel-multipage 
       id="sketch" 
       class="right-panel positioned"
-      data-closed></pdf-view-panel>
+      data-closed></pdf-view-panel-multipage>
   </div>
   <script src="app/index.min.js"></script>
 </body>
