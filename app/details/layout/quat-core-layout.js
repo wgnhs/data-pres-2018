@@ -29,9 +29,15 @@ export class QuatCoreLayout extends LitElement {
     return css`
     `;
   }
-  render() {
+
+   render() {
     return html`
     <table-layout .info=${this.prepInfo()} .context=${this.context}></table-layout>
+    <pdf-view-button
+      .panel=${this.context.pdfpanel}
+      src="${'https://data.wgnhs.wisc.edu/quat-core-photos/' + this.info.WGNHS_ID + '.pdf'}">
+      <span slot="download-text">Download Photos</span>
+    </pdf-view-button>
     `;
   }
 
