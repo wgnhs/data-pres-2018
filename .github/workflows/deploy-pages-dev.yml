@@ -41,7 +41,7 @@ jobs:
 
       - name: Copy dist dir to data-viewer-dev
         run: |
-          yes | rm -rf ./data-pres-dev/*
+          yes | rm -rf ./data-viewer-dev/*
           yes | cp -rf ./data-pres-2018/dist/* ./data-viewer-dev
       
       - name: Commit files to data-viewer-dev
