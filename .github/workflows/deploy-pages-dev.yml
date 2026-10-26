@@ -19,12 +19,6 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           ref: dev
-          path: ./data-pres-2018
-
-      - name: Move to data-pres dir
-        run: |
-          cd ./data-pres-2018
-          ls -la
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
