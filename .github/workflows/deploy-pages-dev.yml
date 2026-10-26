@@ -31,22 +31,22 @@ jobs:
       - name: Build project
         run: npm run build
       
-      - name: Checkout data-pres-dev repo
+      - name: Checkout data-viewer-dev repo
         uses: actions/checkout@v4
         with:
-          repository: wgnhs/data-pres-dev
+          repository: wgnhs/data-viewer-dev
           token: ${{ secrets.GH_TOKEN }}
           ref: gh-pages
-          path: ./data-pres-dev
+          path: ./data-viewer-dev
 
-      - name: Copy dist dir to data-pres-dev
+      - name: Copy dist dir to data-viewer-dev
         run: |
           yes | rm -rf ./data-pres-dev/*
-          yes | cp -rf ./data-pres-2018/dist/* ./data-pres-dev
+          yes | cp -rf ./data-pres-2018/dist/* ./data-viewer-dev
       
-      - name: Commit files to data-pres-dev
+      - name: Commit files to data-viewer-dev
         run: |
-          cd ./data-pres-dev
+          cd ./data-viewer-dev
           git config --local user.email "ejkrznarich@gmail.com"
           git config --local user.name "lizkrznarich"
           git add *
