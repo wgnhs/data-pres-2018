@@ -14,8 +14,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout data-pres-2018 repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          ref: dev
+          path: ./data-pres-2018
+
+      - name: Move to data-pres dir
+        run: |
+          cd ./data-pres-2018
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,12 +35,25 @@ jobs:
 
       - name: Build project
         run: npm run build
+      
+      - name: Checkout data-pres-dev repo
+        uses: actions/checkout@v4
+        with:
+          repository: wgnhs/data-pres-dev
+          token: ${{ secrets.GH_TOKEN }}
+          ref: gh-pages
+          path: ./data-pres-dev
 
-      - name: Deploy to GitHub Pages
+      - name: Copy dist dir to data-pres-dev
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/wgnhs/data-viewer-dev
-          npm run pages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          yes | rm -rf ./data-pres-dev/*
+          yes | cp -rf ./data-pres-2018/dist/* ./data-pres-dev
+      
+      - name: Commit files to data-pres-dev
+        run: |
+          cd ./data-pres-dev
+          git config --local user.email "ejkrznarich@gmail.com"
+          git config --local user.name "lizkrznarich"
+          git add *
+          git commit -m "add new dev release"
+          git push origin gh-pages
