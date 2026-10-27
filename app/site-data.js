@@ -396,6 +396,9 @@ export const filterLookup = [
               new GTLTControl(true)
             ]
           },
+          "ElevationFt": {
+            title: 'Elevation (ft)'
+          },
           "Project": {
             title: 'Project',
             controls: [
@@ -408,8 +411,8 @@ export const filterLookup = [
               new GTLTControl()
             ]
           },
-          "Drill_Method": {
-            title: 'Drill Method',
+          "Method": {
+            title: 'Collection Method',
             controls: [
               new SelectControl()
             ]
