@@ -369,8 +369,8 @@ export const filterLookup = [
     prop: 'Data_Type',
     'Data_Type': 'quaternary core',
     source: {
-      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
-      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0'
+      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0'
     },
     color: 'var(--map-symbol-1)',
     toggleable: true,
@@ -378,38 +378,42 @@ export const filterLookup = [
     sections: [
       {
         fields: {
-          "WGNHS_ID": {
+          "WID": {
             alias: 'WID',
             hidden: true
           },
           "Site_Name": {
-            alias: 'Site_Name',
+            alias: 'SiteName',
             hidden: true
           },
           "County": {
             alias: 'County',
             hidden: true
           },
-          "Drill_Year": {
-            title: 'Drill year',
+          "CompYear": {
+            title: 'Completed year',
             controls: [
               new GTLTControl(true)
             ]
           },
+          "ElevationFt": {
+            title: 'Elevation (ft)'
+          },
+      
           "Project": {
             title: 'Project',
             controls: [
               new SelectControl()
             ]
           },
-          "Depth_Ft": {
+          "DepthFt": {
             title: 'Depth (ft)',
             controls: [
               new GTLTControl()
             ]
           },
-          "Drill_Method": {
-            title: 'Drill Method',
+          "Method": {
+            title: 'Collection method',
             controls: [
               new SelectControl()
             ]
