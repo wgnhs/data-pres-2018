@@ -21,7 +21,6 @@ html {
     --row-green: #33AA44;
     --row-purple: purple;
     --row-orange: orange;
-    --row-red: #E11845;
 
     --palette-white: var(--row-white);
     --palette-dark: var(--row-dark);
@@ -34,7 +33,6 @@ html {
     --palette-green: var(--row-green);
     --palette-purple: var(--row-purple);
     --palette-orange: var(--row-orange);
-    --palette-red: var(--row-red);
 
     --palette-active: var(--palette-orange);
     --palette-brand: var(--uw-red-dark);
@@ -43,8 +41,6 @@ html {
     --map-symbol-0: var(--palette-blue);
     --map-symbol-1: var(--palette-green);
     --map-symbol-2: var(--palette-purple);
-    --map-symbol-3: var(--palette-900);
-    --map-symbol-4: var(--palette-red);
     --map-symbol-active: var(--palette-orange);
 
     --font-family: 'open_sansregular','Open Sans',sans_serif;
