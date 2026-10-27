@@ -1,17 +1,24 @@
-name: Deploy to GitHub Pages
+name: Deploy to GitHub Pages Dev
 
 on:
   push:
     branches:
       - dev
 
+permissions:
+  contents: write      # Required to push commits or tags
+  pull-requests: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout data-pres-2018 repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          ref: dev
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -23,12 +30,25 @@ jobs:
 
       - name: Build project
         run: npm run build
+      
+      - name: Checkout data-viewer-dev repo
+        uses: actions/checkout@v4
+        with:
+          repository: wgnhs/data-viewer-dev
+          token: ${{ secrets.GH_TOKEN }}
+          ref: gh-pages
+          path: ./data-viewer-dev
 
-      - name: Deploy to GitHub Pages
+      - name: Copy dist dir to data-viewer-dev
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/wgnhs/data-viewer-dev
-          npm run pages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          yes | rm -rf ./data-viewer-dev/*
+          yes | cp -rf ./dist/* ./data-viewer-dev
+      
+      - name: Commit files to data-viewer-dev
+        run: |
+          cd ./data-viewer-dev
+          git config --local user.email "ejkrznarich@gmail.com"
+          git config --local user.name "lizkrznarich"
+          git add *
+          git commit -m "add new dev release"
+          git push origin gh-pages

@@ -369,8 +369,8 @@ export const filterLookup = [
     prop: 'Data_Type',
     'Data_Type': 'quaternary core',
     source: {
-      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
-      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/sediment_core/MapServer/0'
+      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0'
     },
     color: 'var(--map-symbol-1)',
     toggleable: true,
@@ -378,38 +378,42 @@ export const filterLookup = [
     sections: [
       {
         fields: {
-          "WGNHS_ID": {
+          "WID": {
             alias: 'WID',
             hidden: true
           },
           "Site_Name": {
-            alias: 'Site_Name',
+            alias: 'SiteName',
             hidden: true
           },
           "County": {
             alias: 'County',
             hidden: true
           },
-          "Drill_Year": {
-            title: 'Drill year',
+          "CompYear": {
+            title: 'Completed year',
             controls: [
               new GTLTControl(true)
             ]
           },
+          "ElevationFt": {
+            title: 'Elevation (ft)'
+          },
+      
           "Project": {
             title: 'Project',
             controls: [
               new SelectControl()
             ]
           },
-          "Depth_Ft": {
+          "DepthFt": {
             title: 'Depth (ft)',
             controls: [
               new GTLTControl()
             ]
           },
-          "Drill_Method": {
-            title: 'Drill Method',
+          "Method": {
+            title: 'Collection method',
             controls: [
               new SelectControl()
             ]
@@ -564,5 +568,102 @@ export const filterLookup = [
         }
       }
     }]
+  }),
+  new FilterGroup({
+    title: "Cuttings data",
+    prop: 'Data_Type',
+    'Data_Type': 'cuttings',
+    source: {
+      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/cuttings_samples/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/cuttings_samples/MapServer/0'
+    },
+    color: 'var(--map-symbol-3)',
+    toggleable: true,
+    active: true,
+    sections: [
+      {
+        fields: {
+          "WID": {
+            alias: 'WID',
+            hidden: true
+          },
+          "SiteName": {
+            alias: 'Site_Name',
+            hidden: true
+          },
+          "County": {
+            alias: 'County',
+            hidden: true
+          },
+          "Drill_Year": {
+            title: 'Drill year',
+            controls: [
+              new GTLTControl(true)
+            ]
+          },
+          "Depth_Ft": {
+            title: 'Depth (ft)',
+            controls: [
+              new GTLTControl()
+            ]
+          },
+          "Drill_Method": {
+            title: 'Drill Method',
+            hidden: true
+          },
+        }
+      }
+    ]
+  }),
+  new FilterGroup({
+    title: "Thin Sections data",
+    prop: 'Data_Type',
+    'Data_Type': 'thin sections',
+    source: {
+      geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/thin_sections/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
+      user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/thin_sections/MapServer/0'
+    },
+    color: 'var(--map-symbol-4)',
+    toggleable: true,
+    active: true,
+    sections: [
+      {
+        fields: {
+          "WID": {
+            alias: 'WID',
+            hidden: true
+          },
+          "SiteName": {
+            alias: 'Site_Name',
+            hidden: true
+          },
+          "County": {
+            alias: 'County',
+            hidden: true
+          },
+          "SiteType": {
+            title: 'Site Type',
+            controls: [
+              new SelectControl()
+            ]
+          },
+          "CompYear": {
+            title: 'Comp Year',
+            controls: [
+              new GTLTControl(true)
+            ]
+          },
+          "Elevation": {
+            title: 'Elevation (ft)',
+          },
+            "SlideCount": {
+            title: 'Slide Count'
+          },
+          "SlideIdList": {
+            title: 'Slide IDs'
+          },
+        }
+      }
+    ]
   })
 ];
