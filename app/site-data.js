@@ -647,7 +647,7 @@ export const filterLookup = [
             ]
           },
           "CompYear": {
-            title: 'Comp Year',
+            title: 'Completed Year',
             controls: [
               new GTLTControl(true)
             ]
