@@ -66,6 +66,7 @@ export class SiteMap extends window.L.Evented {
             pointToLayer: function(geoJsonPoint, latlon) {
               return new RestylingCircleMarker(latlon, {
                 weight: 2,
+                fillOpacity: .2,
                 color: res.color,
                 radius: RestylingCircleMarker.calcRadius(map.getZoom()),
                 stroke: false,

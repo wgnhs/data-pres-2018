@@ -568,7 +568,7 @@ export const filterLookup = [
       }
     }]
   }),
-  /*new FilterGroup({
+  new FilterGroup({
     title: "Cuttings data",
     prop: 'Data_Type',
     'Data_Type': 'cuttings',
@@ -647,7 +647,7 @@ export const filterLookup = [
             ]
           },
           "CompYear": {
-            title: 'Comp Year',
+            title: 'Completed Year',
             controls: [
               new GTLTControl(true)
             ]
@@ -664,5 +664,5 @@ export const filterLookup = [
         }
       }
     ]
-  })*/
+  })
 ];
