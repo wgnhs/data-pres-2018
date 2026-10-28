@@ -808,7 +808,7 @@
         }
       }]
     }),
-    /*new FilterGroup({
+    new FilterGroup({
       title: "Cuttings data",
       prop: 'Data_Type',
       'Data_Type': 'cuttings',
@@ -887,7 +887,7 @@
               ]
             },
             "CompYear": {
-              title: 'Comp Year',
+              title: 'Completed Year',
               controls: [
                 new GTLTControl(true)
               ]
@@ -904,7 +904,7 @@
           }
         }
       ]
-    })*/
+    })
   ];
 
   const RestylingCircleMarker = L.CircleMarker.extend({
@@ -951,7 +951,7 @@
     }
   });
 
-  RestylingCircleMarker.calcRadius = (a) => Math.max(Math.floor(a/1.5),3);
+  RestylingCircleMarker.calcRadius = (a) => Math.max(Math.floor(a/2),3);
 
   class SiteMap extends window.L.Evented {
     constructor() {
@@ -1018,6 +1018,7 @@
               pointToLayer: function(geoJsonPoint, latlon) {
                 return new RestylingCircleMarker(latlon, {
                   weight: 2,
+                  fillOpacity: .2,
                   color: res.color,
                   radius: RestylingCircleMarker.calcRadius(map.getZoom()),
                   stroke: false,
