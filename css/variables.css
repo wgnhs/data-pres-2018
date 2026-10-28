@@ -10,6 +10,12 @@ html {
     --uw-gray-footer-text: #adadad; /* Used for footer text. */
     --uw-gray-footer-text-hover: #f9f9f9; /* Used for links in footer text. */
 
+    --wgnhs-map-blue: #2e4e6d;
+    --wgnhs-map-green: #315d49;
+    --wgnhs-map-purple: #5e4463;
+    --wgnhs-map-gray: #b9b8b5; 
+    --wgnhs-map-red: #924a5a;
+
     --row-white: #f9f9f9;
     --row-dark: #b5b5b5;
     --row-light: #e5e5e5;
@@ -29,9 +35,11 @@ html {
     --palette-accent-transparent: var(--row-accent-transparent);
     --palette-900: var(--row-900);
     --palette-black: var(--row-black);
-    --palette-blue: var(--row-blue);
-    --palette-green: var(--row-green);
-    --palette-purple: var(--row-purple);
+    --palette-blue: var(--wgnhs-map-blue);
+    --palette-green: var(--wgnhs-map-green);
+    --palette-purple: var(--wgnhs-map-purple);
+    --palette-red: var(--wgnhs-map-red);
+    --palette-gray: var(--wgnhs-map-gray);
     --palette-orange: var(--row-orange);
 
     --palette-active: var(--palette-orange);
@@ -41,6 +49,8 @@ html {
     --map-symbol-0: var(--palette-blue);
     --map-symbol-1: var(--palette-green);
     --map-symbol-2: var(--palette-purple);
+    --map-symbol-3: var(--palette-gray);
+    --map-symbol-4: var(--palette-red);
     --map-symbol-active: var(--palette-orange);
 
     --font-family: 'open_sansregular','Open Sans',sans_serif;
