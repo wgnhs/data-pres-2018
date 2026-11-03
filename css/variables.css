@@ -7,10 +7,11 @@ html {
     --uw-gray-darkest: #282728; /* Design element background color, accent color, and footer background color. Often used in place of black. */
     --uw-body-font: #494949; /* Used for standard text on a white background. */
     --uw-anchor-color: #0479a8; /* Used for links in standard text on a white background. */
+    --uw-button-color: #036796;
     --uw-gray-footer-text: #adadad; /* Used for footer text. */
     --uw-gray-footer-text-hover: #f9f9f9; /* Used for links in footer text. */
 
-    --wgnhs-map-blue: #426f9b;
+    --wgnhs-map-blue: var(--uw-button-color);
     --wgnhs-map-green: #315d49;
     --wgnhs-map-purple: #79577f;
     --wgnhs-map-gray: #454440; 
@@ -43,7 +44,7 @@ html {
     --palette-orange: var(--row-orange);
 
     --palette-active: var(--palette-orange);
-    --palette-brand: var(--uw-red-dark);
+    --palette-brand: var(--uw-red);
     --brand-height: calc(2 * var(--font-size-title));
 
     --map-symbol-0: var(--palette-blue);

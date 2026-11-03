@@ -97,16 +97,21 @@ export class MapFilter extends LitElement {
   }
 
   renderFilterGroups() {
-    console.log("Render filter group");
-    console.log(this.filterGroups);
-
     return this.filterGroups.map((group, index) => html`
       <slot name="${index}"></slot>
       <app-collapsible class="group"
         ?open=${group.open}>
         <i slot="header-before" class="material-icons collapse-icon"></i>
         <span slot="header">${group.title}</span>
-        ${(!group.toggleable)?'':html`
+        ${(!group.toggleable)?html`
+          <toggle-switch
+            name="${group.title}"
+            slot="header-after"
+            ?checked=${group.active}
+            @change=${this._handleGroup(group, 'include')}
+            style="display: none"
+          ></toggle-switch>
+        `:html`
           <toggle-switch
             name="${group.title}"
             slot="header-after"
@@ -153,8 +158,6 @@ export class MapFilter extends LitElement {
   }
 
   _handleGroup(group, type) {
-    //console.log("This");
-    //console.log(this);
     const id = group.id;
     const handle = group.activate.bind(group);
     const filter = this[type];
@@ -171,17 +174,11 @@ export class MapFilter extends LitElement {
       if (resolver) {
         filter.push(resolver);
       }
-      
-      
-      //console.log("Filter");
-      //console.log(filter)
       callback(type);
     }
   }
 
   _handleControl(group, control, type) {
-    //console.log("Control");
-    //console.log(control);
     const id = control.id;
     const handle = control.handle.bind(control);
     const filter = this[type];
@@ -225,19 +222,17 @@ export class MapFilter extends LitElement {
       this.sources,
       activePoints
       );
+    console.log("counts:")
+    console.log(counts)
     dispatch(this, 'filtered', {activePoints, counts}, true, true);
   }
 
   updated(changed) {
-    console.log("Updated");
-    console.log(changed);
     const isNeeded = (
       changed.has('matchClass') ||
       changed.has('include') ||
       changed.has('filter') ||
       changed.has('sources'));
-    
-    console.log(isNeeded);
 
     if (this.sources && isNeeded) {
       dispatch(this, 'filter-change', {
@@ -341,11 +336,13 @@ export class MapFilter extends LitElement {
         return result;
       }, []);
       stats.matchClass = matchClass;
-
+      console.log("layer is:")
+      console.log(layer);
       let entries = Object.entries(layer._layers);
       stats.total = entries.length;
       stats.current = activePoints[layer.options.name].size;
-
+      console.log("stats:")
+      console.log(stats);
       return stats;
     });
     return result;
@@ -367,6 +364,7 @@ export class MapFilter extends LitElement {
     this.filterGroups = filterLookup;
   }
 }
+
 customElements.define('map-filter', MapFilter);
 
 const removeFromFilter = (filter, id) => {

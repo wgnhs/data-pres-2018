@@ -19,18 +19,6 @@ export class SiteMap extends window.L.Evented {
 
      
     /* ~~~~~~~~ Basemap Layers ~~~~~~~~ */
-     
-    // // basemaps from Open Street Map
-    // const osmhot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    //   attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors', 
-    //   label: "OpenStreetMap Humanitarian"
-    // });
-
-    // // CARTO Positron
-    // const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-    //   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    //   label: 'CARTO Positron'
-    // });
 
     // Esri basemaps 
     const esristreets = L.esri.basemapLayer('Streets', {label: "Esri Streets"});
@@ -72,10 +60,10 @@ export class SiteMap extends window.L.Evented {
             pointToLayer: function(geoJsonPoint, latlon) {
               return new RestylingCircleMarker(latlon, {
                 weight: 2,
-                color: 'var(--palette-brand)',
+                color: 'var(--map-symbol-0)',
                 radius: RestylingCircleMarker.calcRadius(map.getZoom()),
                 stroke: false,
-                fill: false
+                fill: false,
               });
             }
           }));

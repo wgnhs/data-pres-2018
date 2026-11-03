@@ -14,7 +14,7 @@ export class FilterGroup {
     //console.log(context);
     let result = null;
     const input = context.detail.checked;
-    if (context.toggleable && input) {
+    if (input) {
       result = {
         id: context.id,
         context,

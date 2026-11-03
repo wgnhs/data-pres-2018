@@ -166,8 +166,8 @@ export const filterLookup = [
     prop: 'Data_Type',
     'Data_Type': 'site information',
     open: true,
-    color: 'var(--palette-brand)',
-    toggleable: true,
+    color: 'var(--map-symbol-0)',
+    toggleable: false,
     active: true,
     sections: [
       {
@@ -378,7 +378,7 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0'
     },
-    color: 'var(--map-symbol-1)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
     active: true,
     sections: [
@@ -473,7 +473,7 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/rock_core/MapServer/0'
     },
-    color: 'var(--map-symbol-2)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
     active: true,
     sections: [{
@@ -582,9 +582,9 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/cuttings_samples/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/cuttings_samples/MapServer/0'
     },
-    color: 'var(--map-symbol-3)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
-    active: true,
+    active: false,
     sections: [
       {
         fields: {
@@ -628,7 +628,7 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/thin_sections/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/thin_sections/MapServer/0'
     },
-    color: 'var(--map-symbol-4)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
     active: true,
     sections: [
