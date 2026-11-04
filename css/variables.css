@@ -45,7 +45,7 @@ html {
 
     --palette-active: var(--palette-orange);
     --palette-brand: var(--uw-red);
-    --brand-height: calc(2 * var(--font-size-title));
+    --brand-height: calc(3 * var(--font-size-title));
 
     --map-symbol-0: var(--palette-blue);
     --map-symbol-1: var(--palette-green);

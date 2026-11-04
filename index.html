@@ -180,13 +180,14 @@
     }
     .brand-header {
       background-color: var(--palette-brand);
-      overflow: hidden;
+      min-height: var(--brand-height);
       color: var(--palette-white);
       font-size: var(--font-size-title);
     }
     .brand-img {
-      height: var(--brand-height);
-      line-height: var(--brand-height);
+      height: calc(var(--brand-height)*.75);
+      line-height: calc(var(--brand-height)*.75);
+      padding: calc(var(--brand-height)*.125);
     }
     .positioned {
       position: absolute;
@@ -211,7 +212,7 @@
   <div id="app" data-view="app">
     <header class="brand-header">
       <a href="https://wgnhs.wisc.edu/">
-        <img class="brand-img" alt="Wisconsin Geological and Natural History Survey" src="css/wgnhs-long-reversed.png"></img>
+        <img class="brand-img" alt="Wisconsin Geological and Natural History Survey" src="css/WGNHS_color-flush-reverse-72ppi.png"></img>
       </a>
     </header>
     <app-sidebar id="sidebar" class="left-panel" tabs='["details"]'>
@@ -220,8 +221,8 @@
         <h2 class="subtitle">Geoscience data from the Wisconsin Geological Survey</h2>
         <div class="inner-content">
           <p>
-            This interactive map shows locations of site data for our collections of 
-            geophysical logs and Quaternary core.
+            This interactive map provides information about  geologic samples and datasets curated by the 
+            <a href="https://wgnhs.wisc.edu" target="_blank">Wisconsin Geological and Natural History Survey</a>.
           </p>
           <p>
             <span class="inner-accent">Using the map:</span> Click on a point for 
@@ -239,9 +240,8 @@
               and presents those logs in downloadable PDF and LAS formats.
             </p>
             <p>
-              The data viewer only includes digital log data collected after 1992.
-              Earlier logs have been archived and are available for historical purposes 
-              only.
+              The data viewer only includes digital log data collected after 1992. 
+              Earlier logs from analog equipment have been archived and are available for historical purposes only.
             </p>
             <p>
               <span class="inner-accent">What is a geophysical log?</span> Geophysical 
@@ -259,13 +259,28 @@
             </p>
             <h3 class="inner-title">Quaternary core</h3>
             <p>
-              Sediment core samples provide insight into the glacial history of Wisconsin, 
-              the distribution of surficial deposits used in sand and gravel mining, and 
-              the character of shallow unconfined aquifers.
+              Core samples of unlithified sediment deposited during the Quaternary Period provide insight into 
+              the glacial history of Wisconsin, the distribution of surficial deposits used in sand and gravel mining, 
+              and the character of shallow unconfined aquifers.
             </p>
             <p>
-              This online collection includes locations of samples and types of data 
-              collected after 2011.
+              This online collection includes locations of samples and types of data collected since 2011.
+            </p>
+            <h3 class="inner-title">Bedrock core</h3>
+            <p>
+              Bedrock core samples
+            </p>
+            <h3 class="inner-title">Cuttings samples</h3>
+            <p>
+              Cuttings samples are loose sediment or rock fragments collected during the drilling of a well or borehole. 
+              Most of the cuttings sample sets in the WGNHS archive were submitted by well drillers from high-capacity wells.
+            </p>
+            <h3 class="inner-title">Petrographic thin sections</h3>
+            <p>
+              Petrographic thin sections are thin slices of rock on a glass slide that are prepared to be used 
+              under a microscope to study the optical properties of a rock sample, such as the mineral content. 
+              The thin sections and source rock samples in WGNHS collections have been collected from outcrops 
+              and core samples dating back to the late 1800s.
             </p>
           </div>
         </app-collapsible>

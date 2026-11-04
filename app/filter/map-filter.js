@@ -55,6 +55,7 @@ export class MapFilter extends LitElement {
       .section-title {
         margin: var(--line-height) 0 0 0;
         padding: var(--border-radius);
+        margin: var(--border-radius) 0;
         background-color: var(--palette-light);
       }
 
