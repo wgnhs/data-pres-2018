@@ -25,6 +25,10 @@ export class MapFilter extends LitElement {
       sources: {
         type: Array,
         attribute: false
+      },
+      uniqueWidsByLayer: {
+        type: Array,
+        attribute: false
       }
     };
   }
@@ -103,7 +107,15 @@ export class MapFilter extends LitElement {
         ?open=${group.open}>
         <i slot="header-before" class="material-icons collapse-icon"></i>
         <span slot="header">${group.title}</span>
-        ${(!group.toggleable)?'':html`
+        ${(!group.toggleable)?html`
+          <toggle-switch
+            name="${group.title}"
+            slot="header-after"
+            ?checked=${group.active}
+            @change=${this._handleGroup(group, 'include')}
+            style="display: none"
+          ></toggle-switch>
+        `:html`
           <toggle-switch
             name="${group.title}"
             slot="header-after"
@@ -145,7 +157,8 @@ export class MapFilter extends LitElement {
           `:''}
         </div>
       </app-collapsible>
-    `);
+    `
+    );   
   }
 
   _handleGroup(group, type) {
@@ -211,8 +224,11 @@ export class MapFilter extends LitElement {
       this.include,
       this.filter,
       this.sources,
+      this.uniqueWidsByLayer,
       activePoints
       );
+    console.log("counts:")
+    console.log(counts)
     dispatch(this, 'filtered', {activePoints, counts}, true, true);
   }
 
@@ -234,7 +250,7 @@ export class MapFilter extends LitElement {
     }
   }
 
-  init(layers) {
+  init(layers, uniqueWidsByLayer) {
     this.filterGroups.forEach((group) => {
       let source = (group.prop && group[group.prop])?group[group.prop]:undefined;
       group.sections.forEach((section) => {
@@ -253,6 +269,7 @@ export class MapFilter extends LitElement {
     });
 
     this.sources = layers;
+    this.uniqueWidsByLayer = uniqueWidsByLayer;
   }
 
   static runFilter({matchClass, incl, filt, sources}) {
@@ -287,10 +304,31 @@ export class MapFilter extends LitElement {
       return result;
     }, {});
 
-    return result;
+    let resultArray = []
+    Object.entries(result).forEach(([k, v]) => {
+      if (k.toLowerCase() !== "site information") {
+        resultArray.push(v);
+      }
+    })
+    console.log(resultArray);
+    const common = resultArray.reduce((acc, currentSet) => acc.union(currentSet), new Set());
+    console.log(common);
+
+    console.log(result);
+    
+    console.log("Common");
+    console.log(common); 
+    const filteredSiteInfo = result['site information'].intersection(common);
+    let filteredResult = {'site information': filteredSiteInfo};
+    Object.entries(result).forEach(([k, v]) => {
+      if (k.toLowerCase() !== "site information") {
+        filteredResult[k] = result['site information'].intersection(v);
+      }
+    })
+    return filteredResult;
   }
 
-  static getResultsInfo(matchClass, include, filter, sources, activePoints) {
+  static getResultsInfo(matchClass, include, filter, sources, uniqueWidsByLayer, activePoints) {
     const result = sources.map((layer) => {
       let stats = {};
       stats.name = layer.options.name;
@@ -304,11 +342,13 @@ export class MapFilter extends LitElement {
         return result;
       }, []);
       stats.matchClass = matchClass;
-
+      console.log("layer is:")
+      console.log(layer);
       let entries = Object.entries(layer._layers);
-      stats.total = entries.length;
+      stats.total = layer.options.name === "site information" ? entries.length : uniqueWidsByLayer[layer.options.name].length;
       stats.current = activePoints[layer.options.name].size;
-
+      console.log("stats:")
+      console.log(stats);
       return stats;
     });
     return result;
@@ -330,6 +370,7 @@ export class MapFilter extends LitElement {
     this.filterGroups = filterLookup;
   }
 }
+
 customElements.define('map-filter', MapFilter);
 
 const removeFromFilter = (filter, id) => {

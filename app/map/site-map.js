@@ -19,18 +19,6 @@ export class SiteMap extends window.L.Evented {
 
      
     /* ~~~~~~~~ Basemap Layers ~~~~~~~~ */
-     
-    // // basemaps from Open Street Map
-    // const osmhot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    //   attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors', 
-    //   label: "OpenStreetMap Humanitarian"
-    // });
-
-    // // CARTO Positron
-    // const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-    //   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    //   label: 'CARTO Positron'
-    // });
 
     // Esri basemaps 
     const esristreets = L.esri.basemapLayer('Streets', {label: "Esri Streets"});
@@ -47,6 +35,8 @@ export class SiteMap extends window.L.Evented {
     })); 
 
     let sources = filterLookup.reduceRight((result, curr) => {
+      //console.log("sources filterLookup");
+      //console.log(curr.source);
       if (curr.source && curr.source.geojson) {
         result.push(
           window.fetch(curr.source.geojson)
@@ -59,8 +49,35 @@ export class SiteMap extends window.L.Evented {
       return result;
     }, []);
 
+    // data retrieved from arc map server here
     Promise.all(sources).then((responses) => {
-        this.layers = responses.map((res) => {
+      console.log("Responses");
+      console.log(responses);
+      this.uniqueWidsByLayer = SiteMap.getUniqueWidsByLayer(responses);
+      var combinedData = SiteMap.filterCombineResponses(responses);
+
+      this.layers = [];
+      this.layers.push(L.geoJSON(combinedData, {
+            name: 'site information',
+            pointToLayer: function(geoJsonPoint, latlon) {
+              return new RestylingCircleMarker(latlon, {
+                weight: 2,
+                color: 'var(--map-symbol-0)',
+                radius: RestylingCircleMarker.calcRadius(map.getZoom()),
+                stroke: false,
+                fill: false,
+              });
+            }
+          }));
+        this.layers.push(...responses.map((res) => {
+          //console.log("Getting data");
+          console.log(res.name);
+          console.log(res.data);
+
+          // create 1 geoJson dataset with coords, county, WID, name
+
+          // create map layer from that dataset
+
           return L.geoJSON(res.data, {
             name: res.name,
             pointToLayer: function(geoJsonPoint, latlon) {
@@ -74,7 +91,9 @@ export class SiteMap extends window.L.Evented {
               });
             }
           });
-        });
+        }));
+        console.log(this.layers);
+
         this.layers.forEach(l => l.on('click', (e) => {
           if (this._highlight !== e.propagatedFrom) {
             this.fire('interaction', e.propagatedFrom.feature.properties);
@@ -82,8 +101,9 @@ export class SiteMap extends window.L.Evented {
             this.fire('interaction');
           }
         }))
-        this.layers.forEach(l => l.addTo(map));
+        this.layers[0].addTo(map);
       let lookup = {};
+      console.log(this.layers.length);
       this.layers.forEach(function(layer, idx, arr) {
         layer.eachLayer(function(obj) {
           let wid = obj.feature.properties['Wid'] || obj.feature.properties['WID'] || obj.feature.properties['WGNHS_ID'];
@@ -97,16 +117,22 @@ export class SiteMap extends window.L.Evented {
             'Latitude': latLon['lat'].toFixed(6),
             'Longitude': latLon['lng'].toFixed(6),
             point: obj,
-            datas: new Array(arr.length)
+            datas: []
           };
           obj.feature.properties['Site_Code'] = siteCode;
           obj.feature.properties['Site_Name'] = siteName;
           obj.feature.properties['Data_Type'] = layer.options.name;
-
-          cache.datas[idx] = obj.feature.properties;
+          // some WIDs have multiple records per layer
+          // this code only gets the last one in each layer
+          cache.datas.push(obj.feature.properties);
           lookup[siteCode] = cache;
+          
         });
       });
+      for (const [k, v] of Object.entries(lookup)) {
+        if (v['datas'].length > 2) {
+          }
+      }
       this._lookup = lookup;
       this.fire('init');
     });
@@ -124,10 +150,135 @@ export class SiteMap extends window.L.Evented {
     return result;
   }
 
+  static getUniqueWidsByLayer (responses) {
+      var uniqueWids = []
+      var uniqueWidsLayers = []
+      var missingCounty = {}
+      var missingWid = {}
+
+      responses.map((res) => {
+          let allWidsInLayer = [];
+          let uniqueWidsInLayer = [];
+          let dupWidsInLayer = {};
+          res.data.features.forEach(f => {
+            let wid = f.properties['Wid'] ?? f.properties['WID'] ?? f.properties['WGNHS_ID'] ?? undefined;
+            allWidsInLayer.push(wid);
+            if (!uniqueWidsInLayer.includes(wid)){
+                uniqueWidsInLayer.push(wid);
+            } else {
+              dupWidsInLayer[wid] = allWidsInLayer.filter(w => w ===  wid).length;
+            }
+        });
+        console.log(res.name);
+        console.log("All WIDs in layer");
+        console.log(allWidsInLayer);
+        console.log("Unique WIDs in layer");
+        console.log(uniqueWidsInLayer);
+        console.log("Duplicate WIDs in layer");
+        console.log(dupWidsInLayer);
+        uniqueWidsLayers[res.name] = uniqueWidsInLayer;
+      });
+      console.log("Unique WIDs by layer")
+      console.log(uniqueWidsLayers);
+      return uniqueWidsLayers;
+    }
+
+  static filterCombineResponses (responses) {
+      var combinedData = {
+        type: "FeatureCollection",
+        features: []
+      }
+      var uniqueWids = []
+      var uniqueWidsLayers = []
+      var missingCounty = {}
+      var missingWid = {}
+
+      responses.map((res) => {
+          let allWidsInLayer = [];
+          let uniqueWidsInLayer = [];
+          let dupWidsInLayer = {};
+          missingCounty[res.name] = [];
+          missingWid[res.name] = [];
+          res.data.features.forEach(f => {
+            let wid = f.properties['Wid'] ?? f.properties['WID'] ?? f.properties['WGNHS_ID'] ?? undefined;
+            if (!wid) {
+              missingWid[res.name].push(f);
+            }
+            let county = f.properties['County'] || f.properties['CountyName'];
+            if (!county) {
+              missingCounty[res.name].push(f);
+            }
+            let siteName = f.properties['Site_name'] || f.properties['SiteName'];
+            if (!uniqueWids.includes(wid)){
+              uniqueWids.push(wid);
+              let newFeature = {
+                geometry: structuredClone(f.geometry),
+                id: wid,
+                properties: {
+                  WID: wid,
+                  County: county ? SiteMap.toTitleCase(county): null,
+                  SiteName: siteName
+
+                },
+                type: "Feature"
+              }
+              combinedData.features.push(newFeature);
+            }
+            allWidsInLayer.push(wid);
+            if (!uniqueWidsInLayer.includes(wid)){
+                uniqueWidsInLayer.push(wid);
+            } else {
+              dupWidsInLayer[wid] = allWidsInLayer.filter(w => w ===  wid).length;
+            }
+        });
+        console.log(res.name);
+        console.log(res.data.features.length);
+        console.log("All WIDs in layer");
+        console.log(allWidsInLayer);
+        console.log("Unique WIDs in layer");
+        console.log(uniqueWidsInLayer);
+        console.log("Duplicate WIDs in layer");
+        console.log(dupWidsInLayer);
+        uniqueWidsLayers[res.name] = uniqueWidsInLayer;
+      });
+      console.log("Unique WIDs");
+      console.log(uniqueWids);
+      console.log(uniqueWids.length);
+      console.log("Combined data");
+      console.log(combinedData);
+      console.log(combinedData.features.length);
+      console.log("Missing county");
+      console.log(missingCounty);
+      console.log("Missing WID");
+      console.log(missingWid);
+      //console.log("Dup WIDS");
+      //console.log(dupWids);
+      console.log("Unique WIDs by layer")
+      console.log(uniqueWidsLayers);
+      return combinedData;
+    }
+
+  static toTitleCase(str) {
+    const exceptions = ['of', 'du'];
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map((word, index) => {
+      // If it's an exception and NOT the first word, keep it lowercase
+      if (exceptions.includes(word) && index !== 0) {
+        return word;
+      }
+      // Otherwise, capitalize it
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+  }
+
   //TODO HACK
   getPoint(params) {
     let result = null;
     let cache = this._lookup[SiteMap.getSiteCode(params)];
+    //console.log(cache)
     if (cache) {
       result = cache.point;
     }
@@ -194,6 +345,8 @@ export class SiteMap extends window.L.Evented {
   }
 
   updatePoints(activePoints) {
+    console.log("Update points");
+    console.log(activePoints);
     this.map.fire('filterpoints', {
       detail: {
         resolve: (props) => {

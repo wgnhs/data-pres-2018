@@ -15,7 +15,7 @@ window.filter = document.querySelector('#filter');
 
 window.siteMap.once('init', function() {
   window.siteData = new SiteData(window.siteMap.layers);
-  window.filter.init(window.siteMap.layers);
+  window.filter.init(window.siteMap.layers, window.siteMap.uniqueWidsByLayer);
 
   var deselectFeature = function() {
     window.pdfPanel.hide();
@@ -125,6 +125,8 @@ document.addEventListener('clear-selection', function(e) {
 });
 
 document.addEventListener('zoom-to-site', function(e) {
+  console.log("zoom to site");
+  console.log(e.detail.params)
   window.siteMap.zoomToPoint(e.detail.params);
 });
 
@@ -144,5 +146,7 @@ document.addEventListener('toggle-pdf-panel', function(e) {
 // });
 
 document.addEventListener('filtered', function(e) {
+  console.log("filtered event");
+  console.log(e.detail.activePoints)
   window.siteMap.updatePoints(e.detail.activePoints);
 });

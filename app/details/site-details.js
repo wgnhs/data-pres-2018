@@ -59,11 +59,15 @@ export class SiteDetails extends LitElement {
   }
 
   renderData(info, layoutName) {
+    console.log(layoutName);
+    console.log(info);
+    
     const layout = layoutResolver.getLayout(layoutName);
     return layout(info, {layoutName, pdfpanel: this.pdfpanel});
   }
 
   render() {
+    console.log("Render site details")
     let Latitude = (this.siteinfo)?this.siteinfo['Latitude']:null;
     let Longitude = (this.siteinfo)?this.siteinfo['Longitude']:null;
     let WID = (this.siteinfo)?this.siteinfo['WID']:null;
@@ -73,15 +77,11 @@ export class SiteDetails extends LitElement {
           <span>
             <a href="${window.router.link('entry')}" onclick="event.preventDefault()"><i class="material-icons clear-selection" title="Clear selection" @click="${this.fireClearSelection}" >arrow_back</i></a>
           </span>
-          <h1>${this.siteinfo.Site_Name}</h1>
           <span>
             <i class="material-icons zoom-to-site" title="Zoom to site" @click="${this.fireZoomToSite}">my_location</i>
           </span>
         </div>
-        ${this.renderData({
-          Latitude, Longitude, WID
-        })}
-        ${this.siteinfo.datas.slice().reverse().map((props) => html`
+        ${this.siteinfo.datas.map((props) => html`
           <app-collapsible open>
             <span slot="header" class="name">${props['Data_Type']}</span>
             <div slot="content">

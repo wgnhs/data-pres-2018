@@ -6,6 +6,10 @@ export class FilterSummary extends LitElement {
       counts: {
         type: Array,
         attribute: false
+      },
+      sitesCount: {
+        type: Object,
+        attribute: false
       }
     };
   }
@@ -29,15 +33,15 @@ export class FilterSummary extends LitElement {
     return (!this.counts)?html``:html`
     <div>
       <span>Showing
-        ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
+        ${this.sitesCount.current}
         of
-        ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
+        ${this.sitesCount.total}
         total sites
       </span>
       <ul>
         ${this.counts.reduceRight((prev, el) => prev.concat(html`
         <li ?disabled=${!el.included}>
-          ${el.current} of ${el.total} <span class="name">${el.name}</span> sites
+          ${el.current} of ${el.total} sites with <span class="name">${el.name}</span> records
           ${(el.filteredBy.length > 0)?html`
           (filtered by ${el.filteredBy.join(', ')})
           `:''}
@@ -51,6 +55,11 @@ export class FilterSummary extends LitElement {
   handleFiltered(e) {
     if (e.detail) {
       this.counts = e.detail.counts;
+      this.sitesCount = this.counts.find(count => count.name == "site information");
+      let siteInfoIndex = this.counts.findIndex(count => count.name == "site information");
+      if (siteInfoIndex !== -1) {
+        this.counts.splice(siteInfoIndex, 1);
+      }
     }
   }
 

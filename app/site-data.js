@@ -126,9 +126,7 @@ export class SiteData {
   static getFieldTitle(key, layoutName) {
     let result = key;
     let config = SiteData.getFieldConfiguration(key, layoutName);
-    if (!config) {
-      result += '*';
-    } else if (config.title) {
+    if (config && config.title) {
       result = config.title;
     }
     return result;
@@ -149,6 +147,9 @@ export class SiteData {
     if (!config || config.hidden) {
       result = true;
     }
+    console.log("Get field hidden");
+    console.log(key);
+    console.log(result);
     return result;
   }
 }
@@ -162,7 +163,12 @@ export const ignoredKeys = [
 export const filterLookup = [
   new FilterGroup({
     title: "Site Information",
+    prop: 'Data_Type',
+    'Data_Type': 'site information',
     open: true,
+    color: 'var(--map-symbol-0)',
+    toggleable: false,
+    active: true,
     sections: [
       {
         fields: {
@@ -372,7 +378,7 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/quaternary_core/MapServer/0'
     },
-    color: 'var(--map-symbol-1)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
     active: true,
     sections: [
@@ -467,7 +473,7 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/rock_core/MapServer/0/query?where=LonDD+is+not+null&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/rock_core/MapServer/0'
     },
-    color: 'var(--map-symbol-2)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
     active: true,
     sections: [{
@@ -576,9 +582,9 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/cuttings_samples/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/cuttings_samples/MapServer/0'
     },
-    color: 'var(--map-symbol-3)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
-    active: true,
+    active: false,
     sections: [
       {
         fields: {
@@ -622,7 +628,7 @@ export const filterLookup = [
       geojson: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/thin_sections/MapServer/0/query?where=1%3D1&inSR=4326&outFields=*&returnGeometry=true&geometryPrecision=6&outSR=4326&f=geojson',
       user: 'https://data.wgnhs.wisc.edu/arcgis/rest/services/geologic_data/thin_sections/MapServer/0'
     },
-    color: 'var(--map-symbol-4)',
+    color: 'var(--map-symbol-0)',
     toggleable: true,
     active: true,
     sections: [
