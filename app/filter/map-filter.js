@@ -25,6 +25,10 @@ export class MapFilter extends LitElement {
       sources: {
         type: Array,
         attribute: false
+      },
+      uniqueWidsByLayer: {
+        type: Array,
+        attribute: false
       }
     };
   }
@@ -220,6 +224,7 @@ export class MapFilter extends LitElement {
       this.include,
       this.filter,
       this.sources,
+      this.uniqueWidsByLayer,
       activePoints
       );
     console.log("counts:")
@@ -245,7 +250,7 @@ export class MapFilter extends LitElement {
     }
   }
 
-  init(layers) {
+  init(layers, uniqueWidsByLayer) {
     this.filterGroups.forEach((group) => {
       let source = (group.prop && group[group.prop])?group[group.prop]:undefined;
       group.sections.forEach((section) => {
@@ -264,6 +269,7 @@ export class MapFilter extends LitElement {
     });
 
     this.sources = layers;
+    this.uniqueWidsByLayer = uniqueWidsByLayer;
   }
 
   static runFilter({matchClass, incl, filt, sources}) {
@@ -322,7 +328,7 @@ export class MapFilter extends LitElement {
     return filteredResult;
   }
 
-  static getResultsInfo(matchClass, include, filter, sources, activePoints) {
+  static getResultsInfo(matchClass, include, filter, sources, uniqueWidsByLayer, activePoints) {
     const result = sources.map((layer) => {
       let stats = {};
       stats.name = layer.options.name;
@@ -339,7 +345,7 @@ export class MapFilter extends LitElement {
       console.log("layer is:")
       console.log(layer);
       let entries = Object.entries(layer._layers);
-      stats.total = entries.length;
+      stats.total = layer.options.name === "site information" ? entries.length : uniqueWidsByLayer[layer.options.name].length;
       stats.current = activePoints[layer.options.name].size;
       console.log("stats:")
       console.log(stats);

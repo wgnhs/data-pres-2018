@@ -36,16 +36,12 @@ export class FilterSummary extends LitElement {
         ${this.sitesCount.current}
         of
         ${this.sitesCount.total}
-        total sites and 
-        ${this.counts.reduce((prev, count) => (count.current + prev), 0)}
-        of
-        ${this.counts.reduce((prev, count) => (count.total + prev), 0)}
-        total records
+        total sites
       </span>
       <ul>
         ${this.counts.reduceRight((prev, el) => prev.concat(html`
         <li ?disabled=${!el.included}>
-          ${el.current} of ${el.total} <span class="name">${el.name}</span> records
+          ${el.current} of ${el.total} sites with <span class="name">${el.name}</span> records
           ${(el.filteredBy.length > 0)?html`
           (filtered by ${el.filteredBy.join(', ')})
           `:''}

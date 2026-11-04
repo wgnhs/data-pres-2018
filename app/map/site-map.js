@@ -53,7 +53,9 @@ export class SiteMap extends window.L.Evented {
     Promise.all(sources).then((responses) => {
       console.log("Responses");
       console.log(responses);
+      this.uniqueWidsByLayer = SiteMap.getUniqueWidsByLayer(responses);
       var combinedData = SiteMap.filterCombineResponses(responses);
+
       this.layers = [];
       this.layers.push(L.geoJSON(combinedData, {
             name: 'site information',
@@ -148,12 +150,46 @@ export class SiteMap extends window.L.Evented {
     return result;
   }
 
+  static getUniqueWidsByLayer (responses) {
+      var uniqueWids = []
+      var uniqueWidsLayers = []
+      var missingCounty = {}
+      var missingWid = {}
+
+      responses.map((res) => {
+          let allWidsInLayer = [];
+          let uniqueWidsInLayer = [];
+          let dupWidsInLayer = {};
+          res.data.features.forEach(f => {
+            let wid = f.properties['Wid'] ?? f.properties['WID'] ?? f.properties['WGNHS_ID'] ?? undefined;
+            allWidsInLayer.push(wid);
+            if (!uniqueWidsInLayer.includes(wid)){
+                uniqueWidsInLayer.push(wid);
+            } else {
+              dupWidsInLayer[wid] = allWidsInLayer.filter(w => w ===  wid).length;
+            }
+        });
+        console.log(res.name);
+        console.log("All WIDs in layer");
+        console.log(allWidsInLayer);
+        console.log("Unique WIDs in layer");
+        console.log(uniqueWidsInLayer);
+        console.log("Duplicate WIDs in layer");
+        console.log(dupWidsInLayer);
+        uniqueWidsLayers[res.name] = uniqueWidsInLayer;
+      });
+      console.log("Unique WIDs by layer")
+      console.log(uniqueWidsLayers);
+      return uniqueWidsLayers;
+    }
+
   static filterCombineResponses (responses) {
       var combinedData = {
         type: "FeatureCollection",
         features: []
       }
       var uniqueWids = []
+      var uniqueWidsLayers = []
       var missingCounty = {}
       var missingWid = {}
 
@@ -180,7 +216,7 @@ export class SiteMap extends window.L.Evented {
                 id: wid,
                 properties: {
                   WID: wid,
-                  County: county ? county.toLowerCase() : null,
+                  County: county ? SiteMap.toTitleCase(county): null,
                   SiteName: siteName
 
                 },
@@ -203,6 +239,7 @@ export class SiteMap extends window.L.Evented {
         console.log(uniqueWidsInLayer);
         console.log("Duplicate WIDs in layer");
         console.log(dupWidsInLayer);
+        uniqueWidsLayers[res.name] = uniqueWidsInLayer;
       });
       console.log("Unique WIDs");
       console.log(uniqueWids);
@@ -216,8 +253,26 @@ export class SiteMap extends window.L.Evented {
       console.log(missingWid);
       //console.log("Dup WIDS");
       //console.log(dupWids);
+      console.log("Unique WIDs by layer")
+      console.log(uniqueWidsLayers);
       return combinedData;
     }
+
+  static toTitleCase(str) {
+    const exceptions = ['of', 'du'];
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map((word, index) => {
+      // If it's an exception and NOT the first word, keep it lowercase
+      if (exceptions.includes(word) && index !== 0) {
+        return word;
+      }
+      // Otherwise, capitalize it
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+  }
 
   //TODO HACK
   getPoint(params) {
