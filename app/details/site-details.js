@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit-element';
 import { styles } from 'wgnhs-styles';
 import { dispatch } from 'wgnhs-common';
-export { PDFViewButton } from 'wgnhs-pdf';
+export { PDFViewButton, SlideViewButton } from 'wgnhs-pdf';
 import { layoutResolver } from './layout-resolver.js';
 
 export class SiteDetails extends LitElement {
@@ -63,7 +63,7 @@ export class SiteDetails extends LitElement {
     console.log(info);
     
     const layout = layoutResolver.getLayout(layoutName);
-    return layout(info, {layoutName, pdfpanel: this.pdfpanel});
+    return layout(info, {layoutName, pdfpanel: this.pdfpanel, slidepanel: this.slidepanel});
   }
 
   render() {

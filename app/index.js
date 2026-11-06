@@ -8,8 +8,14 @@ export { MapFilter } from './filter/map-filter.js';
 window.siteMap = new SiteMap();
 window.sidebar = document.querySelector('#sidebar');
 window.pdfPanel = document.querySelector('#sketch');
+console.log(pdfPanel);
+window.slidePanel = document.querySelector('#slides');
+console.log(slidePanel);
 document.querySelectorAll('site-details').forEach(function(details) {
   details['pdfpanel'] = window.pdfPanel;
+});
+document.querySelectorAll('site-details').forEach(function(details) {
+  details['slidepanel'] = window.slidePanel;
 });
 window.filter = document.querySelector('#filter');
 
@@ -136,6 +142,15 @@ document.addEventListener('toggle-pdf-panel', function(e) {
     window.pdfPanel.setAttribute('data-closed', true);
   } else {
     window.pdfPanel.removeAttribute('data-closed');
+  }
+});
+
+document.addEventListener('toggle-slide-panel', function(e) {
+  window.siteMap.setVisibility(e.detail.closed);
+  if (e.detail.closed) {
+    window.slidePanel.setAttribute('data-closed', true);
+  } else {
+    window.slidePanel.removeAttribute('data-closed');
   }
 });
 
