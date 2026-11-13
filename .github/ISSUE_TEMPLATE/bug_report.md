@@ -11,8 +11,8 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **Environment**
-[] Production (https://data.wgnhs.wisc.edu/data-viewer)
-[] Development (https://wgnhs.github.io/data-viewer-dev)
+[ ] Production (https://data.wgnhs.wisc.edu/data-viewer)
+[ ] Development (https://wgnhs.github.io/data-viewer-dev)
 
 **To Reproduce**
 Steps to reproduce the behavior:
